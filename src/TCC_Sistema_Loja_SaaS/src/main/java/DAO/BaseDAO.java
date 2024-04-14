@@ -36,7 +36,9 @@ public abstract class BaseDAO<T> {
     public T consultar(Long id) throws DAOException {
         try {
             EntityManager entityManager = this.entityManagerFactory.createEntityManager();
-            return entityManager.find(getEntityClass(), id);
+            T result = entityManager.find(getEntityClass(), id);
+            entityManager.close();
+            return result;
         } catch (Exception e) {
             throw new DAOException("Erro ao consultar " + nomeEntidade, e);
         }
