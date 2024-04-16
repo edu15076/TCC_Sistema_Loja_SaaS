@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence           http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
-  <persistence-unit name="persistence" transaction-type="RESOURCE_LOCAL">
-    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-    <class>Entidade.Cartao</class>
-    <class>Entidade.Contratante</class>
-    <class>Entidade.Contrato</class>
-    <class>Entidade.ContratoAssinado</class>
-    <class>Entidade.GerenteDeContrato</class>
-    <class>Entidade.HistoricoPagamento</class>
-    <class>Entidade.Loja</class>
-    <class>Entidade.Periodicidade</class>
-    <properties>
-      <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/TCC_Sistema_Loja_SaaS"/>
-      <property name="javax.persistence.jdbc.user" value="postgres"/>
-      <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-      <property name="javax.persistence.jdbc.password" value="123456"/>
-      <property name="javax.persistence.schema-generation.database.action" value="create"/>
-    </properties>
-  </persistence-unit>
+<persistence-unit name="persistence" transaction-type="RESOURCE_LOCAL">
+  <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+  <class>Entidade.Cartao</class>
+  <class>Entidade.Pessoa</class>
+  <class>Entidade.Contratante</class>
+  <class>Entidade.Contrato</class>
+  <class>Entidade.ContratoAssinado</class>
+  <class>Entidade.GerenteDeContrato</class>
+  <class>Entidade.HistoricoPagamento</class>
+  <class>Entidade.Loja</class>
+  <class>Entidade.Periodicidade</class>
+  <properties>
+    <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/TCC_Sistema_Loja_SaaS"/>
+    <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+    <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+    <property name="jakarta.persistence.jdbc.password" value="123456"/>
+
+    <property name="eclipselink.logging.level.sql" value="FINE"/>
+    <property name="eclipselink.logging.parameters" value="true"/>
+  </properties>
+</persistence-unit>
 </persistence>

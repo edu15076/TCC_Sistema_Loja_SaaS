@@ -2,16 +2,8 @@ package Entidade;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "historico_pagamento")
@@ -19,6 +11,8 @@ public class HistoricoPagamento implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(name = "valor_a_ser_pago")
     private double valorASerPago;
     
     @Temporal(TemporalType.TIMESTAMP)
@@ -33,7 +27,7 @@ public class HistoricoPagamento implements Serializable {
     @Column(name = "data_fim_prazo")
     private Date dataFimPrazo;
     
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "id_contrato_assinado")
     private ContratoAssinado contratoAssinado;
 

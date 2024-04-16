@@ -28,3 +28,5 @@ replay_pid*
 # ignorar pastas criadas pelo intelijj
 .idea/
 .idea/workspace.xml
+
+.target/

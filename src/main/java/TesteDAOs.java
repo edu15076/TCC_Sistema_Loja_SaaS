@@ -32,10 +32,6 @@ public class TesteDAOs {
             switch (opcao) {
                 case 1:
                     Contratante novoContratante = new Contratante();
-                    /*Loja loja = new Loja();
-                    
-                    System.out.println("Digite o nome da Loja:");
-                    loja.setNome(in.nextLine());*/
                     
                     System.out.println("Digite o Nome de usuário:");
                     novoContratante.setUsername(in.nextLine());

@@ -2,16 +2,9 @@ package Entidade;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import java.util.List;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "contrato_assinado")
@@ -20,13 +13,18 @@ public class ContratoAssinado implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private boolean vigente;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_contratacao")
     private Date dataContratacao;
     
     @ManyToOne
     @JoinColumn(name = "id_contrato")
     private Periodicidade periodicidade;
+
+    @ManyToOne
+    @JoinColumn(name = "id_contratante")
+    private Contratante contratante;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "contratoAssinado")
+    private List<HistoricoPagamento> historicoPagamento;
 
     public long getId() {
         return id;
@@ -44,6 +42,8 @@ public class ContratoAssinado implements Serializable {
         this.vigente = vigente;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "data_contratacao")
     public Date getDataContratacao() {
         return dataContratacao;
     }
@@ -58,5 +58,21 @@ public class ContratoAssinado implements Serializable {
 
     public void setPeriodicidade(Periodicidade periodicidade) {
         this.periodicidade = periodicidade;
+    }
+
+    public Contratante getContratante() {
+        return contratante;
+    }
+
+    public void setContratante(Contratante contratante) {
+        this.contratante = contratante;
+    }
+
+    public List<HistoricoPagamento> getHistoricoPagamento() {
+        return historicoPagamento;
+    }
+
+    public void setHistoricoPagamento(List<HistoricoPagamento> historicoPagamento) {
+        this.historicoPagamento = historicoPagamento;
     }
 }
