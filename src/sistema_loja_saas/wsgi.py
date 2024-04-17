@@ -1,5 +1,5 @@
 """
-WSGI config for sistema_loga_saas project.
+WSGI config for sistema_loja_saas project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistema_loga_saas.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistema_loja_saas.settings')
 
 application = get_wsgi_application()
