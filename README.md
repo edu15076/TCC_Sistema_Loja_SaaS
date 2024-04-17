@@ -1,5 +1,14 @@
 # TCC_Sistema_Loja_SaaS
 
+<details>
+
+<summary><h2>Indice</h2></summary>
+
+  - [Configuração de Ambiente](#configuração-do-ambiente)
+  - [Commits](#commits)
+
+</details>
+
 ## Configuração do ambiente
 
 Por padrão, todas as orientações nessa seção partem do ponto de vista que o terminal já está no diretório `TCC_Sistema_Loja_SaaS/src`.
