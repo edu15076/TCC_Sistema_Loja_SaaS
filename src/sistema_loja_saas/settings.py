@@ -117,9 +117,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
@@ -135,3 +135,68 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuração dos loggers
+import django.contrib.contenttypes
+
+os.makedirs(f'{BASE_DIR}/logs', exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'loggers': {
+        'debug': {
+            'handlers':['console'],
+            'level':'DEBUG',
+        },
+        'debug-verbose': {
+            'handlers':['console-v'],
+            'level':'DEBUG',
+        },
+        'product': {
+            'handlers':['console-v','file'],
+            'level':'WARNING'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter':'simple',
+            'filters': ['app_label_filter'],
+        },
+        'console-v': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter':'verbose',
+            'filters': ['app_label_filter'],
+        },
+        'file': {
+            'level':'ERROR',
+            'class':'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/logs.log'),
+            'formatter':'file',
+            'filters': ['app_label_filter'],
+        }
+    },
+    'formatters': {
+        'simple': {
+            '()': 'common.logging.DjangoColorsFormatter',
+            'format':'[{levelname}]{pathname} [{app_label}] {message}',
+            'style': '{',
+        },
+        'verbose': {
+            '()': 'common.logging.DjangoColorsFormatter',
+            'format':'{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
+            'style': '{',
+        },
+        'file': {
+            'format':'{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'app_label_filter': {
+            '()': 'common.logging.AppLabelFilter',  # Caminho para o filtro personalizado
+        }
+    },
+}
