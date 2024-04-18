@@ -139,7 +139,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configuração dos loggers
 import django.contrib.contenttypes
 
-os.makedirs(f'{BASE_DIR}/logs', exist_ok=True)
+os.makedirs(f'{BASE_DIR}{os.sep}logs', exist_ok=True)
+if not os.path.exists(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv'):
+    csv = open(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv', 'a')
+    csv.write('Time,Level,App,Mensagem\n')
+    csv.close()
+
 
 LOGGING = {
     'version': 1,
@@ -149,11 +154,11 @@ LOGGING = {
             'level':'DEBUG',
         },
         'debug-verbose': {
-            'handlers':['console-v'],
+            'handlers':['console-v','csv'],
             'level':'DEBUG',
         },
         'product': {
-            'handlers':['console-v','file'],
+            'handlers':['console-v','file','csv'],
             'level':'WARNING'
         },
     },
@@ -176,7 +181,14 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/logs.log'),
             'formatter':'file',
             'filters': ['app_label_filter'],
-        }
+        },
+        'csv': {
+            'level':'WARNING',
+            'class':'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/logs.csv'),
+            'filters': ['app_label_filter'],
+            'formatter':'csv',
+        },
     },
     'formatters': {
         'simple': {
@@ -193,10 +205,16 @@ LOGGING = {
             'format':'{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
             'style': '{',
         },
+        'csv': {
+            '()': 'common.logging.CSVFormatter',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            'format':'{asctime},{levelname},{pathname}{app_label},"{message}"',
+            'style': '{',
+        }
     },
     'filters': {
         'app_label_filter': {
-            '()': 'common.logging.AppLabelFilter',  # Caminho para o filtro personalizado
-        }
+            '()':'common.logging.AppLabelFilter',
+        },
     },
 }

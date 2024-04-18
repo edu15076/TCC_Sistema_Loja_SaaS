@@ -36,7 +36,19 @@ class DjangoColorsFormatter(logging.Formatter):
                 message = message.encode('utf-8')
         colorizer = getattr(self.style, record.levelname, self.style.HTTP_SUCCESS)
         return colorizer(message)
-    
+
+class CSVFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        if sys.version_info < (2, 7):
+            logging.Formatter.__init__(self, *args, **kwargs)
+        else:
+            super(CSVFormatter, self).__init__(*args, **kwargs)
+
+    def formatTime(self, record, datefmt=None):
+        # record.message = record.message.replace(',',' ')
+        return super().formatTime(record, datefmt=datefmt)
+
+
 
 import os
 from sistema_loja_saas.settings import BASE_DIR
@@ -53,6 +65,7 @@ class AppLabelFilter(logging.Filter):
         record.pathname = ''
 
         return True
+    
 
 from enum import Enum
 
@@ -61,5 +74,13 @@ class Loggers(Enum):
     DEBUG_VERBOSE = 'debug-verbose'
     PRODUCT = 'product'
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
+        """
+        Cria um objeto Logger para ser usado, conforme as opções
+        do arquivo settings.py
+
+        :return: Logger
+        :rtype: logging.Logger
+        """
+
         return logging.getLogger(self.value)
