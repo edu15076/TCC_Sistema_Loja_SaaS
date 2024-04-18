@@ -1,6 +1,9 @@
 import sys
 import logging
-
+import os
+from enum import Enum
+from sistema_loja_saas.settings import BASE_DIR
+from django.apps import apps
 from django.core.management.color import color_style
 
 class DjangoColorsFormatter(logging.Formatter):
@@ -37,6 +40,7 @@ class DjangoColorsFormatter(logging.Formatter):
         colorizer = getattr(self.style, record.levelname, self.style.HTTP_SUCCESS)
         return colorizer(message)
 
+
 class CSVFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         if sys.version_info < (2, 7):
@@ -49,15 +53,9 @@ class CSVFormatter(logging.Formatter):
         return super().formatTime(record, datefmt=datefmt)
 
 
-
-import os
-from sistema_loja_saas.settings import BASE_DIR
-from django.apps import apps
-
 class AppLabelFilter(logging.Filter):
     def filter(self, record):
         paths = record.pathname.replace(f'{BASE_DIR}{os.sep}', '').split(os.sep)
-
 
         if '.' not in paths[0] and apps.get_containing_app_config(paths[0]) != None:
             record.app_label = apps.get_containing_app_config(paths[0]).name
@@ -66,8 +64,6 @@ class AppLabelFilter(logging.Filter):
 
         return True
     
-
-from enum import Enum
 
 class Loggers(Enum):
     DEBUG = 'debug'
