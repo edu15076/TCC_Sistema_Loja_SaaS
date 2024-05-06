@@ -10,13 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-import environ
-import os
 
 env = environ.Env()
 env.read_env(os.path.join(BASE_DIR, '.env'))
@@ -94,7 +94,6 @@ DATABASES = {
 }
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -137,8 +136,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuração dos loggers
-import django.contrib.contenttypes
-
 os.makedirs(f'{BASE_DIR}{os.sep}logs', exist_ok=True)
 if not os.path.exists(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv'):
     csv = open(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv', 'a')
@@ -150,71 +147,71 @@ LOGGING = {
     'version': 1,
     'loggers': {
         'debug': {
-            'handlers':['console'],
-            'level':'DEBUG',
+            'handlers': ['console'],
+            'level': 'DEBUG',
         },
         'debug-verbose': {
-            'handlers':['console-v','csv'],
-            'level':'DEBUG',
+            'handlers': ['console-v', 'csv'],
+            'level': 'DEBUG',
         },
         'product': {
-            'handlers':['console-v','file','csv'],
-            'level':'WARNING'
+            'handlers': ['console-v', 'file', 'csv'],
+            'level': 'WARNING'
         },
     },
     'handlers': {
         'console': {
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
-            'formatter':'simple',
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
             'filters': ['app_label_filter'],
         },
         'console-v': {
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
-            'formatter':'verbose',
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
             'filters': ['app_label_filter'],
         },
         'file': {
-            'level':'ERROR',
-            'class':'logging.FileHandler',
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/logs.log'),
-            'formatter':'file',
+            'formatter': 'file',
             'filters': ['app_label_filter'],
         },
         'csv': {
-            'level':'WARNING',
-            'class':'logging.FileHandler',
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/logs.csv'),
             'filters': ['app_label_filter'],
-            'formatter':'csv',
+            'formatter': 'csv',
         },
     },
     'formatters': {
         'simple': {
             '()': 'common.logging.DjangoColorsFormatter',
-            'format':'[{levelname}]{pathname} [{app_label}] {message}',
+            'format': '[{levelname}]{pathname} [{app_label}] {message}',
             'style': '{',
         },
         'verbose': {
             '()': 'common.logging.DjangoColorsFormatter',
-            'format':'{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
+            'format': '{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
             'style': '{',
         },
         'file': {
-            'format':'{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
+            'format': '{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
             'style': '{',
         },
         'csv': {
             '()': 'common.logging.CSVFormatter',
             'datefmt': '%Y-%m-%d %H:%M:%S',
-            'format':'{asctime},{levelname},{pathname}{app_label},"{message}"',
+            'format': '{asctime},{levelname},{pathname}{app_label},"{message}"',
             'style': '{',
         }
     },
     'filters': {
         'app_label_filter': {
-            '()':'common.logging.AppLabelFilter',
+            '()': 'common.logging.AppLabelFilter',
         },
     },
 }
