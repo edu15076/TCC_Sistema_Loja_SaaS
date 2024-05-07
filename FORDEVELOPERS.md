@@ -36,7 +36,9 @@ black nome_da_pasta/
 black nome_do_arquivo
 ```
 
-Para formatar uma pasta ou um arquivo. **Recomenda-se o uso periódico dessa ferramente entre commits, sendo feita no commit *style*.**
+Para formatar uma pasta ou um arquivo. 
+
+**Recomenda-se o uso periódico dessa ferramente entre commits, sendo feita no commit *style*.**
 
 
 **IMPORTANTE:** Deixar de seguir algum quesito citado por ser motivo para negar pull request.
