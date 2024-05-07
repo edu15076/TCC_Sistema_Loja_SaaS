@@ -40,9 +40,8 @@ class DjangoColorsFormatter(logging.Formatter):
         message = logging.Formatter.format(self, record)
         if sys.version_info[0] < 3:
             if isinstance(message, unicode):
-                message = message.encode('utf-8')
-        colorizer = getattr(self.style, record.levelname,
-                            self.style.HTTP_SUCCESS)
+                message = message.encode("utf-8")
+        colorizer = getattr(self.style, record.levelname, self.style.HTTP_SUCCESS)
         return colorizer(message)
 
 
@@ -60,21 +59,20 @@ class CSVFormatter(logging.Formatter):
 
 class AppLabelFilter(logging.Filter):
     def filter(self, record):
-        paths = record.pathname.replace(
-            f'{BASE_DIR}{os.sep}', '').split(os.sep)
+        paths = record.pathname.replace(f"{BASE_DIR}{os.sep}", "").split(os.sep)
 
-        if '.' not in paths[0] and apps.get_containing_app_config(paths[0]) != None:
+        if "." not in paths[0] and apps.get_containing_app_config(paths[0]) != None:
             record.app_label = apps.get_containing_app_config(paths[0]).name
 
-        record.pathname = ''
+        record.pathname = ""
 
         return True
 
 
 class Loggers(Enum):
-    DEBUG = 'debug'
-    DEBUG_VERBOSE = 'debug-verbose'
-    PRODUCT = 'product'
+    DEBUG = "debug"
+    DEBUG_VERBOSE = "debug-verbose"
+    PRODUCT = "product"
 
     def get_logger(self) -> logging.Logger:
         """
