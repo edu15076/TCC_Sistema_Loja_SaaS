@@ -1,0 +1,12 @@
+[tool.black]
+line_length = 88
+target_version = ['py311']
+skip-string-normalization = true
+exclude = '''
+(
+  __pycache__
+  | env
+  | venv
+  | sistema_loja_saas/
+)
+'''
