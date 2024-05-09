@@ -48,6 +48,10 @@ INSTALLED_APPS = [
     'saas'
 ]
 
+# Configura o usuário personalizado
+
+AUTH_USER_MODEL = 'common.UsuarioGenerico'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
