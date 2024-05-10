@@ -1,27 +1,26 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .escopo import Escopo
+from scope_auth.models import UsernamePerScopeManager, AbstractUsernamePerScope
+from scope_auth.models import Scope
 
 
-class CodigoEscopoPairManager(models.Manager):
-    def get_codigos(self, *, escopo: Escopo = None):
+class CodigoScopePairManager(UsernamePerScopeManager):
+    def get_codigos(self, *, escopo: Scope = None):
         if escopo is None:
             return self.values('codigo')
         return self.values('codigo').filter(escopo=escopo)
 
 
-class CodigoEscopoPair(models.Model):
+class CodigoScopePair(AbstractUsernamePerScope):
     codigo = models.CharField(_('CPF ou CNPJ'), max_length=14)
-    escopo = models.ForeignKey(Escopo, on_delete=models.CASCADE)
 
-    objects = CodigoEscopoPairManager()
+    objects = CodigoScopePairManager()
+
+    USERNAME_FIELD = 'codigo'
 
     def __str__(self):
-        return f'(codigo: {self.codigo}, escopo: {self.escopo})'
+        return f'{{codigo: {self.codigo}, scope: {self.scope}}}'
 
     def __repr__(self):
         return str(self)
-
-    class Meta:
-        unique_together = (('codigo', 'escopo'),)

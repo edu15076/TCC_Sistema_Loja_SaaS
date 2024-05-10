@@ -9,7 +9,7 @@ def restart_django(*, imprimir_versoes: bool = False):
         print(f'Django {django.get_version()}')
 
     # define a raiz do projeto par para ser possível importar os modulos
-    sys.path.append('../../src')
+    sys.path.append('../..')
 
     # configura o ambiente
     os.environ.setdefault('DJANGO_SETTINGS_MODULE',

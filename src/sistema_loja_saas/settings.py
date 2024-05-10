@@ -43,14 +43,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'common',
-    'loja',
-    'saas'
+    'util',
+    'scope_auth',
+    'common'
 ]
+
+# Configura o backend da autenticação
+
+AUTHENTICATION_BACKENDS = ['scope_auth.backends.ModelScopeBackend']
 
 # Configura o usuário personalizado
 
 AUTH_USER_MODEL = 'common.UsuarioGenerico'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

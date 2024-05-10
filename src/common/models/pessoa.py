@@ -2,13 +2,13 @@ from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 
-from .codigo_escopo_pair import CodigoEscopoPair
+from .codigo_escopo_pair import CodigoScopePair
 
 
 class PessoaManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().annotate(codigo=F('username__codigo'),
-                                               escopo=F('username__escopo'))
+    def annotated_with_codigo(self):
+        return super().get_queryset().annotate(codigo=F('codigo_escopo_pair__codigo'),
+                                               escopo=F('codigo_escopo_pair__scope'))
 
 
 class Pessoa(models.Model):
@@ -20,9 +20,9 @@ class Pessoa(models.Model):
     telefone = models.CharField(_('Telefone'), max_length=15, blank=True,
                                 null=True)
 
-    username = models.OneToOneField(
-        CodigoEscopoPair, on_delete=models.CASCADE, unique=True, blank=True,
-        verbose_name=_('ID do pair de código e escopo')
+    codigo_escopo_pair = models.OneToOneField(
+        CodigoScopePair, on_delete=models.CASCADE, unique=False, blank=True,
+        verbose_name=_('Código')
     )
 
     pessoas = PessoaManager()
@@ -37,16 +37,16 @@ class Pessoa(models.Model):
 
     @property
     def codigo(self):
-        return self.username.codigo
+        return self.codigo_escopo_pair.codigo
 
     @codigo.setter
     def codigo(self, codigo):
-        self.username.codigo = codigo
+        self.codigo_escopo_pair.codigo = codigo
 
     @property
     def escopo(self):
-        return self.username.escopo
+        return self.codigo_escopo_pair.scope
 
     def save(self, *args, **kwargs):
-        self.username.save()
+        self.codigo_escopo_pair.save()
         super(Pessoa, self).save(*args, **kwargs)
