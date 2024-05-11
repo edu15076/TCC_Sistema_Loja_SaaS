@@ -1,5 +1,4 @@
 import unicodedata
-from django.db import models
 
 from .scope import Scope
 from .unique_per_scope import (UniquePerScopeModelManager, UniquePerScopeMeta,
@@ -18,7 +17,9 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
                              'USERNAME_FIELD')
 
         unique_in_scope = cls._get_unique_in_scope(attrs, bases)
-        unique_in_scope.append(username_field)
+
+        if username_field not in unique_in_scope:
+            unique_in_scope.append(username_field)
 
         attrs['UNIQUE_IN_SCOPE'] = unique_in_scope
 

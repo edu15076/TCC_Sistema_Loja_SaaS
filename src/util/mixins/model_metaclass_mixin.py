@@ -31,3 +31,19 @@ class ModelMetaClassMixin(MetaClassMixin):
         return {name: attr
                 for name, attr in all_attrs.items()
                 if isinstance(attr, (models.Field, ForwardManyToOneDescriptor))}
+
+    @classmethod
+    def _add_field_to_meta(cls, attrs, name: str, value):
+        if 'Meta' in attrs:
+            setattr(attrs['Meta'], name, value)
+        else:
+            attrs['Meta'] = type('Meta', (), {name: value})
+
+    @classmethod
+    def _add_unique_together(cls, attrs, unique_together):
+        previous_unique_together = (tuple() if 'Meta' not in attrs
+                                    else getattr(attrs['Meta'], 'unique_together',
+                                                 tuple()))
+
+        cls._add_field_to_meta(attrs, 'unique_together',
+                               previous_unique_together + unique_together)

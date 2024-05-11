@@ -11,7 +11,7 @@ class UniquePerScopeMeta(ModelBase, ModelMetaClassMixin):
         if cls._is_model_abstract_from_attrs(attrs):
             return super().__new__(cls, name, bases, attrs, **kwargs)
 
-        cls._add_all_unique_together(attrs, bases)
+        cls._add_all_unique_in_scope_as_unique_together(attrs, bases)
 
         return super().__new__(cls, name, bases, attrs, **kwargs)
 
@@ -33,30 +33,14 @@ class UniquePerScopeMeta(ModelBase, ModelMetaClassMixin):
         return list(unique_in_scope)
 
     @classmethod
-    def _add_all_unique_together(cls, attrs, bases):
-        # make all fields unique_together
-        all_fields = cls._all_fields_from(attrs, bases)
-        unique_together = (tuple(name for name in all_fields),)
-
+    def _add_all_unique_in_scope_as_unique_together(cls, attrs, bases):
         # make each UNIQUE_IN_SCOPE fields unique_together with scope
         unique_in_scope = cls._get_unique_in_scope(attrs, bases)
 
-        unique_together += tuple((unique_field, 'scope')
-                                 for unique_field in unique_in_scope)
+        unique_together = tuple((unique_field, 'scope')
+                                for unique_field in unique_in_scope)
 
         cls._add_unique_together(attrs, unique_together)
-
-    @classmethod
-    def _add_unique_together(cls, attrs, unique_together):
-        if 'Meta' in attrs:
-            print(hasattr(attrs['Meta'], 'unique_together'))
-            if hasattr(attrs['Meta'], 'unique_together'):
-                attrs['Meta'].unique_together += unique_together
-            else:
-                setattr(attrs['Meta'], 'unique_together', unique_together)
-        else:
-            attrs['Meta'] = type('Meta', (),
-                                 {'unique_together': unique_together})
 
 
 class UniquePerScopeModelManager(models.Manager):
