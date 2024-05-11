@@ -80,43 +80,45 @@ class BaseUserPerScopeManager(BaseUserManager):
             **({self.model.USERNAME_PER_SCOPE_FIELD: username_per_scope} | kwargs))
 
 
-class AbstractBaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
+class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
     def __new__(cls, name, bases, attrs, **kwargs):
-        if cls._is_model_abstract(attrs):
-            return super().__new__(cls, name, bases, attrs, **kwargs)
+        self = super().__new__(cls, name, bases, attrs, **kwargs)
+
+        if self._meta.abstract:
+            return self
 
         username_per_scope_field, found = (
-            cls._find_attribute_anywhere(attrs, bases,
+            cls._find_attribute(attrs, bases,
                                          'USERNAME_PER_SCOPE_FIELD'))
         if not found:
             raise ValueError('Non abstract subclass or superclass must define '
                              'USERNAME_PER_SCOPE_FIELD')
 
-        username_per_scope, found = (
-            cls._find_attribute_anywhere(attrs, bases, username_per_scope_field))
+        username_per_scope, found = cls._find_field_for_name(self,
+                                                             username_per_scope_field)
         if not found:
             raise ValueError(f'Non abstract subclass or superclass must define '
                              f'{username_per_scope_field} for it defined '
                              f'USERNAME_PER_SCOPE_FIELD = {username_per_scope_field}')
 
-        if not username_per_scope.field.one_to_one:
-            if username_per_scope.field.is_relationship:
+        if not username_per_scope.one_to_one:
+            if username_per_scope.is_relation:
                 raise ValueError(
                     f'{username_per_scope_field} must define a one-to-one relationship '
-                    f'with {username_per_scope.field.remote_field.model.__name__}'
+                    f'with {username_per_scope.remote_field.model.__name__}'
                 )
             else:
                 raise ValueError(f'{username_per_scope_field} must define a one-to-one '
                                  f'relationship')
 
-        if not username_per_scope.field.unique:
+        if not username_per_scope.unique:
             raise ValueError(f'{username_per_scope_field} must be unique')
 
-        return super().__new__(cls, name, bases, attrs, **kwargs)
+        return self
 
 
 class AbstractBaseUserPerScope(AbstractBaseUser,
-                               metaclass=AbstractBaseUserPerScopeMeta):
+                               metaclass=BaseUserPerScopeMeta):
     users = BaseUserPerScopeManager()
 
     def get_username_per_scope(self) -> AbstractUsernamePerScope:
@@ -145,15 +147,6 @@ class AbstractBaseUserPerScope(AbstractBaseUser,
 
     class Meta:
         abstract = True
-
-
-class AbstractUserPerScopeMeta(AbstractBaseUserPerScopeMeta):
-    def __new__(cls, name, bases, attrs, **kwargs):
-        if cls._is_model_abstract(attrs):
-            return super().__new__(cls, name, bases, attrs, **kwargs)
-        if not cls._is_atribute_anywhere(attrs, bases, 'email'):
-            raise ValueError('Subclass must define email')
-        return super().__new__(cls, name, bases, attrs, **kwargs)
 
 
 class UserPerScopeManager(BaseUserPerScopeManager):
@@ -308,7 +301,18 @@ class UserPerScopeWhitEmailManager(UserPerScopeManager):
         super()._create_user(username, password, **kwargs)
 
 
-class AbstractUserPerScopeWithEmail(AbstractUserPerScope):
+class UserPerScopeWithEmailMeta(BaseUserPerScopeMeta):
+    def __new__(cls, name, bases, attrs, **kwargs):
+        self = super().__new__(cls, name, bases, attrs, **kwargs)
+        if self._meta.abstract:
+            return self
+        if not cls._has_field(self, 'email'):
+            raise ValueError('Subclass must define email')
+        return self
+
+
+class AbstractUserPerScopeWithEmail(AbstractUserPerScope,
+                                    metaclass=UserPerScopeWithEmailMeta):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['email']
 
