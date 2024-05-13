@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class SaaSConfig(AppConfig):
+class ScopeAuthConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'saas'
+    name = 'scope_auth'
