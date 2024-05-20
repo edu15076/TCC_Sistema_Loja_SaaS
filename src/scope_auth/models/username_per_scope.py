@@ -1,3 +1,5 @@
+from django.apps import apps
+
 import unicodedata
 
 from .scope import Scope
@@ -43,21 +45,23 @@ class UsernamePerScopeManager(UniquePerScopeModelManager):
 
     def get_by_natural_key(self, *, scope: Scope = None, **kwargs):
         username = self._pop_username_from(kwargs)
-        return super().get_by_natural_key(scope=scope,
-                                          **({self.model.USERNAME_FIELD: username}
-                                             | kwargs))
+        return super().get_by_natural_key(
+            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs)
 
-    def create_by_natural_key(self, *, scope: Scope = None, **kwargs):
-        username = self.model.normalize_username(self._pop_username_from(kwargs))
-        return super().create_by_natural_key(scope=scope,
-                                             **({self.model.USERNAME_FIELD: username}
-                                                | kwargs))
+    def create_username_per_scope(self, *, scope: Scope = None, **kwargs):
+        GlobalUsernamePerScopeModel = apps.get_model(
+            self.model._meta.app_label, self.model._meta.object_name
+        )
+        username = GlobalUsernamePerScopeModel.normalize_username(
+            self._pop_username_from(kwargs))
+        return self.create_by_scope(
+            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs)
 
     def get_or_create_by_natural_key(self, **kwargs):
         try:
             return self.get_by_natural_key(**kwargs)
         except self.model.DoesNotExist:
-            return self.create_by_natural_key(**kwargs)
+            return self.create_username_per_scope(**kwargs)
 
 
 class AbstractUsernamePerScope(AbstractUniquePerScopeModel,
@@ -70,7 +74,7 @@ class AbstractUsernamePerScope(AbstractUniquePerScopeModel,
     @classmethod
     def normalize_username(cls, username):
         return (
-            unicodedata.normalize("NFKC", username)
+            unicodedata.normalize('NFKC', username)
             if isinstance(username, str)
             else username
         )

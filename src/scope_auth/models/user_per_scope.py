@@ -2,6 +2,7 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.contrib import auth
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
@@ -9,7 +10,8 @@ from django.utils.translation import gettext_lazy as _
 
 from scope_auth.models.scope import Scope
 from scope_auth.models.username_per_scope import AbstractUsernamePerScope
-from util.decorators import ClassProperty
+from util import AbstractBuilder
+from util.decorators import ClassProperty, CachedProperty
 from util.mixins import ModelMetaClassMixin
 
 
@@ -61,23 +63,9 @@ class BaseUserPerScopeManager(BaseUserManager):
                 username=username, scope=kwargs.pop('scope', None)
             )
 
+        print(username_per_scope, self.model.USERNAME_PER_SCOPE_FIELD)
+
         return self.get(**{self.model.USERNAME_PER_SCOPE_FIELD: username_per_scope})
-
-    def create_by_natural_key(self, **kwargs):
-        username = self._pop_username_from(kwargs)
-        if username is None:
-            raise ValueError(f'Either username or {self.model.USERNAME_ACTUAL_FIELD} '
-                             f'should be passed.')
-        scope = kwargs.pop('scope', None)
-        username_per_scope_extra_fields = kwargs.pop('username_per_scope_extra_fields',
-                                                     {})
-        _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
-
-        username_per_scope = username_per_scope_manager.create_by_natural_key(
-            username=username, scope=scope, **username_per_scope_extra_fields
-        )
-        return self.create(
-            **({self.model.USERNAME_PER_SCOPE_FIELD: username_per_scope} | kwargs))
 
 
 class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
@@ -88,8 +76,7 @@ class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
             return self
 
         username_per_scope_field, found = (
-            cls._find_attribute(attrs, bases,
-                                         'USERNAME_PER_SCOPE_FIELD'))
+            cls._find_attribute(attrs, bases, 'USERNAME_PER_SCOPE_FIELD'))
         if not found:
             raise ValueError('Non abstract subclass or superclass must define '
                              'USERNAME_PER_SCOPE_FIELD')
@@ -145,6 +132,9 @@ class AbstractBaseUserPerScope(AbstractBaseUser,
     def USERNAME_FIELD(cls):
         return cls.USERNAME_PER_SCOPE_FIELD
 
+    def clean(self):
+        pass
+
     class Meta:
         abstract = True
 
@@ -153,64 +143,103 @@ class UserPerScopeManager(BaseUserPerScopeManager):
     use_in_migrations = True
 
     def _create_user(self, username, password, **extra_fields):
-        if not username:
-            raise ValueError("The given username must be set")
+        try:
+            if not username:
+                raise KeyError("'username' must be set.")
+
+            user = self.model(**{self.model.USERNAME_FIELD: username}, **extra_fields)
+            user.password = make_password(password)
+            user.full_clean()
+            user.save(using=self._db)
+        except ValidationError as e:
+            username.delete()
+            raise e
+
+        return user
+
+    def _validate_username_per_scope_natural_key(self, kwargs: dict) -> tuple:
+        username_field = self.model.USERNAME_ACTUAL_FIELD
+
+        if username_field not in kwargs:
+            raise KeyError(f"'{username_field}' must be set.")
+
+        username = kwargs.pop(username_field)
+        scope = kwargs.pop('scope', None)
+
+        if scope is None:
+            scope = Scope.scopes.default_scope()
+
+        return username, scope, kwargs
+
+    def _create_username_per_scope_by_natural_key(
+            self, kwargs: dict) -> AbstractUsernamePerScope:
+        username, scope, kwargs = self._validate_username_per_scope_natural_key(kwargs)
 
         _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
 
-        if 'scope' in extra_fields:
-            user = self.create_by_natural_key(
-                username=username, scope=extra_fields.pop('scope'), **extra_fields)
-        else:
-            username_per_scope = username_per_scope_manager.get(pk=username)
-            user = self.create(**({self.model.USERNAME_FIELD: username_per_scope} |
-                                  extra_fields))
+        return username_per_scope_manager.create_username_per_scope(
+            username=username, scope=scope,
+            **kwargs.pop('username_per_scope_extra_fields', {}))
 
-        user.password = make_password(password)
-        user.save(using=self._db)
-        return user
+    def _get_username_per_scope_by_natural_key(
+            self, kwargs: dict) -> AbstractUsernamePerScope:
+        username, scope, kwargs = self._validate_username_per_scope_natural_key(kwargs)
+        if 'username_per_scope_extra_fields' in kwargs:
+            raise KeyError("'username_per_scope_extra_fields' should not be set.")
 
-    def _validade_username(self, kwargs):
-        username_field = self.model.USERNAME_ACTUAL_FIELD
+        _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
+
+        return username_per_scope_manager.get_by_natural_key(username=username,
+                                                             scope=scope)
+
+    def _get_username_per_scope(self, kwargs: dict) -> AbstractUsernamePerScope:
         username_per_scope_field = self.model.USERNAME_PER_SCOPE_FIELD
 
-        scope_is_set = 'scope' in kwargs
-        username_is_set = 'username' in kwargs or username_field in kwargs
-        username_field_is_set = username_per_scope_field in kwargs
+        if username_per_scope_field not in kwargs:
+            raise KeyError(f"'{username_per_scope_field}' must be set.")
 
-        if not username_is_set and not username_field_is_set:
-            raise ValueError(f'Either ((username or {username_field}) and scope) or '
-                             f'{username_per_scope_field} should be set, but not both')
-
-        if ('username' == username_per_scope_field or
-                username_field == username_per_scope_field):
-            return kwargs.pop(username_per_scope_field)
-
-        if username_is_set and username_field_is_set:
-            raise ValueError(f'Either ((username or {username_field}) and scope) or '
-                             f'{username_per_scope_field} should be set, but not both')
-
-        if username_is_set:
-            if not scope_is_set:
-                kwargs['scope'] = None
-            return self._pop_username_from(kwargs)
-
-        return kwargs.pop(username_per_scope_field)
+        username_per_scope_pk = kwargs.pop(username_per_scope_field)
+        _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
+        return username_per_scope_manager.get(pk=username_per_scope_pk)
 
     def _get_arguments_for_create_user(self, kwargs):
-        username = self._validade_username(kwargs)
+        username = self._get_username_per_scope(kwargs)
         password = kwargs.pop('password', None)
 
         return username, password, kwargs
 
-    def create_user(self, **kwargs):
+    def _get_cleaned_user(self, kwargs):
         username, password, extra_fields = self._get_arguments_for_create_user(kwargs)
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 
+        return username, password, extra_fields
+
+    def create_user(self, **kwargs):
+        """
+        Create a new user with the provided parameters.
+
+        **Required Parameters:**
+
+        * `password`: The password for the new user.
+
+        * `UserPerScope.USERNAME_PER_SCOPE_FIELD`: The primary key of the
+          `UsernamePerScope` instance for the new user (alternative to `username` or
+          `UsernamePerScope.USERNAME_FIELD`).
+
+        **Optional Parameters:**
+
+        * Any additional fields can be passed as keyword arguments.
+
+        :param kwargs: Parameters as specified above.
+        :return: A new user.
+        :raises KeyErro: If `password` is not set or if neither of the username
+            options are set or if the first username option is set but `scope` is not.
+        """
+        username, password, extra_fields = self._get_cleaned_user(kwargs)
         return self._create_user(username, password, **extra_fields)
 
-    def create_superuser(self, **kwargs):
+    def _get_cleaned_superuser(self, kwargs):
         username, password, extra_fields = self._get_arguments_for_create_user(kwargs)
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -225,7 +254,7 @@ class UserPerScopeManager(BaseUserPerScopeManager):
         else:
             _, username_per_scope_manager = (
                 self._get_username_per_scope_cls_and_manager())
-            scope = username_per_scope_manager.get(pk=username).scope
+            scope = username.scope
             if not scope.is_default_scope():
                 raise ValueError('Superuser must have scope=default_scope.')
 
@@ -234,6 +263,30 @@ class UserPerScopeManager(BaseUserPerScopeManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
+        return username, password, extra_fields
+
+    def create_superuser(self, **kwargs):
+        """
+        Create a new superuser with the provided parameters.
+
+        **Required Parameters:**
+
+        * `password`: The password for the new superuser.
+
+        * `UserPerScope.USERNAME_PER_SCOPE_FIELD`: The primary key of the
+          `UsernamePerScope` instance for the new user (alternative to `username` or
+          `UsernamePerScope.USERNAME_FIELD`).
+
+        **Optional Parameters:**
+
+        * Any additional fields can be passed as keyword arguments.
+
+        :param kwargs: Parameters as specified above.
+        :return: A new superuser.
+        :raises KeyError: If `password` is not set or if neither of the username
+            options are set or if the first username option is set but `scope` is not.
+        """
+        username, password, extra_fields = self._get_cleaned_superuser(kwargs)
         return self._create_user(username, password, **extra_fields)
 
     def with_perm(
@@ -263,6 +316,121 @@ class UserPerScopeManager(BaseUserPerScopeManager):
             )
         return self.none()
 
+    def create_user_by_natural_key(self, **kwargs):
+        """
+        Create a new user with the provided parameters.
+
+        **Required Parameters:**
+
+        * `password`: The password for the new user.
+
+        * `username` or the value of `UsernamePerScope.USERNAME_FIELD`: The value for
+          the attribute named `UsernamePerScope.USERNAME_FIELD` in `UsernamePerScope`.
+
+        **Optional Parameters:**
+
+        * `scope`: The scope of the new user, if not set the default scope will be used.
+
+        * Any additional fields can be passed as keyword arguments.  One of which can be
+          `username_per_scope_extra_fields`, passing a `dict` for any extra fields to
+          create a username per scope instance for the new user.
+
+        :param kwargs: Parameters as specified above.
+        :return: A new user.
+        :raises KeyError: If `password` is not set or if neither of the username
+            options are set or if the first username option is set but `scope` is not.
+        """
+        username = self._create_username_per_scope_by_natural_key(kwargs).pk
+        kwargs[self.model.USERNAME_PER_SCOPE_FIELD] = username
+        return self.create_user(**kwargs)
+
+    def create_superuser_by_natural_key(self, **kwargs):
+        """
+        Create a new superuser with the provided parameters.
+
+        **Required Parameters:**
+
+        * `password`: The password for the new superuser.
+
+        * The attribute with value of `UsernamePerScope.USERNAME_FIELD`: The value for
+          the attribute named `UsernamePerScope.USERNAME_FIELD` in `UsernamePerScope`.
+
+        **Optional Parameters:**
+
+        * `scope`: The scope of the new superuser, if not set the default scope will be
+          used.
+
+        * Any additional fields can be passed as keyword arguments.  One of which can be
+          `username_per_scope_extra_fields`, passing a `dict` for any extra fields to
+          create a username per scope instance for the new superuser.
+
+        :param kwargs: Parameters as specified above.
+        :return: A new superuser.
+        :raises KeyError: If `password` is not set or if neither of the username
+            options are set or if the first username option is set but `scope` is not.
+        """
+        username = self._create_username_per_scope_by_natural_key(kwargs).pk
+        kwargs[self.model.USERNAME_PER_SCOPE_FIELD] = username
+        return self.create_superuser(**kwargs)
+
+    def _get_or_create_username_from_kwargs(self, kwargs):
+        kwargs_cpy = kwargs.copy()
+        username_per_scope_model, _ = self._get_username_per_scope_cls_and_manager()
+        try:
+            username = self._get_username_per_scope_by_natural_key(kwargs)
+            return username, True
+        except username_per_scope_model.DoesNotExist:
+            kwargs = kwargs_cpy
+            username = self._create_username_per_scope_by_natural_key(kwargs)
+            return username, False
+
+    def create_or_reactivate_user(self, **kwargs):
+        """
+        If user does not exist, create a new user. Otherwise, reactivate the user
+        :param kwargs:
+        :return:
+        """
+        username, exists = self._get_or_create_username_from_kwargs(kwargs)
+
+        if not exists:
+            return self.create_user(**{self.model.USERNAME_PER_SCOPE_FIELD: username},
+                                    **kwargs)
+        else:
+            user = self.get_by_natural_key(
+                **{self.model.USERNAME_PER_SCOPE_FIELD: username})
+            user.reactivate()
+            return user
+
+    def create_builder(self):
+        return self._Builder(self.model)
+
+    class _Builder(AbstractBuilder):
+        """Allows to create user from this builder."""
+
+        def __init__(self, user_type):
+            super().__init__()
+            self._user_type = user_type
+
+        @CachedProperty
+        def _manager(self) -> 'UserPerScopeManager':
+            return self._user_type._meta.default_manager
+
+        def build_user(self):
+            return self._manager.create_user(**self._kwargs)
+
+        def build_user_by_natural_key(self):
+            return self._manager.create_user_by_natural_key(**self._kwargs)
+
+        def build_superuser(self):
+            return self._manager.create_superuser(**self._kwargs)
+
+        def build_superuser_by_natural_key(self):
+            return self._manager.create_superuser_by_natural_key(**self._kwargs)
+
+        def build(self):
+            """The default builder builds a user by its natural key."""
+            return self.build_user_by_natural_key()
+
 
 class AbstractUserPerScope(AbstractBaseUserPerScope, PermissionsMixin):
     """
@@ -287,6 +455,11 @@ class AbstractUserPerScope(AbstractBaseUserPerScope, PermissionsMixin):
 
     users = UserPerScopeManager()
 
+    def reactivate(self):
+        if self.is_active:
+            raise ValueError('User is already active.')
+        self.is_active = True
+
     class Meta:
         verbose_name = _('user')
         verbose_name_plural = _('users')
@@ -295,10 +468,8 @@ class AbstractUserPerScope(AbstractBaseUserPerScope, PermissionsMixin):
 
 class UserPerScopeWhitEmailManager(UserPerScopeManager):
     def _create_user(self, username, password, **kwargs):
-        email = kwargs.pop('email', None)
-        email = self.normalize_email(email)
-        kwargs['email'] = email
-        super()._create_user(username, password, **kwargs)
+        kwargs['email'] = self.normalize_email(kwargs.get('email', None))
+        return super()._create_user(username, password, **kwargs)
 
 
 class UserPerScopeWithEmailMeta(BaseUserPerScopeMeta):
@@ -307,7 +478,7 @@ class UserPerScopeWithEmailMeta(BaseUserPerScopeMeta):
         if self._meta.abstract:
             return self
         if not cls._has_field(self, 'email'):
-            raise ValueError('Subclass must define email')
+            raise TypeError('Subclass must define email')
         return self
 
 
@@ -318,7 +489,7 @@ class AbstractUserPerScopeWithEmail(AbstractUserPerScope,
 
     def clean(self):
         super().clean()
-        self.email = self.__class__.objects.normalize_email(self.email)
+        self.email = self._meta.default_manager.normalize_email(self.email)
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an email to this user."""

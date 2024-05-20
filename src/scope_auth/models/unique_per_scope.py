@@ -51,7 +51,7 @@ class UniquePerScopeModelManager(models.Manager):
         scope = scope if scope is not None else Scope.scopes.default_scope()
         return self.get(scope=scope, **kwargs)
 
-    def create_by_natural_key(self, *, scope: Scope = None, **kwargs):
+    def create_by_scope(self, *, scope: Scope = None, **kwargs):
         scope = scope if scope is not None else Scope.scopes.default_scope()
         return self.create(scope=scope, **kwargs)
 

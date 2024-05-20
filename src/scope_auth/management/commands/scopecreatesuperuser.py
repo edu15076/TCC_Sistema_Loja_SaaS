@@ -6,7 +6,7 @@ from django.core import exceptions
 class Command(CreateSuperUserCommand):
     def _create_user_from_username(self, username):
         username_per_scope_cls = self.UserModel.get_username_per_scope_type()
-        return username_per_scope_cls._default_manager.create_by_natural_key(
+        return username_per_scope_cls._default_manager.create_username_per_scope(
             username=username)
 
     def get_input_data(self, field, message, default=None):
