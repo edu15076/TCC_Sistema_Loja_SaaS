@@ -39,8 +39,8 @@ class AbstractSingleton(models.Model):
             raise NoInstanceError(f'No instance exists for {cls.__class__.__name__}')
 
     @CachedClassProperty
-    def instance_id(cls):
-        return cls.instance.id
+    def instance_pk(cls):
+        return cls.instance.pk
 
     class Meta:
         abstract = True
