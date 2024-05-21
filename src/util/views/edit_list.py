@@ -7,10 +7,10 @@ from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.http import Http404
 from django.utils.translation import gettext as _
 
-from .filter_list import BaseListFilterView
+from .filter_list import BaseFilterListView
 
 
-class BaseCreateOrUpdateListView(BaseListFilterView, ModelFormMixin, ProcessFormView):
+class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessFormView):
     template_name_suffix = '_create_update'
 
     def get_pk_slug(self) -> tuple[Union[int, None], Union[str, None]]:

@@ -221,7 +221,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         return context
 
 
-class BaseListFilterView(MultipleObjectFilterMixin, View):
+class BaseFilterListView(MultipleObjectFilterMixin, View):
     """View base que exibe listas de objetos com filtros"""
 
     def get(self, request, *args, **kwargs):
@@ -248,7 +248,7 @@ class BaseListFilterView(MultipleObjectFilterMixin, View):
         return self.render_to_response(context)
 
 
-class ListFilterView(MultipleObjectTemplateResponseMixin, BaseListFilterView):
+class FilterListView(MultipleObjectTemplateResponseMixin, BaseFilterListView):
     """
     Renderiza a lista de objetos definida por `self.model` ou `self.queryset`.
     Permite filtrar essa lista por variaveis definidas na url e
