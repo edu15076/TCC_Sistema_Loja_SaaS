@@ -6,7 +6,7 @@ from django import forms
 from django.views.generic.list import MultipleObjectMixin
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.views.generic.base import View
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.utils.translation import gettext as _
 
 from django.core.exceptions import ImproperlyConfigured
@@ -22,7 +22,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     """
 
     url_filter_kwargs = None
-    user_model = None
+    user_attribute_name = None
     filter_form = None
 
     def url_kwargs_erro(self, exception: Exception = None, message: str = None):
@@ -81,7 +81,6 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                             f" is not type dict or list"
                     ))
                 )
-
 
         except AttributeError:
             pass
@@ -168,10 +167,18 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 ),
             )
 
+    def get_user(self):
+        """Retorna o usuário logado"""
+        return self.request.user
+
     def get_queryset(self) -> QuerySet[Any]:
         """
         Retorna a lista de itens do model da view filtrada pelo formulário
-        `self.filter_form` ou pelos argumentos de url e define `self.queryset`
+        `self.filter_form` e pelos argumentos de url, alem de filtrar pelo 
+        atributo de usuário do model definido em `self.user_attribute_name`,
+        se definido, com o usuário retornado por `self.get_user()`.
+        
+        Também define `self.queryset` com o valor de retorno.
 
         :return: lista de itens do modelo
         """
@@ -203,10 +210,8 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
             if isinstance(order_params, list):
                 queryset = queryset.order_by(*order_params)
 
-        # ! não testado, estou esperando arrumarem o usuário genérico
-        # TODO rever
-        # if self.user_model is not None:
-        #     queryset = queryset.filter(**{self.user_model: self.request.user})
+        if self.user_attribute_name is not None:
+            queryset = queryset.filter(**{self.user_attribute_name: self.get_user()})
 
         # self.object_list = queryset
         self.queryset = queryset
