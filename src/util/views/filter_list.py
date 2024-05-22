@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import FieldError
 
-from common.logging import Loggers
+from util.logging import Loggers
 
 
 class MultipleObjectFilterMixin(MultipleObjectMixin):
@@ -39,7 +39,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 )
             )
 
-        Loggers.DEBUG_VERBOSE.get_logger().exception(msg=message)
+        Loggers.DEBUG_VERBOSE.value().exception(msg=message)
         raise Http404(_("Pagina invalida"))
 
     def get_filter_parameters(self) -> dict[str, Any]:
