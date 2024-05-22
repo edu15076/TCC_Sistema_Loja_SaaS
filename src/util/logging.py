@@ -55,7 +55,24 @@ class CSVFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         # record.message = record.message.replace(',',' ')
         return super().formatTime(record, datefmt=datefmt)
+    
+    def format(self, record):
+        record.exc_text = None
+        record.exc_info = None
 
+        return super().format(record)
+
+
+class ExcInfoInlineFormatter(logging.Formatter):
+    def format(self, record):
+        """Deixa a informação de exceção inline nos logs"""
+
+        s = super().format(record)
+        s = s.replace('\n', ' ')
+        s = s.replace('   ', ' ')
+        s = s.replace(record.message, f'{record.message}:')
+        
+        return s
 
 class AppLabelFilter(logging.Filter):
     def filter(self, record):
@@ -70,9 +87,9 @@ class AppLabelFilter(logging.Filter):
 
 
 class Loggers(Enum):
-    DEBUG = "debug"
-    DEBUG_VERBOSE = "debug-verbose"
-    PRODUCT = "product"
+    DEBUG = logging.getLogger("debug")
+    DEBUG_VERBOSE = logging.getLogger("debug-verbose")
+    PRODUCT = logging.getLogger("product")
 
     def get_logger(self) -> logging.Logger:
         """
@@ -83,4 +100,4 @@ class Loggers(Enum):
         :rtype: logging.Logger
         """
 
-        return logging.getLogger(self.value)
+        return self.value

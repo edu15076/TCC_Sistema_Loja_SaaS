@@ -145,10 +145,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuração dos loggers
-os.makedirs(f'{BASE_DIR}{os.sep}logs', exist_ok=True)
-if not os.path.exists(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv'):
-    csv = open(f'{BASE_DIR}{os.sep}logs{os.sep}logs.csv', 'a')
-    csv.write('Time,Level,App,Mensagem\n')
+LOGS_DIR = os.path.join(BASE_DIR, '../logs/')
+
+os.makedirs(f'{LOGS_DIR}', exist_ok=True)
+if not os.path.exists(f'{LOGS_DIR}logs.csv'):
+    csv = open(f'{LOGS_DIR}logs.csv', 'a')
+    csv.write('DateTime,Level,App,Mensagem\n')
     csv.close()
 
 
@@ -165,7 +167,7 @@ LOGGING = {
         },
         'product': {
             'handlers': ['console-v', 'file', 'csv'],
-            'level': 'WARNING'
+            'level': 'WARNING',
         },
     },
     'handlers': {
@@ -184,35 +186,36 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/logs.log'),
+            'filename': os.path.join(LOGS_DIR, 'logs.log'),
             'formatter': 'file',
             'filters': ['app_label_filter'],
         },
         'csv': {
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/logs.csv'),
-            'filters': ['app_label_filter'],
+            'filename': os.path.join(LOGS_DIR, 'logs.csv'),
             'formatter': 'csv',
+            'filters': ['app_label_filter'],
         },
     },
     'formatters': {
         'simple': {
-            '()': 'common.logging.DjangoColorsFormatter',
+            '()': 'util.logging.DjangoColorsFormatter',
             'format': '[{levelname}]{pathname} [{app_label}] {message}',
             'style': '{',
         },
         'verbose': {
-            '()': 'common.logging.DjangoColorsFormatter',
+            '()': 'util.logging.DjangoColorsFormatter',
             'format': '{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
             'style': '{',
         },
         'file': {
+            '()': 'util.logging.ExcInfoInlineFormatter',
             'format': '{levelname}:{asctime}:{pathname}{app_label}:{module}: {message}',
             'style': '{',
         },
         'csv': {
-            '()': 'common.logging.CSVFormatter',
+            '()': 'util.logging.CSVFormatter',
             'datefmt': '%Y-%m-%d %H:%M:%S',
             'format': '{asctime},{levelname},{pathname}{app_label},"{message}"',
             'style': '{',
@@ -220,7 +223,7 @@ LOGGING = {
     },
     'filters': {
         'app_label_filter': {
-            '()': 'common.logging.AppLabelFilter',
+            '()': 'util.logging.AppLabelFilter',
         },
     },
 }
