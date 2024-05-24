@@ -1,3 +1,4 @@
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db.models.fields.related_descriptors import ForwardManyToOneDescriptor
 
@@ -16,10 +17,10 @@ class ModelMetaClassMixin(MetaClassMixin):
     @classmethod
     def _find_field_for_name(cls, self,
                              field_name: str) -> tuple[models.Field | None, bool]:
-        for field in self._meta.fields:
-            if field_name == field.name:
-                return field, True
-        return None, False
+        try:
+            return self._meta.get_field(field_name), True
+        except FieldDoesNotExist:
+            return None, False
 
     @classmethod
     def _is_model_abstract_from_attrs(cls, attrs) -> bool:

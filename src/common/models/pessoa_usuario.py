@@ -1,12 +1,24 @@
 import unicodedata
 from django.db import models
+from django.contrib.postgres.aggregates import ArrayAgg
 
 from scope_auth.models import AbstractUsernamePerScope, UsernamePerScopeManager, Scope
 
 from .pessoa import Pessoa
 
 
+__all__ = (
+    'PessoaUsuarioManager',
+    'PessoaUsuario'
+)
+
+
 class PessoaUsuarioManager(UsernamePerScopeManager):
+    def pessoas_per_scope(self):
+        return self.values('scope').annotate(
+            pessoas=ArrayAgg('pessoa')
+        )
+
     def filter_by_scope(self, /, scope: Scope = None):
         if scope is None:
             scope = Scope.scopes.default_scope()

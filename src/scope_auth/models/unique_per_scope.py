@@ -57,7 +57,11 @@ class UniquePerScopeModelManager(models.Manager):
 
 
 class AbstractUniquePerScopeModel(models.Model, metaclass=UniquePerScopeMeta):
-    scope = models.ForeignKey(Scope, on_delete=models.CASCADE)
+    scope = models.ForeignKey(
+        Scope,
+        models.CASCADE,
+        related_name='unique_per_scope'
+    )
 
     UNIQUE_IN_SCOPE = []
 

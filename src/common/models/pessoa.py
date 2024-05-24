@@ -6,6 +6,18 @@ from django.utils.translation import gettext_lazy as _
 from ..validators import codigo_validator
 
 
+__all__ = (
+    'PessoaManager',
+    'Pessoa',
+    'PessoaFisicaQuerySet',
+    'PessoaFisicaManager',
+    'PessoaFisica',
+    'PessoaJuridicaQuerySet',
+    'PessoaJuridicaManager',
+    'PessoaJuridica',
+)
+
+
 class PessoaManager(models.Manager):
     pass
 
@@ -19,10 +31,10 @@ class Pessoa(models.Model):
     pessoas = PessoaManager()
 
     def is_pessoa_fisica(self):
-        return hasattr(self, 'pessoa_fisica')
+        return hasattr(self, 'pessoa_fisica') and self.pessoa_fisica is not None
 
     def is_pessoa_juridica(self):
-        return hasattr(self, 'pessoa_juridica')
+        return hasattr(self, 'pessoa_juridica') and self.pessoa_juridica is not None
 
     def __repr__(self):
         return str(self.codigo)
@@ -42,11 +54,11 @@ class Pessoa(models.Model):
 
 
 class PessoaFisicaQuerySet(models.QuerySet):
-    def simple(self):
-        return self.values('nome', 'sobrenome', 'data_nascimento', 'cpf')
-
     def complete(self):
         return self.annotate(cpf=F('pessoa__codigo'))
+
+    def simple(self):
+        return self.values('nome', 'sobrenome', 'data_nascimento', 'cpf')
 
 
 class PessoaFisicaManager(PessoaManager):
@@ -72,6 +84,12 @@ class PessoaFisica(Pessoa):
     data_nascimento = models.DateField(_('Data de nascimento'), blank=True, null=True)
 
     pessoas = PessoaFisicaManager()
+
+    @classmethod
+    def from_pessoa(cls, pessoa: Pessoa):
+        if not hasattr(pessoa, 'pessoa_fisica'):
+            raise ValueError('Pessoa não é pessoa física')
+        return pessoa.pessoa_fisica
 
     @property
     def cpf(self) -> str:
@@ -124,6 +142,12 @@ class PessoaJuridica(Pessoa):
                                      blank=True)
 
     pessoas = PessoaJuridicaManager()
+
+    @classmethod
+    def from_pessoa(cls, pessoa):
+        if not hasattr(pessoa, 'pessoa_juridica'):
+            raise ValueError('Pessoa não é pessoa jurídica')
+        return pessoa.pessoa_juridica
 
     @property
     def cnpj(self) -> str:

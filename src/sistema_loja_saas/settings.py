@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'util',
     'scope_auth',
-    'common'
+    'common',
+    'loja'
 ]
 
 # Configura o backend da autenticação

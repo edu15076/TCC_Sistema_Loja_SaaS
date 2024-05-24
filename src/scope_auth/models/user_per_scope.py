@@ -63,8 +63,6 @@ class BaseUserPerScopeManager(BaseUserManager):
                 username=username, scope=kwargs.pop('scope', None)
             )
 
-        print(username_per_scope, self.model.USERNAME_PER_SCOPE_FIELD)
-
         return self.get(**{self.model.USERNAME_PER_SCOPE_FIELD: username_per_scope})
 
 

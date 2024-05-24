@@ -1,16 +1,37 @@
 from datetime import date
 
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 
 from scope_auth.models import (Scope, AbstractUserPerScopeWithEmail,
                                UserPerScopeWhitEmailManager)
-from util.decorators import CachedClassProperty
+from util.decorators import CachedClassProperty, CachedProperty
 from util.models import cast_to_model
 from .pessoa import PessoaFisica, PessoaJuridica, Pessoa
 
 from .pessoa_usuario import PessoaUsuario
+
+
+__all__ = (
+    'UsuarioGenericoQuerySet',
+    'UsuarioGenericoManager',
+    'AbstractUsuarioGenerico',
+    'UsuarioGenerico',
+    'UsuarioGenericoSimpleQuerySet',
+    'UsuarioGenericoSimpleManager',
+    'UsuarioGenericoSimple',
+    'UsuarioGenericoPessoaQuerySet',
+    'UsuarioGenericoPessoaManager',
+    'UsuarioGenericoPessoa',
+    'UsuarioGenericoPessoaFisicaQuerySet',
+    'UsuarioGenericoPessoaFisicaManager',
+    'UsuarioGenericoPessoaFisica',
+    'UsuarioGenericoPessoaJuridicaQuerySet',
+    'UsuarioGenericoPessoaJuridicaManager',
+    'UsuarioGenericoPessoaJuridica',
+)
 
 
 class UsuarioGenericoQuerySet(models.QuerySet):
@@ -21,10 +42,9 @@ class UsuarioGenericoQuerySet(models.QuerySet):
         )
 
     def as_usuarios_pessoa_fisica(self):
-        qs = self.filter_pessoas_fisicas()
-        qs.__class__ = UsuarioGenericoPessoaFisicaQuerySet
-        qs.model = UsuarioGenericoPessoaFisica
-        return qs.complete()
+        self.__class__ = UsuarioGenericoPessoaFisicaQuerySet
+        self.model = UsuarioGenericoPessoaFisica
+        return self.complete()
 
     def filter_pessoas_juridicas(self):
         """Filtra usuários que são pessoas jurídicas."""
@@ -33,10 +53,14 @@ class UsuarioGenericoQuerySet(models.QuerySet):
         )
 
     def as_usuarios_pessoa_juridica(self):
-        qs = self.filter_pessoas_juridicas()
-        qs.__class__ = UsuarioGenericoPessoaJuridicaQuerySet
-        qs.model = UsuarioGenericoPessoaJuridica
-        return qs.complete()
+        self.__class__ = UsuarioGenericoPessoaJuridicaQuerySet
+        self.model = UsuarioGenericoPessoaJuridica
+        return self.complete()
+
+    def usuarios_per_scope(self):
+        return self.values(scope='pessoa_usuario__scope').annotate(
+            pessoas=ArrayAgg('pessoa_usuario__pessoa')
+        )
 
     def complete(self):
         return self.select_related('pessoa_usuario', 'pessoa_usuario__pessoa',
@@ -95,11 +119,17 @@ class AbstractUsuarioGenerico(AbstractUserPerScopeWithEmail):
         """
         Return the first_name plus the last_name, with a space in between.
         """
-        return self.pessoa_usuario.pessoa.get_full_name()
+        if self.pessoa.is_pessoa_fisica():
+            return self.pessoa.pessoa_fisica.get_full_name()
+        else:
+            return self.pessoa.pessoa_juridica.get_full_name()
 
     def get_short_name(self):
         """Return the short name for the user."""
-        return self.pessoa_usuario.pessoa.get_short_name()
+        if self.pessoa.is_pessoa_fisica():
+            return self.pessoa.pessoa_fisica.get_short_name()
+        else:
+            return self.pessoa.pessoa_juridica.get_short_name()
 
     def enviar_email_para_usuario(self, subject, message, from_email=None, **kwargs):
         """Envia um email para esse usuário."""
@@ -126,9 +156,22 @@ class UsuarioGenerico(AbstractUsuarioGenerico):
 
 
 class UsuarioGenericoSimpleQuerySet(UsuarioGenericoQuerySet):
+    @CachedClassProperty
+    def _annotated_fields(cls):
+        return {
+            'pessoa': F('pessoa_usuario__pessoa'),
+            'scope': F('pessoa_usuario__scope')
+        }
+
+    @CachedClassProperty
+    def _aliased_fields(cls):
+        return UsuarioGenericoSimpleQuerySet._annotated_fields
+
+    def _complete(self):
+        return self.alias(**self._aliased_fields)
+
     def complete(self):
-        return super().complete().annotate(pessoa=F('pessoa_usuario__pessoa'),
-                                           scope=F('pessoa_usuario__scope'))
+        return super().complete()._complete().annotate(**self._annotated_fields)
 
     def simple(self):
         return self.values('telefone', 'email', 'pessoa', 'scope')
@@ -138,12 +181,22 @@ class UsuarioGenericoSimpleManager(UsuarioGenericoManager):
     def get_queryset(self):
         return UsuarioGenericoSimpleQuerySet(self.model, using=self._db).complete()
 
+    def from_usuarios_queryset(self, qs):
+        qs.__class__ = UsuarioGenericoSimpleQuerySet
+        qs.model = UsuarioGenericoSimple
+        return qs.complete()
+
     def simple(self):
         return self.get_queryset().simple()
 
 
 class UsuarioGenericoSimple(UsuarioGenerico):
     usuarios = UsuarioGenericoSimpleManager()
+
+    @classmethod
+    def from_usuario(cls, usuario):
+        usuario.__class__ = UsuarioGenericoSimple
+        return usuario
 
     @property
     def scope(self) -> Scope:
@@ -162,8 +215,17 @@ class UsuarioGenericoSimple(UsuarioGenerico):
 
 
 class UsuarioGenericoPessoaQuerySet(UsuarioGenericoSimpleQuerySet):
-    def complete(self):
-        return super().complete().annotate(codigo=F('pessoa_usuario__pessoa__codigo'))
+    @CachedClassProperty
+    def _annotated_fields(cls):
+        return {
+            'codigo': F('pessoa_usuario__pessoa__codigo'),
+            'scope': F('pessoa_usuario__scope'),
+            'pessoa': F('pessoa_usuario__pessoa')
+        }
+
+    @CachedClassProperty
+    def _aliased_fields(cls):
+        return super()._aliased_fields | UsuarioGenericoPessoaQuerySet._annotated_fields
 
     def simple(self):
         return self.values('telefone', 'email', 'scope', 'codigo')
@@ -173,6 +235,11 @@ class UsuarioGenericoPessoaManager(UsuarioGenericoSimpleManager):
     def get_queryset(self):
         return UsuarioGenericoPessoaQuerySet(
             self.model, using=self._db).complete()
+
+    def from_usuarios_queryset(self, qs):
+        qs.__class__ = UsuarioGenericoPessoaQuerySet
+        qs.model = UsuarioGenericoPessoa
+        return qs.complete()
 
     def _criar_pessoa(self, codigo: str, **dados_pessoa):
         self.model.TIPO_PESSOA._meta.default_manager.get_or_create(
@@ -215,6 +282,11 @@ class UsuarioGenericoPessoaManager(UsuarioGenericoSimpleManager):
 class UsuarioGenericoPessoa(UsuarioGenericoSimple):
     usuarios = UsuarioGenericoPessoaManager()
 
+    @classmethod
+    def from_usuario(cls, usuario):
+        usuario.__class__ = UsuarioGenericoPessoa
+        return usuario
+
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[Pessoa]:
         return Pessoa
@@ -236,14 +308,25 @@ class UsuarioGenericoPessoa(UsuarioGenericoSimple):
 
 
 class UsuarioGenericoPessoaFisicaQuerySet(UsuarioGenericoPessoaQuerySet):
-    def complete(self):
-        return super().complete().filter_pessoas_fisicas().annotate(
-            pessoa_fisica=F('pessoa_usuario__pessoa__pessoa_fisica'),
-            nome=F('pessoa_usuario__pessoa__pessoa_fisica__nome'),
-            sobrenome=F('pessoa_usuario__pessoa__pessoa_fisica__sobrenome'),
-            data_nascimento=F('pessoa_usuario__pessoa__pessoa_fisica__data_nascimento'),
-            cpf=F('codigo')
-        )
+    @CachedClassProperty
+    def _annotated_fields(cls):
+        return {
+            'pessoa': F('pessoa_usuario__pessoa__pessoa_fisica'),
+            'nome': F('pessoa_usuario__pessoa__pessoa_fisica__nome'),
+            'sobrenome': F('pessoa_usuario__pessoa__pessoa_fisica__sobrenome'),
+            'data_nascimento': F('pessoa_usuario__pessoa__pessoa_fisica__'
+                                 'data_nascimento'),
+            'cpf': F('pessoa_usuario__pessoa__codigo'),
+            'scope': F('pessoa_usuario__scope')
+        }
+
+    @CachedClassProperty
+    def _aliased_fields(cls):
+        return (super()._aliased_fields |
+                UsuarioGenericoPessoaFisicaQuerySet._annotated_fields)
+
+    def _complete(self):
+        return super()._complete().filter_pessoas_fisicas()
 
     def simple(self):
         return self.values(
@@ -255,6 +338,11 @@ class UsuarioGenericoPessoaFisicaManager(UsuarioGenericoPessoaManager):
     def get_queryset(self):
         return UsuarioGenericoPessoaFisicaQuerySet(
             self.model, using=self._db).complete()
+
+    def from_usuarios_queryset(self, qs):
+        qs.__class__ = UsuarioGenericoPessoaFisicaQuerySet
+        qs.model = UsuarioGenericoPessoaFisica
+        return qs.complete()
 
     def criar_usuario(
             self, cpf: str, scope: Scope = None, password: str = None,
@@ -277,6 +365,13 @@ class UsuarioGenericoPessoaFisicaManager(UsuarioGenericoPessoaManager):
 
 class UsuarioGenericoPessoaFisica(UsuarioGenericoPessoa):
     usuarios = UsuarioGenericoPessoaFisicaManager()
+
+    @classmethod
+    def from_usuario(cls, usuario):
+        if not usuario.pessoa.is_pessoa_fisica():
+            raise ValueError('Usuário não é pessoa física.')
+        usuario.__class__ = UsuarioGenericoPessoaFisica
+        return usuario
 
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[PessoaFisica]:
@@ -327,13 +422,23 @@ class UsuarioGenericoPessoaFisica(UsuarioGenericoPessoa):
 
 
 class UsuarioGenericoPessoaJuridicaQuerySet(UsuarioGenericoPessoaQuerySet):
-    def complete(self):
-        return super().complete().filter_pessoas_juridicas().annotate(
-            pessoa_juridica=F('pessoa_usuario__pessoa__pessoa_juridica'),
-            razao_social=F('pessoa_usuario__pessoa__pessoa_juridica__razao_social'),
-            nome_fantasia=F('pessoa_usuario__pessoa__pessoa_juridica__nome_fantasia'),
-            cnpj=F('codigo')
-        )
+    @CachedClassProperty
+    def _annotated_fields(cls):
+        return {
+            'pessoa': F('pessoa_usuario__pessoa__pessoa_juridica'),
+            'razao_social': F('pessoa_usuario__pessoa__pessoa_juridica__razao_social'),
+            'nome_fantasia': F('pessoa_usuario__pessoa__pessoa_juridica__nome_fantasia'),
+            'cnpj': F('pessoa_usuario__pessoa__codigo'),
+            'scope': F('pessoa_usuario__scope')
+        }
+
+    @CachedClassProperty
+    def _aliased_fields(cls):
+        return (super()._aliased_fields |
+                UsuarioGenericoPessoaJuridicaQuerySet._annotated_fields)
+
+    def _complete(self):
+        return super()._complete().filter_pessoas_juridicas()
 
     def simple(self):
         return self.values(
@@ -345,6 +450,11 @@ class UsuarioGenericoPessoaJuridicaManager(UsuarioGenericoPessoaManager):
     def get_queryset(self):
         return UsuarioGenericoPessoaJuridicaQuerySet(
             self.model, using=self._db).complete()
+
+    def from_usuarios_queryset(self, qs):
+        qs.__class__ = UsuarioGenericoPessoaJuridicaQuerySet
+        qs.model = UsuarioGenericoPessoaJuridica
+        return qs.complete()
 
     def criar_usuario(
             self, cnpj: str, scope: Scope = None, password: str = None,
@@ -367,6 +477,13 @@ class UsuarioGenericoPessoaJuridicaManager(UsuarioGenericoPessoaManager):
 
 class UsuarioGenericoPessoaJuridica(UsuarioGenericoPessoa):
     usuarios = UsuarioGenericoPessoaJuridicaManager()
+
+    @classmethod
+    def from_usuario(cls, usuario):
+        if not usuario.pessoa.is_pessoa_juridica():
+            raise ValueError('Usuário não é pessoa jurídica.')
+        usuario.__class__ = UsuarioGenericoPessoaJuridica
+        return usuario
 
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[PessoaJuridica]:
