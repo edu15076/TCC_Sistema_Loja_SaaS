@@ -8,3 +8,4 @@ from .usuario_generico import (
     UsuarioGenericoPessoaFisicaManager, UsuarioGenericoPessoaFisica,
     UsuarioGenericoPessoaJuridicaManager, UsuarioGenericoPessoaJuridica
 )
+from .endereco import Endereco

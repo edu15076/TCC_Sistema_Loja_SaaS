@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'util',
     'scope_auth',
+    'saas',
     'common'
 ]
 
@@ -226,4 +227,12 @@ LOGGING = {
             '()': 'util.logging.AppLabelFilter',
         },
     },
+}
+
+# Configuração dos provedores de CEP
+CEP_SETTINGS = {
+    "PROVIDERS": (
+        "common.cep_providers.RepublicaVirtualCEPProvider",
+    ),
+    "PROVIDERS_TIMEOUT": 2
 }
