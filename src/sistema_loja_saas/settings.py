@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'util',
     'scope_auth',
     'saas',
-    'common'
+    'common',
 ]
 
 # Configura o backend da autenticação
@@ -220,7 +220,7 @@ LOGGING = {
             'datefmt': '%Y-%m-%d %H:%M:%S',
             'format': '{asctime},{levelname},{pathname}{app_label},"{message}"',
             'style': '{',
-        }
+        },
     },
     'filters': {
         'app_label_filter': {
@@ -231,8 +231,6 @@ LOGGING = {
 
 # Configuração dos provedores de CEP
 CEP_SETTINGS = {
-    "PROVIDERS": (
-        "common.cep_providers.RepublicaVirtualCEPProvider",
-    ),
-    "PROVIDERS_TIMEOUT": 2
+    "PROVIDERS": ("common.cep_providers.RepublicaVirtualCEPProvider",),
+    "PROVIDERS_TIMEOUT": 2,
 }

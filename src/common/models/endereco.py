@@ -8,7 +8,8 @@ from requests.exceptions import Timeout
 
 from sistema_loja_saas.settings import CEP_SETTINGS
 from common.cep_providers import BaseCEPProvider
-from util.logging import Loggers    
+from util.logging import Loggers
+
 
 class Endereco(models.Model):
     cep = models.CharField(_('CEP'), max_length=8, editable=False)
@@ -23,10 +24,9 @@ class Endereco(models.Model):
 
     def get_full_dict(self) -> dict[str, str]:
         """Retorna um dicionário com o endereço completo"""
-        
+
         if self._complete_data is not None:
             return self._complete_data
-
 
         providers = self._get_installed_cep_providers()
         cep_data = None
@@ -34,9 +34,7 @@ class Endereco(models.Model):
 
         for provider in providers:
             try:
-                cep_data = provider.get_cep_data(
-                    self.cep
-                )
+                cep_data = provider.get_cep_data(self.cep)
 
                 if cep_data is not None:
                     break
@@ -69,37 +67,35 @@ class Endereco(models.Model):
                     " deve herdar de "
                     "'common.cep_providers.BaseCEPProvider'"
                 )))
-            
+
             if provider.provider_id is None:
                 raise ImproperlyConfigured(_((
                     f"Classe provedora de CEP {provider.__class__.__name__}"
                     " deve conter o atributo 'provider_id' e ele"
                     " não deve ser None"
                 )))
-            
+
             if provider.provider_id in providers_ids:
                 raise ImproperlyConfigured(_((
-                    "Mais de um provedor configurado com o id"
-                    f" {provider.provider_id}"
+                            "Mais de um provedor configurado com o id"
+                            f" {provider.provider_id}"
                 )))
-            
+
             providers.append(provider)
             providers_ids.add(provider.provider_id)
 
         return providers
-        
+
     def clean(self):
         if not self.cep_exists():
-            raise ValidationError(_(
-                f"Para ser salvo, o cep {self.cep} deve existir"
-            ))
-        
+            raise ValidationError(_(f"Para ser salvo, o cep {self.cep} deve existir"))
+
         self.cep = self._complete_data['cep']
 
         super().clean()
 
     def save(self, *args, **kwargs):
-        self.full_clean() 
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @property
@@ -112,16 +108,15 @@ class Endereco(models.Model):
     @property
     def uf(self):
         return self.complete_data['uf']
-    
+
     @property
     def cidade(self):
         return self.complete_data['cidade']
-    
+
     @property
     def bairro(self):
         return self.complete_data.get('bairro')
-    
+
     @property
     def rua(self):
         return self.complete_data.get('rua')
-    
