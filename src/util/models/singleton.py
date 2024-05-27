@@ -7,22 +7,14 @@ class NoInstanceError(RuntimeError):
     pass
 
 
-class AbstractSingletonManager(models.Manager):
-    use_in_migrations = True
-
+class SingletonManager(models.Manager):
     def load(self, *args, **kwargs):
         obj, created = self.get_or_create(*args, **kwargs)
         return obj
 
 
 class AbstractSingleton(models.Model):
-    class OnlyChoice(models.IntegerChoices):
-        SINGLETON = 1, 'single'
-
-    _singleton = models.SmallIntegerField(choices=OnlyChoice.choices,
-                                          default=OnlyChoice.SINGLETON, editable=False)
-
-    single_instance = AbstractSingletonManager()
+    single_instance = SingletonManager()
 
     def delete(self, *args, **kwargs):
         pass
@@ -35,12 +27,23 @@ class AbstractSingleton(models.Model):
     def instance(cls):
         try:
             return cls.single_instance.get()
-        except AbstractSingleton.DoesNotExist:
+        except SingletonMixin.DoesNotExist:
             raise NoInstanceError(f'No instance exists for {cls.__class__.__name__}')
 
     @CachedClassProperty
     def instance_pk(cls):
         return cls.instance.pk
+
+    class Meta:
+        abstract = True
+
+
+class SingletonMixin(AbstractSingleton):
+    class OnlyChoice(models.IntegerChoices):
+        SINGLETON = 1, 'single'
+
+    _singleton = models.SmallIntegerField(choices=OnlyChoice.choices,
+                                          default=OnlyChoice.SINGLETON, editable=False)
 
     class Meta:
         abstract = True

@@ -4,8 +4,8 @@ from django.db import models
 from django.db.models import Q
 
 from util.decorators import CachedClassProperty
-from util.models import AbstractSingleton
-from util.models.singleton import AbstractSingletonManager
+from util.models import SingletonMixin
+from util.models.singleton import SingletonManager
 
 
 class ScopeManager(models.Manager):
@@ -32,12 +32,12 @@ class Scope(models.Model):
         return hasattr(self, 'default_scope') and self.default_scope is not None
 
 
-class DefaultScopeManager(ScopeManager, AbstractSingletonManager):
+class DefaultScopeManager(ScopeManager, SingletonManager):
     def get_queryset(self):
         return super().get_queryset().filter(scope=self.default_scope())
 
 
-class DefaultScope(Scope, AbstractSingleton):
+class DefaultScope(Scope, SingletonMixin):
     base_scope = models.OneToOneField(
         Scope,
         on_delete=models.CASCADE,

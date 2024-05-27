@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'util',
     'scope_auth',
     'common',
-    'loja'
+    'loja',
+    'saas'
 ]
 
 # Configura o backend da autenticação

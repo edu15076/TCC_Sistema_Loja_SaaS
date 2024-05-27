@@ -2,30 +2,30 @@
 
 from django.db import migrations
 
-
-groupos_funcionarios = [
-    'loja_chefes',
-    'loja_gerentes_de_rh',
-    'loja_gerentes_de_estoque',
-    'loja_gerentes_de_vendas',
-    'loja_caixeiros',
-    'loja_vendedores'
-]
+from common.grupos_create_delete import criar_grupos_usuarios, deletar_grupos_usuarios
 
 
-def criar_grupos_funcionarios(apps, schema_editor):
-    # TODO: Associar permissões aos grupos criados
-    Group = apps.get_model('auth', 'Group')
-    Group.objects.bulk_create([
-        Group(name=g) for g in groupos_funcionarios
-    ])
+# TODO: Associar permissões aos grupos criados
+grupos_funcionarios = {
+    'loja_chefes': [
 
+    ],
+    'loja_gerentes_de_rh': [
 
-def deletar_grupos_funcionarios(apps, schema_editor):
-    Group = apps.get_model('auth', 'Group')
-    Group.objects.filter(
-        name__in=groupos_funcionarios
-    ).delete()
+    ],
+    'loja_gerentes_de_estoque': [
+
+    ],
+    'loja_gerentes_de_vendas': [
+
+    ],
+    'loja_caixeiros': [
+
+    ],
+    'loja_vendedores': [
+
+    ]
+}
 
 
 class Migration(migrations.Migration):
@@ -35,5 +35,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(criar_grupos_funcionarios, deletar_grupos_funcionarios)
+        migrations.RunPython(
+            lambda apps, schema_editor: criar_grupos_usuarios(apps, schema_editor,
+                                                              grupos_funcionarios),
+            lambda apps, schema_editor: deletar_grupos_usuarios(apps, schema_editor,
+                                                                grupos_funcionarios)
+        )
     ]

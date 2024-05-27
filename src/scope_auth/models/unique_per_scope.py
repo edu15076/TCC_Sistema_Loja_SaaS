@@ -44,6 +44,8 @@ class UniquePerScopeMeta(ModelBase, ModelMetaClassMixin):
 
 
 class UniquePerScopeModelManager(models.Manager):
+    use_in_migrations = True
+
     def get_by_natural_key(self, *, scope: Scope = None, **kwargs):
         """
         Returns the instance for the passed atributes
