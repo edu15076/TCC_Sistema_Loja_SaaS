@@ -14,8 +14,9 @@ class ModelMetaClassMixin(MetaClassMixin):
         return field_name in cls._get_fields_names(self._meta.fields)
 
     @classmethod
-    def _find_field_for_name(cls, self,
-                             field_name: str) -> tuple[models.Field | None, bool]:
+    def _find_field_for_name(
+        cls, self, field_name: str
+    ) -> tuple[models.Field | None, bool]:
         for field in self._meta.fields:
             if field_name == field.name:
                 return field, True
@@ -28,9 +29,11 @@ class ModelMetaClassMixin(MetaClassMixin):
     @classmethod
     def _all_fields_from(cls, attrs, bases):
         all_attrs = cls._all_attributes(attrs, bases)
-        return {name: attr
-                for name, attr in all_attrs.items()
-                if isinstance(attr, (models.Field, ForwardManyToOneDescriptor))}
+        return {
+            name: attr
+            for name, attr in all_attrs.items()
+            if isinstance(attr, (models.Field, ForwardManyToOneDescriptor))
+        }
 
     @classmethod
     def _add_field_to_meta(cls, attrs, name: str, value):
@@ -41,9 +44,12 @@ class ModelMetaClassMixin(MetaClassMixin):
 
     @classmethod
     def _add_unique_together(cls, attrs, unique_together):
-        previous_unique_together = (tuple() if 'Meta' not in attrs
-                                    else getattr(attrs['Meta'], 'unique_together',
-                                                 tuple()))
+        previous_unique_together = (
+            tuple()
+            if 'Meta' not in attrs
+            else getattr(attrs['Meta'], 'unique_together', tuple())
+        )
 
-        cls._add_field_to_meta(attrs, 'unique_together',
-                               previous_unique_together + unique_together)
+        cls._add_field_to_meta(
+            attrs, 'unique_together', previous_unique_together + unique_together
+        )
