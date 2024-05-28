@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from saas.views.a import A
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('a/', A.as_view()),
 ]
