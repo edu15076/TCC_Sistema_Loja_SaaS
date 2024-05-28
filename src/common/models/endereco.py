@@ -27,24 +27,36 @@ class EnderecoManager(models.Manager):
             provider = provider_class(CEP_SETTINGS['PROVIDERS_TIMEOUT'])
 
             if not issubclass(type(provider), BaseCEPProvider):
-                raise ImproperlyConfigured(_((
-                    f"Classe provedora de CEP {provider.__class__.__name__}"
-                    " deve herdar de "
-                    "'common.cep_providers.BaseCEPProvider'"
-                )))
+                raise ImproperlyConfigured(
+                    _(
+                        (
+                            f"Classe provedora de CEP {provider.__class__.__name__}"
+                            " deve herdar de "
+                            "'common.cep_providers.BaseCEPProvider'"
+                        )
+                    )
+                )
 
             if provider.provider_id is None:
-                raise ImproperlyConfigured(_((
-                    f"Classe provedora de CEP {provider.__class__.__name__}"
-                    " deve conter o atributo 'provider_id' e ele"
-                    " não deve ser None"
-                )))
+                raise ImproperlyConfigured(
+                    _(
+                        (
+                            f"Classe provedora de CEP {provider.__class__.__name__}"
+                            " deve conter o atributo 'provider_id' e ele"
+                            " não deve ser None"
+                        )
+                    )
+                )
 
             if provider.provider_id in providers_ids:
-                raise ImproperlyConfigured(_((
+                raise ImproperlyConfigured(
+                    _(
+                        (
                             "Mais de um provedor configurado com o id"
                             f" {provider.provider_id}"
-                )))
+                        )
+                    )
+                )
 
             providers.append(provider)
             providers_ids.add(provider.provider_id)
@@ -53,7 +65,11 @@ class EnderecoManager(models.Manager):
 
 
 class Endereco(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
-    cep = models.CharField(_('CEP'), max_length=8, validators=[CEPValidator(EnderecoManager().get_installed_cep_providers)])
+    cep = models.CharField(
+        _('CEP'),
+        max_length=8,
+        validators=[CEPValidator(EnderecoManager().get_installed_cep_providers)],
+    )
     numero = models.PositiveIntegerField(_('Numero'), blank=False)
     complemento = models.CharField(_('Complemento'), blank=True)
 
@@ -88,10 +104,14 @@ class Endereco(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
                     break
             except Timeout as e:
                 cep_data = None
-                logger.warning(_((
-                    "Tempo limite da solicitação ao provedor "
-                    f"{provider.provider_id} atingido."
-                )))
+                logger.warning(
+                    _(
+                        (
+                            "Tempo limite da solicitação ao provedor "
+                            f"{provider.provider_id} atingido."
+                        )
+                    )
+                )
 
         if cep_data is not None:
             cep_data['id'] = self.id
@@ -124,5 +144,3 @@ class Endereco(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     @property
     def rua(self):
         return self.complete_data.get('rua')
-
-

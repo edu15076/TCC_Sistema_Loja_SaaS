@@ -11,7 +11,7 @@ class CartaoManager(models.Manager):
     def get_padrao(self, contratante: UsuarioGenericoPessoaJuridica = None):
         if contratante is not None:
             objects = self.filter(contratante=contratante)
-        
+
         return objects.get(padrao=True)
 
     def realiza_pagamento(self):
@@ -47,9 +47,7 @@ class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
 
     def set_padrao(self):
         try:
-            Cartao.cartoes.get_padrao(contratante=self.contratante).update(
-                padrao=False
-            )
+            Cartao.cartoes.get_padrao(contratante=self.contratante).update(padrao=False)
             self.padrao = True
             self.save()
 
