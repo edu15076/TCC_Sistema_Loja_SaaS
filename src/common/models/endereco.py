@@ -1,59 +1,24 @@
-import re
-from typing import Iterable
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.module_loading import import_string
-from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.exceptions import ImproperlyConfigured
 from requests.exceptions import Timeout
 
+from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
 from sistema_loja_saas.settings import CEP_SETTINGS
 from common.cep_providers import BaseCEPProvider
 from util.logging import Loggers
+from common.validators import CEPValidator
 
 
-class Endereco(models.Model):
-    cep = models.CharField(_('CEP'), max_length=8, editable=False)
-    numero = models.PositiveIntegerField(_('Numero'), blank=False)
-    complemento = models.CharField(_('Complemento'), blank=True)
+class EnderecoManager(models.Manager):
+    @classmethod
+    def get_installed_cep_providers(cls) -> list[BaseCEPProvider]:
+        """
+        :return: instancias dos provedores de CEP configurados
+        :rtype: list[BaseCEPProvider]
+        """
 
-    _complete_data = None
-
-    def cep_exists(self) -> bool:
-        """Retorna se o cep do modelo existe"""
-        return self.get_full_dict() is not None
-
-    def get_full_dict(self) -> dict[str, str]:
-        """Retorna um dicionário com o endereço completo"""
-
-        if self._complete_data is not None:
-            return self._complete_data
-
-        providers = self._get_installed_cep_providers()
-        cep_data = None
-        logger = Loggers.get_logger()
-
-        for provider in providers:
-            try:
-                cep_data = provider.get_cep_data(self.cep)
-
-                if cep_data is not None:
-                    break
-            except Timeout as e:
-                cep_data = None
-                logger.warning(_((
-                    "Tempo limite da solicitação ao provedor "
-                    f"{provider.provider_id} atingido."
-                )))
-
-        if cep_data is not None:
-            cep_data['numero'] = self.numero
-            cep_data['complemento'] = self.complemento
-
-        self._complete_data = cep_data
-
-        return cep_data
-
-    def _get_installed_cep_providers(self) -> list[BaseCEPProvider]:
         providers_ids = set()
         providers = []
 
@@ -86,17 +51,56 @@ class Endereco(models.Model):
 
         return providers
 
-    def clean(self):
-        if not self.cep_exists():
-            raise ValidationError(_(f"Para ser salvo, o cep {self.cep} deve existir"))
 
-        self.cep = self._complete_data['cep']
+class Endereco(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
+    cep = models.CharField(_('CEP'), max_length=8, validators=[CEPValidator(EnderecoManager().get_installed_cep_providers)])
+    numero = models.PositiveIntegerField(_('Numero'), blank=False)
+    complemento = models.CharField(_('Complemento'), blank=True)
 
-        super().clean()
+    _complete_data = None
+    not_updatable_fields = ['cep']
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
+    enderecos = EnderecoManager()
+    objects = models.Manager()
+
+    def cep_exists(self) -> bool:
+        """Retorna se o cep do modelo existe"""
+        cache = Endereco.enderecos.filter(cep=self.cep).exists()
+        return cache or self.get_full_dict() is not None
+
+    def get_full_dict(self) -> dict[str, str]:
+        """Retorna um dicionário com o endereço completo"""
+
+        if self._complete_data is not None:
+            self._complete_data['numero'] = self.numero
+            self._complete_data['complemento'] = self.complemento
+            return self._complete_data
+
+        providers = Endereco.enderecos.get_installed_cep_providers()
+        cep_data = None
+        logger = Loggers.get_logger()
+
+        for provider in providers:
+            try:
+                cep_data = provider.get_cep_data(self.cep)
+
+                if cep_data is not None:
+                    break
+            except Timeout as e:
+                cep_data = None
+                logger.warning(_((
+                    "Tempo limite da solicitação ao provedor "
+                    f"{provider.provider_id} atingido."
+                )))
+
+        if cep_data is not None:
+            cep_data['id'] = self.id
+            cep_data['numero'] = self.numero
+            cep_data['complemento'] = self.complemento
+
+        self._complete_data = cep_data
+
+        return cep_data
 
     @property
     def complete_data(self) -> dict[str, str]:
@@ -107,11 +111,11 @@ class Endereco(models.Model):
 
     @property
     def uf(self):
-        return self.complete_data['uf']
+        return self.complete_data.get('uf')
 
     @property
     def cidade(self):
-        return self.complete_data['cidade']
+        return self.complete_data.get('cidade')
 
     @property
     def bairro(self):
@@ -120,3 +124,5 @@ class Endereco(models.Model):
     @property
     def rua(self):
         return self.complete_data.get('rua')
+
+

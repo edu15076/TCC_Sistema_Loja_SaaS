@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import re
 
 from requests import Request, Session
+from django.utils.translation import gettext_lazy as _
 
 
 class BaseCEPProvider(ABC):

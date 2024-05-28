@@ -1,15 +1,19 @@
-from typing import Any
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 
 from common.models import UsuarioGenericoPessoaJuridica
 from common.models import Endereco
-from util.logging import Loggers
+from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
 
 
 class CartaoManager(models.Manager):
+    def get_padrao(self, contratante: UsuarioGenericoPessoaJuridica = None):
+        if contratante is not None:
+            objects = self.filter(contratante=contratante)
+        
+        return objects.get(padrao=True)
+
     def realiza_pagamento(self):
         """
         realiza pagamento automático no cartão marcado como
@@ -20,14 +24,14 @@ class CartaoManager(models.Manager):
         # ! ainda não implementado
 
 
-class Cartao(models.Model):
+class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     padrao = models.BooleanField(_('Padrão'), default=False)
-    numero = models.PositiveBigIntegerField(_('Numero'), editable=False)
-    codigo = models.PositiveIntegerField(_('Codigo'), editable=False)
-    bandeira = models.PositiveIntegerField(_('Bandeira'), blank=True, editable=False)
-    nome_titular = models.CharField(
-        _('Nome do titular'), max_length=200, editable=False
-    )
+    numero = models.PositiveBigIntegerField(_('Numero'))
+    codigo = models.PositiveIntegerField(_('Codigo'))
+    bandeira = models.PositiveIntegerField(_('Bandeira'), blank=True)
+    nome_titular = models.CharField(_('Nome do titular'), max_length=200)
+
+    not_updatable_fields = ['numero', 'codigo', 'bandeira', 'nome_titular']
 
     contratante = models.ForeignKey(
         UsuarioGenericoPessoaJuridica,
@@ -39,10 +43,11 @@ class Cartao(models.Model):
     )
 
     cartoes = CartaoManager()
+    objects = models.Manager()
 
     def set_padrao(self):
         try:
-            Cartao.objects.filter(contratante=self.contratante, padrao=True).update(
+            Cartao.cartoes.get_padrao(contratante=self.contratante).update(
                 padrao=False
             )
             self.padrao = True
@@ -51,19 +56,6 @@ class Cartao(models.Model):
         except ObjectDoesNotExist:
             self.padrao = True
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-
-    def clean(self) -> None:
-        objects = Cartao.objects.filter(contratante=self.contratante)
-
-        if objects.filter(numero=self.numero).exists():
-            raise ValidationError(_(
-                f'O contratante {self.contratante.nome_fantasia} já'
-                'tem um cartão com o número {self.numero}.'
-            ))
-        if self.padrao and objects.filter(padrao=self.padrao).exists():
-            raise ValidationError(_(
-                f'Só é permitido um cartão padrão por usuário.'
-            ))
+    def clean(self):
+        if self.padrao:
+            self.set_padrao()

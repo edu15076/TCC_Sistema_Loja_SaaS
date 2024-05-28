@@ -1,4 +1,8 @@
+from django.utils.deconstruct import deconstructible
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+from util.logging import Loggers
 
 
 def cpf_validator(value):
@@ -68,3 +72,30 @@ def codigo_validator(value):
         cpf_validator(value)
     else:
         cnpj_validator(value)
+
+
+@deconstructible
+class CEPValidator:
+    def __init__(self, get_providers_func):
+        self.get_providers = get_providers_func
+
+    def __call__(self, value):
+        if not value or len(value) != 8:
+            ValidationError(_('CEP inválido'))
+
+        logger = Loggers.get_logger()
+
+        providers = self.get_providers()
+        for provider in providers:
+            try:
+                cep_data = provider.get_cep_data(value)
+
+                if cep_data is not None:
+                    return
+            except Exception as e:
+                logger.warning(_((
+                    f"{e.args[0]} na solicitação ao provedor "
+                    f"{provider.provider_id}"
+                )))
+
+        raise ValidationError(_(f"CEP não existe"))
