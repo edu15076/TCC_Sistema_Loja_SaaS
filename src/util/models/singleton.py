@@ -16,9 +16,6 @@ class SingletonManager(models.Manager):
 class AbstractSingleton(models.Model):
     single_instance = SingletonManager()
 
-    def delete(self, *args, **kwargs):
-        pass
-
     @classmethod
     def load(cls, *args, **kwargs):
         return cls.single_instance.load(*args, **kwargs)
@@ -26,7 +23,7 @@ class AbstractSingleton(models.Model):
     @CachedClassProperty
     def instance(cls):
         try:
-            return cls.single_instance.get()
+            return cls.single_instance.first()
         except SingletonMixin.DoesNotExist:
             raise NoInstanceError(f'No instance exists for {cls.__class__.__name__}')
 
@@ -42,8 +39,12 @@ class SingletonMixin(AbstractSingleton):
     class OnlyChoice(models.IntegerChoices):
         SINGLETON = 1, 'single'
 
-    _singleton = models.SmallIntegerField(choices=OnlyChoice.choices,
-                                          default=OnlyChoice.SINGLETON, editable=False)
+    _singleton = models.SmallIntegerField(
+        choices=OnlyChoice.choices,
+        default=OnlyChoice.SINGLETON,
+        editable=False,
+        unique=True
+    )
 
     class Meta:
         abstract = True

@@ -49,15 +49,18 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
             telefone=telefone, **dados_pessoa
         )
         if self.model.papel_group is not None:
-            usuario.groups.add(self.model.papel_group)
-            usuario.save()
+            usuario.groups.set([self.model.papel_group])
         return usuario
 
     def _criar_ou_recuperar_de_funcionario(self, funcionario: 'Funcionario',
                                            **extra_fields):
-        """Cria ou recupera uma instância subclasse a partir de um funcionario"""
-        funcionario.groups.add(self.model.papel_group)
-        funcionario.save()
+        """Cria ou recupera uma instância da subclasse a partir de um funcionario"""
+        try:
+            funcionario = self.get(funcionario=funcionario)
+        except self.model.DoesNotExist:
+            funcionario = self.model(funcionario=funcionario, **extra_fields)
+            funcionario.save_base(raw=True)
+        funcionario.groups.set([self.model.papel_group])
         return funcionario
 
 
@@ -112,9 +115,13 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         self.scope = loja
 
     def adicionar_papel(self, group: Group, **extra_fields):
+        """Adiciona o papel criando uma instância do model relacionado"""
         class_for_papel = self.papel_por_funcionario[group.name]
         class_for_papel._default_manager._criar_ou_recuperar_de_funcionario(
             self, **extra_fields)
+
+    def remover_papel(self, group: Group):
+        self.groups.remove(group)
 
     # TODO: Criar métodos para verificar se um usuário é de um tipo
 

@@ -1,11 +1,12 @@
+from django.contrib.auth.models import Group
 from django.db import models
 
 from common.models import (UsuarioGenericoPessoaJuridica,
                            UsuarioGenericoPessoaJuridicaManager)
 from common.models import ContratosScope
 from loja.models import Loja
-from util.models.singleton import AbstractSingleton
-
+from util.decorators import CachedClassProperty
+from util.models.singleton import AbstractSingleton, SingletonManager, SingletonMixin
 
 __all__ = (
     'UsuarioContratacao',
@@ -19,29 +20,43 @@ class UsuarioContratacaoManager(UsuarioGenericoPessoaJuridicaManager):
             self, cnpj: str, password: str = None, email: str = None,
             telefone: str = None, **dados_pessoa
     ):
-        return self.criar_usuario(
+        usuario = self.criar_usuario(
             cnpj=cnpj, scope=ContratosScope.instance, password=password, email=email,
             telefone=telefone, **dados_pessoa
         )
+        if self.model.papel_group is not None:
+            usuario.groups.set([self.model.papel_group])
+        return usuario
 
 
 class UsuarioContratacao(UsuarioGenericoPessoaJuridica):
     usuarios = UsuarioContratacaoManager()
 
+    @CachedClassProperty
+    def papel_group(cls) -> Group | None:
+        return None
+
     class Meta:
         proxy = True
 
 
-class GerenteDeContratosManager(UsuarioContratacaoManager):
+class GerenteDeContratosManager(UsuarioContratacaoManager, SingletonManager):
     pass
 
 
-class GerenteDeContratos(UsuarioContratacao, AbstractSingleton):
-    gerentes = GerenteDeContratosManager()
+class GerenteDeContratos(UsuarioContratacao, SingletonMixin):
+    gerente = GerenteDeContratosManager()
+
+    @CachedClassProperty
+    def papel_group(cls):
+        return Group.objects.get(name='saas_gerente_de_contratos')
 
 
 class ClienteContratanteManager(UsuarioContratacaoManager):
-    pass
+    def _get_cleaned_user(self, kwargs):
+        username, password, extra_fields = super()._get_cleaned_user(kwargs)
+        extra_fields['loja'] = Loja.lojas.create()
+        return username, password, extra_fields
 
 
 class ClienteContratante(UsuarioContratacao):
@@ -49,3 +64,7 @@ class ClienteContratante(UsuarioContratacao):
                                 related_name='contratante')
 
     contratantes = ClienteContratanteManager()
+
+    @CachedClassProperty
+    def papel_group(cls):
+        return Group.objects.get(name='saas_clientes_contratantes')

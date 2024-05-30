@@ -1,18 +1,18 @@
 from datetime import date
 
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 
 from scope_auth.models import (Scope, AbstractUserPerScopeWithEmail,
                                UserPerScopeWhitEmailManager)
-from util.decorators import CachedClassProperty, CachedProperty
+from util.decorators import CachedClassProperty
 from util.models import cast_to_model
 from .pessoa import PessoaFisica, PessoaJuridica, Pessoa
 
 from .pessoa_usuario import PessoaUsuario
-
 
 __all__ = (
     'UsuarioGenericoQuerySet',
@@ -241,29 +241,39 @@ class UsuarioGenericoPessoaManager(UsuarioGenericoSimpleManager):
         qs.model = UsuarioGenericoPessoa
         return qs.complete()
 
-    def _criar_pessoa(self, codigo: str, **dados_pessoa):
-        self.model.TIPO_PESSOA._meta.default_manager.get_or_create(
+    def _criar_pessoa(self, codigo: str, **dados_pessoa) -> tuple[Pessoa, bool]:
+        return self.model.TIPO_PESSOA._meta.default_manager.get_or_create(
             codigo=codigo, **dados_pessoa)
 
     def criar_usuario(
             self, codigo: str, scope: Scope = None, password: str = None,
             email: str = None, telefone: str = None, **dados_pessoa
     ):
-        self._criar_pessoa(codigo, **dados_pessoa)
-        return self.create_user_by_natural_key(
-            pessoa=codigo, scope=scope, password=password, email=email,
-            telefone=telefone
-        )
+        pessoa, created = self._criar_pessoa(codigo, **dados_pessoa)
+        try:
+            return self.create_user_by_natural_key(
+                pessoa=codigo, scope=scope, password=password, email=email,
+                telefone=telefone
+            )
+        except Exception as e:
+            if created:
+                pessoa.delete()
+            raise e
 
     def criar_superusuario(
             self, codigo: str, scope: Scope = None, password: str = None,
             email: str = None, telefone: str = None, **dados_pessoa
     ):
-        self._criar_pessoa(codigo, **dados_pessoa)
-        return self.create_superuser_by_natural_key(
-            pessoa=codigo, scope=scope, password=password, email=email,
-            telefone=telefone
-        )
+        pessoa, created = self._criar_pessoa(codigo, **dados_pessoa)
+        try:
+            return self.create_superuser_by_natural_key(
+                pessoa=codigo, scope=scope, password=password, email=email,
+                telefone=telefone
+            )
+        except Exception as e:
+            if created:
+                pessoa.delete()
+            raise e
 
     class _Builder(UsuarioGenericoSimpleManager._Builder):
         def build_user_by_natural_key(self):
@@ -427,7 +437,8 @@ class UsuarioGenericoPessoaJuridicaQuerySet(UsuarioGenericoPessoaQuerySet):
         return {
             'pessoa': F('pessoa_usuario__pessoa__pessoa_juridica'),
             'razao_social': F('pessoa_usuario__pessoa__pessoa_juridica__razao_social'),
-            'nome_fantasia': F('pessoa_usuario__pessoa__pessoa_juridica__nome_fantasia'),
+            'nome_fantasia': F(
+                'pessoa_usuario__pessoa__pessoa_juridica__nome_fantasia'),
             'cnpj': F('pessoa_usuario__pessoa__codigo'),
             'scope': F('pessoa_usuario__scope')
         }
