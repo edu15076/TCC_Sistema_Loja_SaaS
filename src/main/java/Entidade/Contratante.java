@@ -58,4 +58,17 @@ public class Contratante extends Pessoa implements Serializable {
     public void setCartoes(List<Cartao> cartoes) {
         this.cartoes = cartoes;
     }
+
+    public String toString() {
+        return String.join("\n",
+                "ID: " + this.getId(),
+                "Username: " + this.getUsername(),
+                "CNPJ: " + this.getCnpj(),
+                "Nome: " + this.getNome(),
+                "Sobrenome: " + this.getSobrenome(),
+                "Data de Nascimento: " + this.getNascimento(),
+                "Email: " + this.getEmail(),
+                "Telefone: " + this.getTelefone()
+        );
+    }
 }
