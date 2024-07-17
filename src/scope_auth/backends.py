@@ -1,5 +1,5 @@
 from django.contrib.auth.backends import ModelBackend, UserModel
-from .models import Scope
+from .util import get_scope_from_request
 
 
 class ModelScopeBackend(ModelBackend):
@@ -7,11 +7,7 @@ class ModelScopeBackend(ModelBackend):
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
 
-        scope = request.GET.get('scope')
-        if scope is None:
-            scope = request.POST.get('scope')
-        if scope is None:
-            scope = Scope.scopes.default_scope()
+        scope = get_scope_from_request(request)
 
         if username is None or password is None or scope is None:
             return

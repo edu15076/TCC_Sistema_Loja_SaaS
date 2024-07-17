@@ -4,8 +4,14 @@ from django.core.exceptions import ValidationError
 __all__ = (
     'cpf_validator',
     'cnpj_validator',
-    'codigo_validator'
+    'codigo_validator',
+    'PESSOA_FISICA_CODIGO_LEN',
+    'PESSOA_JURIDICA_CODIGO_LEN'
 )
+
+
+PESSOA_FISICA_CODIGO_LEN = 11
+PESSOA_JURIDICA_CODIGO_LEN = 14
 
 
 def cpf_validator(value):

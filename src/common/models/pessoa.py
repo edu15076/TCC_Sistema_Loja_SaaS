@@ -2,8 +2,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
+from django.db.models.functions import Length
 
-from ..validators import codigo_validator
+from ..validators import (codigo_validator, PESSOA_FISICA_CODIGO_LEN,
+                          PESSOA_JURIDICA_CODIGO_LEN)
+
+
+models.CharField.register_lookup(Length, 'length')
 
 
 __all__ = (
@@ -24,17 +29,25 @@ class PessoaManager(models.Manager):
 
 class Pessoa(models.Model):
     codigo = models.CharField(
-        _('Código'), max_length=14, unique=True, primary_key=True, editable=False,
-        db_column='codigo', validators=[codigo_validator]
+        _('Código'),
+        max_length=max(PESSOA_JURIDICA_CODIGO_LEN, PESSOA_FISICA_CODIGO_LEN),
+        db_column='codigo',
+        validators=[codigo_validator]
     )
+
+    telefone = models.CharField(_('Telefone'), max_length=15, blank=True,
+                                null=True)
+    email = models.EmailField(_('Endereço de email'), blank=True)
 
     pessoas = PessoaManager()
 
     def is_pessoa_fisica(self):
-        return hasattr(self, 'pessoa_fisica') and self.pessoa_fisica is not None
+        return (hasattr(self, 'codigo') and
+                len(self.codigo) == PESSOA_FISICA_CODIGO_LEN)
 
     def is_pessoa_juridica(self):
-        return hasattr(self, 'pessoa_juridica') and self.pessoa_juridica is not None
+        return (hasattr(self, 'codigo') and
+                len(self.codigo) == PESSOA_JURIDICA_CODIGO_LEN)
 
     def __repr__(self):
         return str(self.codigo)
@@ -52,10 +65,13 @@ class Pessoa(models.Model):
     def get_short_name(self):
         raise NotImplementedError('Subclass must implement this method')
 
+    class Meta:
+        abstract = True
+
 
 class PessoaFisicaQuerySet(models.QuerySet):
     def complete(self):
-        return self.annotate(cpf=F('pessoa__codigo'))
+        return self.annotate(cpf=F('codigo'))
 
     def simple(self):
         return self.values('nome', 'sobrenome', 'data_nascimento', 'cpf')
@@ -70,26 +86,11 @@ class PessoaFisicaManager(PessoaManager):
 
 
 class PessoaFisica(Pessoa):
-    pessoa = models.OneToOneField(
-        Pessoa,
-        on_delete=models.CASCADE,
-        parent_link=True,
-        primary_key=True,
-        related_name='pessoa_fisica',
-        db_column='cpf'
-    )
-
     nome = models.CharField(_('Primeiro nome'), max_length=100, blank=True)
     sobrenome = models.CharField(_('Sobrenome'), max_length=100, blank=True)
     data_nascimento = models.DateField(_('Data de nascimento'), blank=True, null=True)
 
     pessoas = PessoaFisicaManager()
-
-    @classmethod
-    def from_pessoa(cls, pessoa: Pessoa):
-        if not hasattr(pessoa, 'pessoa_fisica'):
-            raise ValueError('Pessoa não é pessoa física')
-        return pessoa.pessoa_fisica
 
     @property
     def cpf(self) -> str:
@@ -106,13 +107,16 @@ class PessoaFisica(Pessoa):
         return self.nome
 
     def clean(self):
-        if len(self.cpf) != 11:
+        if len(self.cpf) != PESSOA_FISICA_CODIGO_LEN:
             raise ValidationError('O codigo de PessoaFisica deve ser um cpf')
+
+    class Meta:
+        abstract = True
 
 
 class PessoaJuridicaQuerySet(models.QuerySet):
     def complete(self):
-        return self.annotate(cnpj=F('pessoa__codigo'))
+        return self.annotate(cnpj=F('codigo'))
 
     def simple(self):
         return self.values('razao_social', 'nome_fantasia', 'cnpj')
@@ -125,29 +129,17 @@ class PessoaJuridicaManager(PessoaManager):
     def simple(self):
         return self.get_queryset().simple()
 
+    def get_by_razao_social(self, razao_social):
+        return self.get_queryset().get(razao_social=razao_social)
+
 
 class PessoaJuridica(Pessoa):
-    pessoa = models.OneToOneField(
-        Pessoa,
-        on_delete=models.CASCADE,
-        parent_link=True,
-        primary_key=True,
-        related_name='pessoa_juridica',
-        db_column='cnpj'
-    )
-
     razao_social = models.CharField(_('Razão social'), max_length=100,
-                                    blank=True)
+                                    blank=True, unique=True)
     nome_fantasia = models.CharField(_('Nome fantasia'), max_length=100,
                                      blank=True)
 
     pessoas = PessoaJuridicaManager()
-
-    @classmethod
-    def from_pessoa(cls, pessoa):
-        if not hasattr(pessoa, 'pessoa_juridica'):
-            raise ValueError('Pessoa não é pessoa jurídica')
-        return pessoa.pessoa_juridica
 
     @property
     def cnpj(self) -> str:
@@ -164,5 +156,8 @@ class PessoaJuridica(Pessoa):
         return self.nome_fantasia
 
     def clean(self):
-        if len(self.cnpj) != 14:
+        if len(self.cnpj) != PESSOA_JURIDICA_CODIGO_LEN:
             raise ValidationError('O codigo de PessoaJuridica deve ser um cnpj')
+
+    class Meta:
+        abstract = True

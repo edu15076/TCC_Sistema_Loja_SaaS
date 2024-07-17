@@ -1,0 +1,6 @@
+<form hx-target="this" hx-swap="outerHTML" hx-post="{% url 'criar_usuario' %}"
+      method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Criar">
+</form>

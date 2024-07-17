@@ -68,7 +68,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     # TODO: Adicionar fields de Funcionario
 
     usuario = models.OneToOneField(
-        UsuarioGenerico,
+        UsuarioGenericoPessoaFisica,
         models.CASCADE,
         parent_link=True,
         primary_key=True,

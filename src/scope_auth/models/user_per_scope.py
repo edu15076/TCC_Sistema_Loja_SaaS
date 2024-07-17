@@ -102,8 +102,7 @@ class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
         return self
 
 
-class AbstractBaseUserPerScope(AbstractBaseUser,
-                               metaclass=BaseUserPerScopeMeta):
+class AbstractBaseUserPerScope(AbstractBaseUser, metaclass=BaseUserPerScopeMeta):
     users = BaseUserPerScopeManager()
 
     def get_username_per_scope(self) -> AbstractUsernamePerScope:
