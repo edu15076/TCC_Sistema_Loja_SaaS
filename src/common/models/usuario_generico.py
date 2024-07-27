@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import F
@@ -12,8 +10,6 @@ from util.models import cast_to_model
 from .pessoa import PessoaFisica, PessoaJuridica, Pessoa
 
 from .pessoa_usuario import PessoaUsuario
-from ..validators import PESSOA_FISICA_CODIGO_LEN, PESSOA_JURIDICA_CODIGO_LEN
-
 
 __all__ = (
     'UsuarioGenericoQuerySet',
@@ -36,24 +32,6 @@ __all__ = (
 
 
 class UsuarioGenericoQuerySet(models.QuerySet):
-    def filter_pessoas_fisicas(self):
-        """Filtra usuários que são pessoas físicas."""
-        return self.filter(
-            codigo__length=PESSOA_FISICA_CODIGO_LEN
-        )
-
-    def as_usuarios_pessoa_fisica(self) -> 'UsuarioGenericoPessoaFisicaQuerySet':
-        return UsuarioGenericoPessoaFisica.usuarios.from_usuarios_queryset(self)
-
-    def filter_pessoas_juridicas(self):
-        """Filtra usuários que são pessoas jurídicas."""
-        return self.filter(
-            codigo__length=PESSOA_JURIDICA_CODIGO_LEN
-        )
-
-    def as_usuarios_pessoa_juridica(self) -> 'UsuarioGenericoPessoaJuridicaQuerySet':
-        return UsuarioGenericoPessoaJuridica.usuarios.from_usuarios_queryset(self)
-
     def usuarios_per_scope(self):
         return self.values(scope='pessoa_usuario__scope').annotate(
             pessoas=ArrayAgg('pessoa_usuario__codigo')
@@ -90,36 +68,6 @@ class AbstractUsuarioGenerico(AbstractUserPerScopeWithEmail, Pessoa):
     class Meta:
         abstract = True
 
-    def as_usuario_pessoa_fisica(self):
-        if (not self.is_pessoa_fisica() or
-                not hasattr(self, 'usuariogenericopessoafisica')):
-            raise TypeError(f'O usuário não pode ser convertido pois a pessoa '
-                            f'{self.codigo} não é uma pessoa física.')
-        return self.usuariogenericopessoafisica
-
-    def as_usuario_pessoa_juridica(self):
-        if (not self.is_pessoa_juridica() or
-                not hasattr(self, 'usuariogenericopessoajuridica')):
-            raise TypeError(f'O usuário não pode ser convertido pois a pessoa '
-                            f'{self.codigo} não é uma pessoa jurídica.')
-        return self.usuariogenericopessoajuridica
-
-    def get_full_name(self):
-        """
-        Return the first_name plus the last_name, with a space in between.
-        """
-        if self.is_pessoa_fisica():
-            return PessoaFisica.get_full_name(self.as_usuario_pessoa_fisica())
-        else:
-            return PessoaJuridica.get_full_name(self.as_usuario_pessoa_juridica())
-
-    def get_short_name(self):
-        """Return the short name for the user."""
-        if self.is_pessoa_fisica():
-            return PessoaFisica.get_short_name(self.as_usuario_pessoa_fisica())
-        else:
-            return PessoaJuridica.get_short_name(self.as_usuario_pessoa_juridica())
-
     def enviar_email_para_usuario(self, subject, message, from_email=None, **kwargs):
         """Envia um email para esse usuário."""
         self.email_user(subject, message, from_email, **kwargs)
@@ -134,6 +82,11 @@ class AbstractUsuarioGenerico(AbstractUserPerScopeWithEmail, Pessoa):
     def clean(self):
         AbstractUserPerScopeWithEmail.clean(self)
         Pessoa.clean(self)
+
+    def full_clean(self, exclude=None, validate_unique=True, validate_constraints=True):
+        AbstractUserPerScopeWithEmail.full_clean(self, exclude, validate_unique,
+                                                 validate_constraints)
+        Pessoa.full_clean(self, exclude, validate_unique, validate_constraints)
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -257,9 +210,10 @@ class UsuarioGenericoPessoa(UsuarioGenericoSimple):
     usuarios = UsuarioGenericoPessoaManager()
 
     @classmethod
-    def from_usuario(cls, usuario):
-        usuario.__class__ = UsuarioGenericoPessoa
-        return usuario
+    def from_usuario(cls, usuario: AbstractUsuarioGenerico) -> 'UsuarioGenericoPessoa':
+        if PessoaFisica.is_pessoa_fisica(usuario):
+            return UsuarioGenericoPessoaFisica.from_usuario(usuario)
+        return UsuarioGenericoPessoaJuridica.from_usuario(usuario)
 
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[Pessoa]:
@@ -326,11 +280,13 @@ class UsuarioGenericoPessoaFisica(UsuarioGenericoPessoa, PessoaFisica):
     usuarios = UsuarioGenericoPessoaFisicaManager()
 
     @classmethod
-    def from_usuario(cls, usuario):
-        if not usuario.is_pessoa_fisica():
-            raise ValueError('Usuário não é pessoa_ptr física.')
-        usuario.__class__ = UsuarioGenericoPessoaFisica
-        return usuario
+    def from_usuario(cls, usuario: AbstractUsuarioGenerico
+                     ) -> 'UsuarioGenericoPessoaFisica':
+        if (not PessoaFisica.is_pessoa_fisica(usuario) or
+                not hasattr(usuario, 'usuariogenericopessoafisica')):
+            raise TypeError(f'O usuário não pode ser convertido pois a pessoa '
+                            f'desse usuário não é uma pessoa física.')
+        return usuario.usuariogenericopessoafisica
 
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[PessoaFisica]:
@@ -392,11 +348,13 @@ class UsuarioGenericoPessoaJuridica(UsuarioGenericoPessoa, PessoaJuridica):
     usuarios = UsuarioGenericoPessoaJuridicaManager()
 
     @classmethod
-    def from_usuario(cls, usuario):
-        if not usuario.is_pessoa_juridica():
-            raise ValueError('Usuário não é pessoa_ptr jurídica.')
-        usuario.__class__ = UsuarioGenericoPessoaJuridica
-        return usuario
+    def from_usuario(cls, usuario: AbstractUsuarioGenerico
+                     ) -> 'UsuarioGenericoPessoaJuridica':
+        if (not PessoaJuridica.is_pessoa_juridica(usuario) or
+                not hasattr(usuario, 'usuariogenericopessoajuridica')):
+            raise TypeError(f'O usuário não pode ser convertido pois a pessoa '
+                            f'desse usuário não é uma pessoa jurídica.')
+        return usuario.usuariogenericopessoajuridica
 
     @CachedClassProperty
     def TIPO_PESSOA(self) -> type[PessoaJuridica]:

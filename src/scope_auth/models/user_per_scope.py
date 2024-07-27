@@ -54,14 +54,18 @@ class BaseUserPerScopeManager(BaseUserManager):
         if len(kwargs) > 1 or (len(kwargs) == 1 and 'scope' not in kwargs):
             raise ValueError('The only keyword argument accepted is "scope"')
 
-        _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
+        username_per_scope_cls, username_per_scope_manager = (
+            self._get_username_per_scope_cls_and_manager())
 
-        if 'scope' not in kwargs:
-            username_per_scope = username_per_scope_manager.get(pk=username)
-        else:
-            username_per_scope = username_per_scope_manager.get_by_natural_key(
-                username=username, scope=kwargs.pop('scope', None)
-            )
+        try:
+            if 'scope' not in kwargs:
+                username_per_scope = username_per_scope_manager.get(pk=username)
+            else:
+                username_per_scope = username_per_scope_manager.get_by_natural_key(
+                    username=username, scope=kwargs.pop('scope', None)
+                )
+        except username_per_scope_cls.DoesNotExist:
+            raise self.model.DoesNotExist
 
         return self.get(**{self.model.USERNAME_PER_SCOPE_FIELD: username_per_scope})
 

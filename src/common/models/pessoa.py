@@ -41,14 +41,6 @@ class Pessoa(models.Model):
 
     pessoas = PessoaManager()
 
-    def is_pessoa_fisica(self):
-        return (hasattr(self, 'codigo') and
-                len(self.codigo) == PESSOA_FISICA_CODIGO_LEN)
-
-    def is_pessoa_juridica(self):
-        return (hasattr(self, 'codigo') and
-                len(self.codigo) == PESSOA_JURIDICA_CODIGO_LEN)
-
     def __repr__(self):
         return str(self.codigo)
 
@@ -92,6 +84,11 @@ class PessoaFisica(Pessoa):
 
     pessoas = PessoaFisicaManager()
 
+    @classmethod
+    def is_pessoa_fisica(cls, pessoa: Pessoa):
+        return (hasattr(pessoa, 'codigo') and
+                len(pessoa.codigo) == PESSOA_FISICA_CODIGO_LEN)
+
     @property
     def cpf(self) -> str:
         return self.codigo
@@ -107,8 +104,8 @@ class PessoaFisica(Pessoa):
         return self.nome
 
     def clean(self):
-        if len(self.cpf) != PESSOA_FISICA_CODIGO_LEN:
-            raise ValidationError('O codigo de PessoaFisica deve ser um cpf')
+        if self.cpf and len(self.cpf) != PESSOA_FISICA_CODIGO_LEN:
+            raise ValidationError('CPF inválido')
 
     class Meta:
         abstract = True
@@ -141,6 +138,11 @@ class PessoaJuridica(Pessoa):
 
     pessoas = PessoaJuridicaManager()
 
+    @classmethod
+    def is_pessoa_juridica(cls, pessoa: Pessoa):
+        return (hasattr(pessoa, 'codigo') and
+                len(pessoa.codigo) == PESSOA_JURIDICA_CODIGO_LEN)
+
     @property
     def cnpj(self) -> str:
         return self.codigo
@@ -156,8 +158,8 @@ class PessoaJuridica(Pessoa):
         return self.nome_fantasia
 
     def clean(self):
-        if len(self.cnpj) != PESSOA_JURIDICA_CODIGO_LEN:
-            raise ValidationError('O codigo de PessoaJuridica deve ser um cnpj')
+        if self.cnpj and len(self.cnpj) != PESSOA_JURIDICA_CODIGO_LEN:
+            raise ValidationError('CNPJ inválido')
 
     class Meta:
         abstract = True

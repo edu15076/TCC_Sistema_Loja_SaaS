@@ -6,11 +6,13 @@ class ModelScopeBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
+        if username is None or password is None:
+            return
 
         scope = get_scope_from_request(request)
-
-        if username is None or password is None or scope is None:
+        if scope is None:
             return
+
         try:
             user = UserModel._default_manager.get_by_natural_key(username=username,
                                                                  scope=scope)

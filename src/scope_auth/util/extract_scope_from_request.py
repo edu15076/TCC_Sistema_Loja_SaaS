@@ -11,8 +11,6 @@ def get_scope_from_request(request):
         'scope', request.POST.get(
             'scope', Scope.scopes.default_scope().pk))
     try:
-        scope = int(scope)
-        scope = Scope.scopes.get(pk=scope)
-        return scope
+        return Scope.scopes.get(pk=int(scope))
     except (ValueError, Scope.DoesNotExist):
         raise Http404

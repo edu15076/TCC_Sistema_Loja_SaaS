@@ -6,8 +6,6 @@ from common.data import DadosEmpresa
 
 
 def criar_gerente_de_contratos(apps, schema_editor):
-    UsuarioGenericoPessoaJuridica = apps.get_model('common',
-                                                   'UsuarioGenericoPessoaJuridica')
     DefaultScope = apps.get_model('scope_auth', 'DefaultScope')
     PessoaUsuario = apps.get_model('common', 'PessoaUsuario')
     GerenteDeContratos = apps.get_model('saas', 'GerenteDeContratos')
@@ -19,10 +17,9 @@ def criar_gerente_de_contratos(apps, schema_editor):
         scope=scope
     )
 
+    from saas.models import GerenteDeContratos as _GerenteDeContratos
     setattr(GerenteDeContratos, 'USERNAME_FIELD',
-            'pessoa_usuario')
-
-    Group = apps.get_model('auth', 'Group')
+            getattr(_GerenteDeContratos, 'USERNAME_FIELD'))
 
     gerente_de_contratos = GerenteDeContratos.gerente._create_user(
         username=pessoa_usuario,
@@ -34,6 +31,8 @@ def criar_gerente_de_contratos(apps, schema_editor):
         razao_social=DadosEmpresa.RAZAO_SOCIAL,
         nome_fantasia=DadosEmpresa.NOME_FANTASIA
     )
+
+    Group = apps.get_model('auth', 'Group')
 
     gerente_de_contratos.groups.set([
         Group.objects.get(name='saas_gerente_de_contratos')
