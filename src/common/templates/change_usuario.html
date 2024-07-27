@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar Usuario{% endblock title %}
+
+{% block main %}
+    <h1>Editar usuario {{ user.codigo }} no escopo {{ scope }}</h1>
+    {% include 'forms/change_usuario_form.html' %}
+{% endblock main %}

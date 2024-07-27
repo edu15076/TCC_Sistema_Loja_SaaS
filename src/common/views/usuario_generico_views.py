@@ -1,24 +1,32 @@
 from django.contrib.auth import login
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 
-from common.forms.usuario_generico_forms import UsuarioGenericoCreationForm
-from .mixins import ScopeMixin
-from util.views import NotLoggedInRequiredMixin, CreateHTMXView
+from common.forms.usuario_generico_forms import (
+    UsuarioGenericoCreationForm, UsuarioGenericoPessoaJuridicaCreationForm,
+    UsuarioGenericoAuthenticationForm,
+    UsuarioGenericoPessoaJuridicaAuthenticationForm, UsuarioGenericoChangeForm,
+    UsuarioGenericoPessoaJuridicaChangeForm)
+from .mixins import ScopeMixin, UsuarioMixin
+from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
 
 __all__ = (
     'CreateUsuarioView',
     'LoginUsuarioView',
+    'UpdateUsuarioView',
+    'LogoutUsuarioGenericoView',
     'CreateUsuarioGenericoView',
-    'LoginUsuarioGenericoView'
+    'LoginUsuarioGenericoView',
+    'UpdateUsuarioGenericoView',
 )
 
 
-class CreateUsuarioGenericoView(NotLoggedInRequiredMixin, ScopeMixin, CreateHTMXView):
+class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
+    form_class = UsuarioGenericoCreationForm
+
     def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['scope'] = self.get_scope()
-        return kwargs
+        return super().get_form_kwargs() | {'scope': self.get_scope()}
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -26,17 +34,49 @@ class CreateUsuarioGenericoView(NotLoggedInRequiredMixin, ScopeMixin, CreateHTMX
         return response
 
 
-class LoginUsuarioGenericoView(NotLoggedInRequiredMixin, ScopeMixin, LoginView):
-    pass
+class LoginUsuarioGenericoView(ScopeMixin, HTMXFormMixin, LoginView):
+    authentication_form = UsuarioGenericoAuthenticationForm
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        login(self.request, form.get_user())
+        return super().form_valid(form)
+
+
+class UpdateUsuarioGenericoView(LoginRequiredMixin, ScopeMixin, UsuarioMixin,
+                                UpdateHTMXView):
+    form_class = UsuarioGenericoChangeForm
+
+    def get_object(self, queryset=None):
+        return self.get_user()
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+class LogoutUsuarioGenericoView(ScopeMixin, LogoutView):
+    next_page = reverse_lazy('login')
 
 
 class LoginUsuarioView(LoginUsuarioGenericoView):
     template_name = 'login.html'
-    redirect_authenticated_user = True
+    form_template_name = 'forms/login_form.html'
+    next_page = reverse_lazy('home')
+    authentication_form = UsuarioGenericoPessoaJuridicaAuthenticationForm
 
 
 class CreateUsuarioView(CreateUsuarioGenericoView):
-    form_class = UsuarioGenericoCreationForm
+    form_class = UsuarioGenericoPessoaJuridicaCreationForm
     template_name = 'create_user.html'
     form_template_name = 'forms/criar_usuario_form.html'
-    redirect_url = reverse_lazy('home')
+    success_url = reverse_lazy('home')
+
+
+class UpdateUsuarioView(UpdateUsuarioGenericoView):
+    form_class = UsuarioGenericoPessoaJuridicaChangeForm
+    template_name = 'change_usuario.html'
+    form_template_name = 'forms/change_usuario_form.html'
+    success_url = reverse_lazy('home')
+    login_url = reverse_lazy('login')
