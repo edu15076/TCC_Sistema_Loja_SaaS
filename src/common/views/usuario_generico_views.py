@@ -62,21 +62,21 @@ class LogoutUsuarioGenericoView(ScopeMixin, LogoutView):
 
 class LoginUsuarioView(LoginUsuarioGenericoView):
     template_name = 'login.html'
-    form_template_name = 'forms/login_form.html'
     next_page = reverse_lazy('home')
     authentication_form = UsuarioGenericoPessoaJuridicaAuthenticationForm
+    form_action = reverse_lazy('login')
 
 
 class CreateUsuarioView(CreateUsuarioGenericoView):
     form_class = UsuarioGenericoPessoaJuridicaCreationForm
     template_name = 'create_user.html'
-    form_template_name = 'forms/criar_usuario_form.html'
     success_url = reverse_lazy('home')
+    form_action = reverse_lazy('criar_usuario')
 
 
 class UpdateUsuarioView(UpdateUsuarioGenericoView):
     form_class = UsuarioGenericoPessoaJuridicaChangeForm
     template_name = 'change_usuario.html'
-    form_template_name = 'forms/change_usuario_form.html'
     success_url = reverse_lazy('home')
     login_url = reverse_lazy('login')
+    form_action = reverse_lazy('edit_user')

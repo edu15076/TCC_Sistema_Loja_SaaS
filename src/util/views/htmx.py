@@ -21,7 +21,14 @@ class HttpResponseHTMXRedirect(HttpResponseRedirect):
 
 
 class HTMXFormMixin(FormMixin):
-    form_template_name: str = None
+    form_action: str = None
+    form_template_name: str = 'forms/htmx_form_post_template.html'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.form_action:
+            self.extra_context = self.extra_context or {}
+            self.extra_context.update({'action': self.form_action})
 
     def form_invalid(self, form):
         return TemplateResponse(self.request, self.form_template_name,
@@ -32,8 +39,6 @@ class HTMXFormMixin(FormMixin):
 
 
 class HTMXModelFormMixin(HTMXFormMixin, ModelFormMixin):
-    form_template_name: str = None
-
     def form_valid(self, form):
         self.object = form.save()
         return super().form_valid(form)
