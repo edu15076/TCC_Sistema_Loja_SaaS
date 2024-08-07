@@ -18,8 +18,13 @@ from django.contrib import admin
 from django.urls import path
 
 from common.urls import urlpatterns as common_urls
+from saas.urls import urlpatterns as saas_urls
+from loja.urls import urlpatterns as loja_urls
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     *common_urls,
+    *saas_urls,
+    *loja_urls,
 ]

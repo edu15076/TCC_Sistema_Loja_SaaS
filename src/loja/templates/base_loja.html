@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+    <link href="{% static 'styles/navbar/sidebar/sidebar.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block header %}
+    {% include 'navbar/sidebar/top_navbar_loja.html' %}
+{% endblock header %}
+
+{% block main %}
+    <div class="d-flex container-fluid ps-0 overflow-hidden">
+        {% include 'navbar/sidebar/sidebar_loja.html' %}
+
+        <div class="flex-fill overflow-auto">
+            <article class="container p-4">
+                {% block main_content %}{% endblock main_content %}
+            </article>
+        </div>
+    </div>
+{% endblock main %}
+
+{% block scripts %}
+    <script src="{% static 'scripts/navbar/sidebar/localsorage_sidebar_state.js' %}"></script>
+{% endblock scripts %}
