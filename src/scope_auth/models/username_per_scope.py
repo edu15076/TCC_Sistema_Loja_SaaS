@@ -33,9 +33,9 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
 
         if not found:
             # raise ValueError(f'{attrs}')
-            raise ValueError(f'Non abstract subclass or superclass must define '
-                             f'{attrs["USERNAME_FIELD"]} for it defined USERNAME_FIELD '
-                             f'= {attrs["USERNAME_FIELD"]}')
+            raise ValueError(f"Non abstract subclass or superclass must define "
+                             f"{attrs['USERNAME_FIELD']} for it defined USERNAME_FIELD "
+                             f"= {attrs['USERNAME_FIELD']}")
 
         return self
 
