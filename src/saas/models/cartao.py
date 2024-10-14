@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from common.models import UsuarioGenericoPessoaJuridica
 from common.models import Endereco
+from saas.models import ClienteContratante
 from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
 
 
@@ -14,15 +15,17 @@ class CartaoManager(models.Manager):
 
         return objects.get(padrao=True)
 
-    def realiza_pagamento(self):
+    def realiza_pagamento(self, contratante: ClienteContratante):
         """
+        ! ainda não implementado
+
         realiza pagamento automático no cartão marcado como
         padrão de determinado usuário, se houver mais de um
         ou nenhum levanta excessão. Se não for possivel
         realizar o pagamento, envia um email.
         """
-        # ! ainda não implementado
 
+        raise NotImplementedError()
 
 class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     padrao = models.BooleanField(_('Padrão'), default=False)
@@ -34,16 +37,16 @@ class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     not_updatable_fields = ['numero', 'codigo', 'bandeira', 'nome_titular']
 
     contratante = models.ForeignKey(
-        UsuarioGenericoPessoaJuridica,
+        ClienteContratante,
         verbose_name=_('Cliente Contratante'),
         on_delete=models.CASCADE,
     )
+    
     endereco = models.OneToOneField(
         Endereco, verbose_name=_('Endereço do titular'), on_delete=models.CASCADE
     )
 
     cartoes = CartaoManager()
-    objects = models.Manager()
 
     def set_padrao(self):
         try:
