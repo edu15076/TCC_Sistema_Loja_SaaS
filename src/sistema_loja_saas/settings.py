@@ -231,11 +231,17 @@ LOGGING = {
             'datefmt': '%Y-%m-%d %H:%M:%S',
             'format': '{asctime},{levelname},{pathname}{app_label},"{message}"',
             'style': '{',
-        }
+        },
     },
     'filters': {
         'app_label_filter': {
             '()': 'util.logging.AppLabelFilter',
         },
     },
+}
+
+# Configuração dos provedores de CEP
+CEP_SETTINGS = {
+    "PROVIDERS": ("common.cep_providers.RepublicaVirtualCEPProvider",),
+    "PROVIDERS_TIMEOUT": 2,
 }
