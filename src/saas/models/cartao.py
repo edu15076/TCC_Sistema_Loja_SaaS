@@ -2,14 +2,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
-from common.models import UsuarioGenericoPessoaJuridica
 from common.models import Endereco
 from saas.models import ClienteContratante
 from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
 
 
 class CartaoManager(models.Manager):
-    def get_padrao(self, contratante: UsuarioGenericoPessoaJuridica = None):
+    def get_padrao(self, contratante: ClienteContratante = None):
         if contratante is not None:
             objects = self.filter(contratante=contratante)
 
