@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+    {% include 'navbar/top_navbar_contratacao.html' %}
+{% endblock header %}
+
+{% block main %}
+    <article class="container mt-3">
+        {% block main_content %}{% endblock main_content %}
+    </article>
+{% endblock main %}

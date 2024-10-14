@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock title %}</title>
+    <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'styles/base.css' %}" rel="stylesheet">
+    {% block styles %}{% endblock styles %}
+</head>
+<body class="min-vh-100 d-flex flex-column">
+    <header class="sticky-top bg-dark-subtle">{% block header %}{% endblock header %}</header>
+    
+    <main class="flex-grow-1">
+        {% block main %}{% endblock main %}
+    </main>
+
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <script src="{% static 'bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-3.7.1.js' %}"></script>
+    {% block scripts %}{% endblock scripts %}
+</body>
+</html>

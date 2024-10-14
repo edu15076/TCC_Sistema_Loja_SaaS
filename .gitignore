@@ -57,6 +57,8 @@ cover/
 
 # Django stuff:
 *.csv
+# Comment this if in prod
+!empresa.csv
 *.log
 /logs
 local_settings.py

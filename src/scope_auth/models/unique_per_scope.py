@@ -44,6 +44,8 @@ class UniquePerScopeMeta(ModelBase, ModelMetaClassMixin):
 
 
 class UniquePerScopeModelManager(models.Manager):
+    use_in_migrations = True
+
     def get_by_natural_key(self, *, scope: Scope = None, **kwargs):
         """
         Returns the instance for the passed atributes
@@ -57,7 +59,11 @@ class UniquePerScopeModelManager(models.Manager):
 
 
 class AbstractUniquePerScopeModel(models.Model, metaclass=UniquePerScopeMeta):
-    scope = models.ForeignKey(Scope, on_delete=models.CASCADE)
+    scope = models.ForeignKey(
+        Scope,
+        models.CASCADE,
+        related_name='unique_per_scope'
+    )
 
     UNIQUE_IN_SCOPE = []
 

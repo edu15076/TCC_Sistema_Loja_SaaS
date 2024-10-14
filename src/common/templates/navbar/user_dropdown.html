@@ -1,0 +1,28 @@
+<ul class="navbar-nav mx-3 d-flex flex-row justify-content-between align-self-start gap-3" style="width: fit-content;">
+    {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+            <a class="nav-link" href="#" id="userActionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div>{{ user.get_short_name }}</div>
+                <div>{{ user.codigo }}</div>
+            </a>
+            <ul class="dropdown-menu position-absolute dropdown-menu-end" aria-labelledby="userActionsDropdown">
+                <li><a class="dropdown-item" href="{{ edit_user_url }}">Editar conta</a></li>
+                <li><a class="dropdown-item" href="{{ login_url }}">Trocar conta</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form action="{{ logout_url }}" method="post">
+                        {% csrf_token %}
+                        <button class="dropdown-item" type="submit">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link px-0" href="{{ create_user_url }}">Criar conta</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link px-0" href="{{ login_url }}">Login</a>
+        </li>
+    {% endif %}
+</ul>

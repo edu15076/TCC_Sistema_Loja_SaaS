@@ -1,2 +1,2 @@
-# from .usuario_contratacao import UsuarioContratacao, ContratanteManager, GerenteManager
+# from .usuario_contratacao import *
 from .cartao import Cartao
