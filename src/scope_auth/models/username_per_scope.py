@@ -32,9 +32,10 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
         username, found = cls._find_field_for_name(self, username_field)
 
         if not found:
+            # raise ValueError(f'{attrs}')
             raise ValueError(f'Non abstract subclass or superclass must define '
-                             f'{attrs['USERNAME_FIELD']} for it defined USERNAME_FIELD '
-                             f'= {attrs['USERNAME_FIELD']}')
+                             f'{attrs["USERNAME_FIELD"]} for it defined USERNAME_FIELD '
+                             f'= {attrs["USERNAME_FIELD"]}')
 
         return self
 
