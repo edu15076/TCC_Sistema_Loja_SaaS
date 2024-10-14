@@ -1,0 +1,15 @@
+<nav class="navbar navbar-expand-lg z-2">
+    <div class="container-fluid d-flex justify-content-between">
+        <div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarItems" aria-controls="navbarItems" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarItems">
+                <ul class="navbar-nav mx-3">
+                    {% block nav_items %}{% endblock nav_items %}
+                </ul>
+            </div>
+        </div>
+        {% block user_dropdown %}{% endblock user_dropdown %}
+    </div>
+</nav>

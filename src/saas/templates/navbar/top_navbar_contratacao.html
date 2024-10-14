@@ -1,0 +1,13 @@
+{% extends 'navbar/top_navbar.html' %}
+
+{% block nav_items %}
+    {% include 'navbar/nav_items_contratacao.html' %}
+{% endblock nav_items %}
+
+{% block user_dropdown %}
+    {% url 'editar_usuario_contratacao' as edit_user_url %}
+    {% url 'criar_usuario_contratacao' as create_user_url %}
+    {% url 'login_contratacao' as login_url %}
+    {% url 'logout_contratacao' as logout_url %}
+    {% include 'navbar/user_dropdown.html' %}
+{% endblock user_dropdown %}

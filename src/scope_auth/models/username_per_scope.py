@@ -40,6 +40,8 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
 
 
 class UsernamePerScopeManager(UniquePerScopeModelManager):
+    use_in_migrations = True
+
     def _pop_username_from(self, kwargs):
         return kwargs.pop('username', kwargs.pop(self.model.USERNAME_FIELD, None))
 

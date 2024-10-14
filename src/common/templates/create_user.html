@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar Usuario{% endblock title %}
+
+{% block main %}
+    <h1>Criar usuario no escopo {{ scope }}</h1>
+    {% include 'forms/htmx_form_post_template.html' %}
+{% endblock main %}

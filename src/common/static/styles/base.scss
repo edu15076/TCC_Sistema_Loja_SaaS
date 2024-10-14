@@ -1,0 +1,19 @@
+@import "bootstrap_base_imports";
+
+@import "../bootstrap/scss/mixins";
+
+:root {
+  --navbar-height: 5rem;
+}
+
+.navbar {
+  min-height: var(--navbar-height);
+}
+
+$color-mode-type: data;
+
+@include color-mode(dark) {
+}
+
+@include color-mode(light) {
+}

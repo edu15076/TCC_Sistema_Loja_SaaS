@@ -1,0 +1,10 @@
+<aside class="collapse collapse-horizontal bg-dark-subtle sidebar-collapse position-fixed z-3" data-bs-autohide="false">
+    <nav class="d-flex flex-column flex-shrink-0 p-3">
+        <ul class="nav nav-pills flex-column mb-auto">
+            {% block nav_items %}{% endblock nav_items %}
+        </ul>
+    </nav>
+</aside>
+
+<!-- Aside para ocupar espaço do aside fixo -->
+<aside class="collapse collapse-horizontal sidebar-collapse invisible z-3" data-bs-autohide="false"><nav></nav></aside>

@@ -1,0 +1,9 @@
+{% extends 'navbar/sidebar/sidebar.html' %}
+
+{# TODO: Adicionar nav-item's por permição do usuário da loja #}
+
+{% block nav_items %}
+    <li class="nav-item">
+        <a href="{% url 'home_loja' %}" class="nav-link">Home</a>
+    </li>
+{% endblock nav_items %}

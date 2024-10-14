@@ -1,0 +1,21 @@
+@import "../../bootstrap_base_imports";
+
+@import "../../../bootstrap/scss/transitions";
+
+$sidebar-width: $spacer * 15;
+
+:root {
+  --sidebar-width: #{$sidebar-width};
+  --sidebar-bg-color: var(--bs-dark-bg-subtle);
+}
+
+.sidebar-collapse {
+  height: calc(100vh - var(--navbar-height));
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  > * {
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--navbar-height));
+  }
+}
