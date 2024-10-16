@@ -10,7 +10,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -60,6 +59,7 @@ cover/
 # Comment this if in prod
 !empresa.csv
 *.log
+/logs
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
