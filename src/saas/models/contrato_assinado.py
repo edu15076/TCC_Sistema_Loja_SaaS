@@ -1,12 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MaxLengthValidator, MinLengthValidator
 
 from saas.models.contrato import Contrato
 from saas.models.usuario_contratacao import ClienteContratante
 
 __all__ = [
-
+    'ContratoAssinadoQuerySet',
+    'ContratoAssinadoManager',
+    'ContratoAssinado',
 ]
 
 
