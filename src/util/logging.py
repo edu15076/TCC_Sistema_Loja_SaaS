@@ -6,7 +6,7 @@ from enum import Enum
 from django.apps import apps
 from django.core.management.color import color_style
 
-from sistema_loja_saas.settings import BASE_DIR
+from sistema_loja_saas.settings import BASE_DIR, DEBUG
 
 
 class DjangoColorsFormatter(logging.Formatter):
@@ -91,13 +91,18 @@ class Loggers(Enum):
     DEBUG_VERBOSE = logging.getLogger("debug-verbose")
     PRODUCT = logging.getLogger("product")
 
-    def get_logger(self) -> logging.Logger:
+    @staticmethod
+    def get_logger() -> logging.Logger:
         """
-        Cria um objeto Logger para ser usado, conforme as opções
-        do arquivo settings.py
+        Cria um objeto Logger conforme as opções
+        a configuração do sistema, se está ou não
+        em debug
 
         :return: Logger
         :rtype: logging.Logger
         """
 
-        return self.value
+        if DEBUG:
+            return Loggers.DEBUG_VERBOSE.value
+        else:
+            return Loggers.PRODUCT.value
