@@ -22,6 +22,7 @@ class ContratoManager(models.Manager):
 
 
 class Contrato(models.Model):
+    # * colocar um apelido
     descricao = models.CharField(_('Descrição'), max_length=512, blank=True)
     ativo = models.BooleanField(_('Ativo'), default=False)
     valor_por_periodo = models.DecimalField(_('Valor por perido'), max_digits=11, decimal_places=2)
