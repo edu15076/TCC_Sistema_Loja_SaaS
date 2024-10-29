@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MaxLengthValidator, MinLengthValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
 
@@ -28,14 +28,17 @@ class Contrato(models.Model):
     valor_por_periodo = models.DecimalField(_('Valor por perido'), max_digits=11, decimal_places=2)
     telas_simultaneas = models.IntegerField(_('Telas simulteneas'), null=True)
     taxa_de_multa = models.IntegerField(_('Taxa de multa'), blank=False, validators=[
-        MaxLengthValidator(100, _('Porcentagem não pode exceder 100%.')),
-        MinLengthValidator(0, _('Porcentagem não pode ser negativo.'))
+        MaxValueValidator(100, _('Porcentagem não pode exceder 100%.')),
+        MinValueValidator(0, _('Porcentagem não pode ser negativo.'))
     ])
     tempo_maximo_de_atraso_em_dias = models.IntegerField(
         _('Tempo máximo de atraso em dias'), 
-        validators=MinLengthValidator(0, _('Tempo não pode ser negativo.'))
+        validators=MinValueValidator(0, _('Tempo não pode ser negativo.'))
     )
-    periodo = models.ForeignKey(Periodo, on_delete=models.RESTRICT)
+    periodo = models.ForeignKey(
+        Periodo, 
+        verbose_name=_('Periodo do contrato'), 
+        on_delete=models.RESTRICT)
 
     contratos = ContratoManager()
 
