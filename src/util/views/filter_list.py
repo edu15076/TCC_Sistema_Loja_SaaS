@@ -7,6 +7,7 @@ from django.views.generic.list import MultipleObjectMixin
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.views.generic.base import View
 from django.http import Http404, HttpResponseForbidden
+from django.core.paginator import Paginator
 from django.utils.translation import gettext as _
 
 from django.core.exceptions import ImproperlyConfigured
@@ -24,6 +25,26 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     url_filter_kwargs = None
     user_attribute_name = None
     filter_form = None
+    paginate_by = None
+
+    def get_page(self) -> QuerySet:
+        """
+        Retorna os elementos de uma página
+        """
+        if self.paginate_by is None:
+            return self.get_queryset()
+        
+        queryset = self.get_queryset()
+        page_number = self.request.GET.get('page')
+
+        try:
+            page_number = int(page_number) if page_number else 1
+        except ValueError:
+            page_number = 1
+
+        paginator = Paginator(queryset, per_page=self.paginate_by)
+
+        return paginator.get_page(page_number)
 
     def url_kwargs_erro(self, exception: Exception = None, message: str = None):
         """

@@ -8,6 +8,7 @@ from django.http import Http404
 from django.utils.translation import gettext as _
 
 from .filter_list import BaseFilterListView
+from .htmx import HTMXModelFormMixin
 
 
 class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessFormView):
@@ -93,4 +94,14 @@ class CreateOrUpdateListView(
     BaseCreateOrUpdateListView, MultipleObjectTemplateResponseMixin):
     """
     View que permite visualizar uma lista de objetos, cadastrar e editar eles
+    """
+
+class CreateOrUpdateListHTMXView(
+    HTMXModelFormMixin,
+    BaseCreateOrUpdateListView, 
+    MultipleObjectTemplateResponseMixin,
+):
+    """
+    View que permite visualizar uma lista de objetos, cadastrar e editar eles
+    usando HTMX
     """
