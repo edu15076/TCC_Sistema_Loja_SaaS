@@ -26,6 +26,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     user_attribute_name = None
     filter_form = None
     paginate_by = None
+    default_order = []
 
     def get_page(self) -> QuerySet:
         """
@@ -145,10 +146,12 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         irá retornar o resultado de `self.get_order_parameters()`
         """
 
-        if self.filter_form is None:
-            return super().get_ordering()
+        ordering = self.default_order
 
-        ordering = self.get_order_parameters()
+        if self.filter_form is None:
+            return ordering + (super().get_ordering() or [])
+
+        ordering += (self.get_order_parameters() or [])
 
         if len(ordering) == 0:
             return super().get_ordering()
@@ -222,7 +225,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 exception=e,
             )
 
-        if issubclass(self.filter_form, forms.BaseForm):
+        if self.filter_form is not None and issubclass(self.filter_form, forms.BaseForm):
             filter_params = self.get_filter_parameters()
             order_params = self.get_ordering()
 

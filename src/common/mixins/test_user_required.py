@@ -6,18 +6,11 @@ from saas.models import GerenteDeContratos, ClienteContratante
 
 User = get_user_model()
 
-class TestLoginRequiredMixin(TestCase):
+class TestLoginRequiredMixin:
     def setUp(self):
-        try:
-            self.gerente = GerenteDeContratos.gerente.criar_usuario_contratacao(
-                cnpj='34561499177486', 
-                password='usuariodeTeste', 
-                email='gerente@test.dev', 
-            )
-        except:
-            self.gerente = GerenteDeContratos.gerente.load()
+        self.gerente = GerenteDeContratos.gerente.load()
 
-        self.gerente_password = 'usuariodeTeste'
+        self.gerente_password = DadosEmpresa.SENHA_DEFAULT
 
         self.clientes_contratantes = []
         self.clientes_contratantes.append(
@@ -41,8 +34,9 @@ class TestLoginRequiredMixin(TestCase):
         )
         self.clientes_contratantes_password = 'test135'
 
-    def login(self, user, password: str):
-        self.client.login(username=user.cnpj, password=password)
+    def login_gerente(self):
+        from scope_auth.models import Scope
+        return self.client.login(username=self.gerente.cnpj, password=self.gerente_password, scope=Scope.scopes.default_scope())
 
     def test_login_required(self):
         response = self.client.get(self.url)

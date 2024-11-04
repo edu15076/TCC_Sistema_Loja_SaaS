@@ -76,7 +76,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         pass
 
     def test_get_contratos(self):
-        self.client.login(email=self.gerente.codigo, password=self.gerente_password)
+        self.login_gerente()
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
@@ -99,7 +99,8 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         pass
 
     def test_post_criar_contrato(self):
-        self.client.login(email=self.gerente.email, password=self.gerente_password)
+        self.login_gerente()
+
         data = {
             'descricao': 'Novo Contrato',
             'ativo': True,
@@ -107,54 +108,83 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
             'telas_simultaneas': 5,
             'taxa_de_multa': 25,
             'tempo_maximo_de_atraso_em_dias': 120,
-            'periodo': self.periodos[0].id
+            'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.MES,
+            'numero_de_periodos': 12
         }
+
+
         response = self.client.post(self.url, data)
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(Contrato.objects.filter(descricao='Novo Contrato').exists())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Contrato.contratos.filter(descricao='Novo Contrato').exists())
+
+        novo_contrato = response.json()['data']
+        novo_contrato_dict = response.json()['data']
+        novo_contrato_dict['periodo_id'] = novo_contrato_dict['periodo']
+        del novo_contrato_dict['periodo']
+        print(Contrato.contratos.filter(descricao='Novo Contrato').values())
+        print(novo_contrato_dict)
+        # novo_contrato_dict['tempo_maximo_de_atraso_em_dias'] = novo_contrato.periodo.numero_de_periodos
+        # novo_contrato_dict['unidades_de_tempo_por_periodo'] = novo_contrato.periodo.unidades_de_tempo_por_periodo
+
+        self.assertDictEqual(data, novo_contrato_dict)
+
+        fail_data = {
+            'descricao': 'Novo Contrato',
+            'ativo': True,
+            'valor_por_periodo': 4000,
+            'telas_simultaneas': 5,
+            'taxa_de_multa': 25,
+            'tempo_maximo_de_atraso_em_dias': 120,
+            'numero_de_periodos': 12
+        }
+
+        fail_response = self.client.post(self.url, fail_data)
+        self.assertNotEqual(fail_response.status_code, 200)
 
     def test_post_atualizar_contrato(self):
         pass
 
     def test_post_ativar_contrato(self):
-        self.client.login(email=self.gerente.email, password=self.gerente_password)
+        self.login_gerente()
 
         data = {
             'operacao': 'ativar_contrato',
             'id': self.contratos[1].id
         }
 
-        response = self.client.post(f'{self.url}{data['id']}/', data)
+        response = self.client.post(f"{self.url}{data['id']}/", data)
+        
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(Contrato.objects.get(id=self.contratos[1].id).ativo)
+        self.assertTrue(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
         data = {
             'operacao': 'ativar_contrato',
             'id': 'inexistente'
         }
 
-        response = self.client.post(f'{self.url}{data['id']}/', data)
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(f"{self.url}{data['id']}/", data)
+        self.assertEqual(response.status_code, 404)
 
     def test_post_desativar_contrato(self):
-        self.client.login(email=self.gerente.email, password=self.gerente_password)
+        self.login_gerente()
 
         data = {
             'operacao': 'desativar_contrato',
             'id': self.contratos[1].id
         }
 
-        response = self.client.post(f'{self.url}{data['id']}/', data)
+        response = self.client.post(f"{self.url}{data['id']}/", data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(Contrato.objects.get(id=self.contratos[1].id).ativo)
+        self.assertFalse(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
         data = {
             'operacao': 'desativar_contrato',
             'id': 'inexistente'
         }
 
-        response = self.client.post(f'{self.url}{data['id']}/', data)
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(f"{self.url}{data['id']}/", data)
+        self.assertEqual(response.status_code, 404)
 
     def test_post_view(self):
         pass

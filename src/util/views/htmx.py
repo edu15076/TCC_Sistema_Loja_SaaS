@@ -31,6 +31,7 @@ class HTMXFormMixin(FormMixin):
             self.extra_context.update({'action': self.form_action})
 
     def form_invalid(self, form):
+        print('AAAAAAAAAAAA')
         return TemplateResponse(self.request, self.form_template_name,
                                 self.get_context_data(form=form))
 
@@ -41,7 +42,9 @@ class HTMXFormMixin(FormMixin):
 class HTMXModelFormMixin(HTMXFormMixin, ModelFormMixin):
     def form_valid(self, form):
         self.object = form.save()
-        return super().form_valid(form)
+        a = super().form_valid(form)
+        print(f'htmx {a}')
+        return a
 
 
 class CreateHTMXView(HTMXModelFormMixin, CreateView):

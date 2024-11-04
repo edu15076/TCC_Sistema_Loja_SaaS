@@ -33,6 +33,7 @@ class ABCGestaoContratoCRUDListView(
             - `filter_form`: formulário para filtrar contratos
         :rtype: HttpResponse
         """
+        return super().get(request, *args, **kwargs)
 
     @abstractmethod
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
@@ -52,3 +53,4 @@ class ABCGestaoContratoCRUDListView(
         :return: Resultado da operação.
         :rtype: HttpResponse
         """
+        return super().post(request, *args, **kwargs)

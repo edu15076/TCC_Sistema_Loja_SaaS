@@ -1,10 +1,11 @@
 from typing import Any, Union
 
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.generic.edit import ModelFormMixin, ProcessFormView
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.http import Http404
+from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
 
 from .filter_list import BaseFilterListView
@@ -80,14 +81,19 @@ class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessForm
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        return super().post(request, *args, **kwargs)
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def form_invalid(self, form):
         self.object_list = self.get_queryset()
-
+        
         return self.render_to_response(
             self.get_context_data(object_list=self.object_list, form=form)
         )
+    
 
 
 class CreateOrUpdateListView(
@@ -105,3 +111,14 @@ class CreateOrUpdateListHTMXView(
     View que permite visualizar uma lista de objetos, cadastrar e editar eles
     usando HTMX
     """
+
+    def form_invalid(self, form):
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return JsonResponse({
+            'success': True,
+            'data': model_to_dict(self.object)
+            }, status=200
+        )
