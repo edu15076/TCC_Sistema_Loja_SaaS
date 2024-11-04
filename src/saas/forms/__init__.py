@@ -1,1 +1,1 @@
-from contrato_form import *
+from .contrato_form import *

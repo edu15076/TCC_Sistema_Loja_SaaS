@@ -33,7 +33,7 @@ class Contrato(models.Model):
     ])
     tempo_maximo_de_atraso_em_dias = models.IntegerField(
         _('Tempo máximo de atraso em dias'), 
-        validators=MinValueValidator(0, _('Tempo não pode ser negativo.'))
+        validators=[MinValueValidator(0, _('Tempo não pode ser negativo.'))]
     )
     periodo = models.ForeignKey(
         Periodo, 

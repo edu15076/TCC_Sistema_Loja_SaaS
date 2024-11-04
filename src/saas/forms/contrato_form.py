@@ -1,8 +1,10 @@
 from typing import Any
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field
 from django import forms
 from django.utils.translation import gettext_lazy as _
+
 from ..models import Contrato
 from common.models import Periodo
 
