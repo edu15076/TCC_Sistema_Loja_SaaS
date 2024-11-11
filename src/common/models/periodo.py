@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinValueValidator
 
 
 __all__ = [
@@ -18,9 +18,9 @@ class Periodo(models.Model):
 
     numero_de_periodos = models.IntegerField(
         _('Numero de periodos'),
-        validators=MinLengthValidator(0, _('Numero de  não pode ser negativo.'))
+        validators=[MinValueValidator(0, _('Numero de  não pode ser negativo.'))]
     )
-    unidads_de_tempo_por_periodo = models.CharField(
+    unidades_de_tempo_por_periodo = models.CharField(
         _('Unidade de tempo por periodo'), 
         max_length=3,
         choices=UnidadeDeTempo,
