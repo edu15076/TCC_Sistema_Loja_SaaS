@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% include '' %}
+
+{% block header %}
+    {% include 'navbar/top_navbar_contratacao.html' %}
+{% endblock header %}
+
+{% block main %}
+    <h1>Contratos Disponíveis</h1>
+
+    <section class="container mt-3">
+        {% block contratos %}
+            <ul id="lista-contratos-disponiveis">
+                {% for contrato in contratos %}
+                    <li>
+                        <h2>Contrato: {{ contrato.descricao }}</h2>
+                        <p>Ativo: {{ contrato.ativo }}</p>
+                        <p>Valor: {{ contrato.valor_por_periodo }}</p>
+                        <p>Período: {{ contrato.periodo.unidades_de_tempo_por_periodo }}</p>
+                    </li>
+                {% empty %}
+                    <li>Nenhum contrato encontrado.</li>
+                {% endfor %}
+            </ul>
+        {% endblock contratos %}
+    </section>
+{% endblock main %}

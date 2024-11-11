@@ -1,1 +1,2 @@
 from .gestao_contratos_test import TestGestaoContratoCRUDListView
+from .contratos_disponiveis_test import TestContratosDisponiveisCRUDView
