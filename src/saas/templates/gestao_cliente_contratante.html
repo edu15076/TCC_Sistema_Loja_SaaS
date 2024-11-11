@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+    {% include 'navbar/top_navbar_contratacao.html' %}
+{% endblock header %}
+
+{% block main %}
+    <button class="btn btn-primary" hx-get="{% url 'cancelar_contrato' %}" hx-target="#cancelar-contrato" hx-swap="innerHTML">
+        Cancelar contrato
+    </button>
+
+    <div id="cancelar-contrato" class="mt-4"></div>
+{% endblock main %}

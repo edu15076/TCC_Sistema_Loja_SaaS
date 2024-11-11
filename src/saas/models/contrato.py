@@ -46,3 +46,12 @@ class Contrato(models.Model):
     def valor_total(self):
         return self.valor_por_periodo * self.periodo.numero_de_periodos
     
+    def values_visualizacao_cliente_contratante(self) -> dict:
+        return {
+            'descricao': self.descricao,
+            'valor_por_periodo': self.valor_por_periodo,
+            'telas_simultaneas': self.telas_simultaneas,
+            'taxa_de_multa': self.taxa_de_multa,
+            'tempo_maximo_de_atraso_em_dias': self.tempo_maximo_de_atraso_em_dias,
+            # TODO: Colocar o resto dos atributos relevantes e calculados
+        }  

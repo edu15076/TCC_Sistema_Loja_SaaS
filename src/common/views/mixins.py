@@ -22,4 +22,4 @@ class UsuarioMixin:
         user = self.request.user
         with suppress(TypeError):
             user = self.usuario_class.from_usuario(user)
-        return user
+        return user    
