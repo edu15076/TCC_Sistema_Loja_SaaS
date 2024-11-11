@@ -16,10 +16,15 @@ class ScopeMixin:
 
 
 class UsuarioMixin:
-    usuario_class: type(UsuarioGenericoPessoa) = UsuarioGenericoPessoa
+    usuario_class: type[UsuarioGenericoPessoa] | list[type[UsuarioGenericoPessoa]] = UsuarioGenericoPessoa
 
     def get_user(self):
         user = self.request.user
-        with suppress(TypeError):
-            user = self.usuario_class.from_usuario(user)
+        usuario_classes = self.usuario_class if isinstance(self.usuario_class, list) else [self.usuario_class]
+        for usuario_class in usuario_classes:
+            try:
+                user = usuario_class.from_usuario(user)
+            except TypeError:
+                continue
+            break
         return user

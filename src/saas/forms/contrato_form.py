@@ -53,3 +53,35 @@ class ContratoForm(forms.ModelForm):
             contrato.save()
             
         return contrato
+    
+class FiltroContratoForm(forms.Form):
+    STATUS_CHOICES = [
+        ('todos', _('Todos')),
+        (True, _('Ativos')),
+        (False, _('Inativos')),
+    ]
+    ORDER_CHOICES = [
+        ('valor_por_periodo', _('Menor valor por periodo')),
+        # TODO ('telas_simultaneas',)
+        ('-valor_por_periodo', _('Maior valor por periodo')),
+        ('valor_total', _('Menor valor total')),
+        ('-valor_total', _('Maior valor total')),
+        ('id', _("Padrão")),
+    ]
+
+    ativo = forms.ChoiceField(
+        label=_('Status dos Contratos'),
+        choices=STATUS_CHOICES,
+        initial=None
+    )
+
+    ordem = forms.ChoiceField(
+        label=_('Ordem'),
+        choices=ORDER_CHOICES
+    )
+    
+    class Meta:
+        order_arguments = ['ordem']
+        filter_arguments = ['ativo']
+
+        

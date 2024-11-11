@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
 
 from django.http import HttpRequest, HttpResponse
-from django.views.generic import ListView, CreateView
-from django.views.generic.edit import DeletionMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from util.views.edit_list import CreateOrUpdateListHTMXView
+from common.views.mixins import UsuarioMixin
 
 
 class ABCGestaoContratoCRUDListView(
-    ABC, LoginRequiredMixin, CreateOrUpdateListHTMXView, DeletionMixin
+    ABC, LoginRequiredMixin, UsuarioMixin, CreateOrUpdateListHTMXView
 ):
     @abstractmethod
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
