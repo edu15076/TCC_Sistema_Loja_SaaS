@@ -12,7 +12,7 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
     model = Contrato
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        queryset = self.get_page()
+        queryset = self.get_page().filter(ativo=True)
 
         return render(request, self.template_name, {
             'contratos': queryset

@@ -6,7 +6,7 @@ from common.models import Periodo
 from saas.views import ContratosDisponiveisCRUDView
 
 
-class TestContratosDisponiveisCRUDView(ContratosDisponiveisCRUDView, TestCase):
+class TestContratosDisponiveisCRUDView(TestCase):
     def setUp(self):
         super().setUp()
 
@@ -70,4 +70,4 @@ class TestContratosDisponiveisCRUDView(ContratosDisponiveisCRUDView, TestCase):
 
     def test_lista_contratos(self):
         response = self.client.get(self.url)
-        print(response.context)
+        print(response.content.decode('utf-8'))
