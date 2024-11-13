@@ -2,10 +2,13 @@ from django.contrib.auth.models import Group
 from django.db import models
 from django.db.models import F
 
-from common.models import (UsuarioGenericoPessoaFisica,
-                           UsuarioGenericoPessoaFisicaManager,
-                           UsuarioGenericoPessoaFisicaQuerySet, LojaScope,
-                           UsuarioGenerico)
+from common.models import (
+    UsuarioGenericoPessoaFisica,
+    UsuarioGenericoPessoaFisicaManager,
+    UsuarioGenericoPessoaFisicaQuerySet,
+    LojaScope,
+    UsuarioGenerico,
+)
 
 
 __all__ = (
@@ -15,7 +18,7 @@ __all__ = (
     'GerenteDeVendas',
     'GerenteDeEstoque',
     'Caixeiro',
-    'Vendedor'
+    'Vendedor',
 )
 
 from util.decorators import CachedClassProperty
@@ -25,14 +28,24 @@ from util.models import cast_to_model
 
 class FuncionarioQuerySet(UsuarioGenericoPessoaFisicaQuerySet):
     def complete(self):
-        return (super().complete().defer('pessoa_usuario__scope__loja__logo')
-                .select_related('pessoa_usuario__scope__loja')
-                .annotate(loja=F('pessoa_usuario__scope__loja')))
+        return (
+            super()
+            .complete()
+            .defer('pessoa_usuario__scope__loja__logo')
+            .select_related('pessoa_usuario__scope__loja')
+            .annotate(loja=F('pessoa_usuario__scope__loja'))
+        )
 
     def simple(self):
         return self.values(
-            'telefone', 'email', 'scope', 'nome', 'sobrenome', 'data_nascimento', 'cpf',
-            'loja'
+            'telefone',
+            'email',
+            'scope',
+            'nome',
+            'sobrenome',
+            'data_nascimento',
+            'cpf',
+            'loja',
         )
 
 
@@ -41,19 +54,29 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
         return FuncionarioQuerySet(self.model, using=self._db).complete()
 
     def criar_funcionario(
-            self, cpf: str, loja=None, password: str = None,
-            email: str = None, telefone: str = None, **dados_pessoa
+        self,
+        cpf: str,
+        loja=None,
+        password: str = None,
+        email: str = None,
+        telefone: str = None,
+        **dados_pessoa,
     ):
         usuario = self.criar_usuario(
-            cpf=cpf, scope=loja.scope, password=password, email=email,
-            telefone=telefone, **dados_pessoa
+            cpf=cpf,
+            scope=loja.scope,
+            password=password,
+            email=email,
+            telefone=telefone,
+            **dados_pessoa,
         )
         if self.model.papel_group is not None:
             usuario.groups.set([self.model.papel_group])
         return usuario
 
-    def _criar_ou_recuperar_de_funcionario(self, funcionario: 'Funcionario',
-                                           **extra_fields):
+    def _criar_ou_recuperar_de_funcionario(
+        self, funcionario: 'Funcionario', **extra_fields
+    ):
         """Cria ou recupera uma instância da subclasse a partir de um funcionario"""
         try:
             funcionario = self.get(funcionario=funcionario)
@@ -72,7 +95,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         models.CASCADE,
         parent_link=True,
         primary_key=True,
-        related_name='funcionario_loja'
+        related_name='funcionario_loja',
     )
 
     funcionarios = FuncionarioManager()
@@ -89,7 +112,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
             'loja_gerentes_de_vendas': GerenteDeVendas,
             'loja_gerentes_de_estoque': GerenteDeEstoque,
             'loja_caixeiros': Caixeiro,
-            'loja_vendedores': Vendedor
+            'loja_vendedores': Vendedor,
         }
 
     @property
@@ -118,7 +141,8 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         """Adiciona o papel criando uma instância do model relacionado"""
         class_for_papel = self.papel_por_funcionario[group.name]
         class_for_papel._default_manager._criar_ou_recuperar_de_funcionario(
-            self, **extra_fields)
+            self, **extra_fields
+        )
 
     def remover_papel(self, group: Group):
         self.groups.remove(group)
@@ -140,7 +164,7 @@ class Chefe(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='chefe'
+        related_name='chefe',
     )
 
     @CachedClassProperty
@@ -148,9 +172,7 @@ class Chefe(Funcionario):
         return Group.objects.get(name='loja_chefes')
 
     class Meta:
-        permissions = (
-            ('criar_chefe', 'Pode criar chefe'),
-        )
+        permissions = (('criar_chefe', 'Pode criar chefe'),)
 
 
 class GerenteDeRH(Funcionario):
@@ -159,7 +181,7 @@ class GerenteDeRH(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='gerente_de_rh'
+        related_name='gerente_de_rh',
     )
 
     @CachedClassProperty
@@ -173,7 +195,7 @@ class GerenteDeVendas(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='gerente_de_vendas'
+        related_name='gerente_de_vendas',
     )
 
     @CachedClassProperty
@@ -187,7 +209,7 @@ class GerenteDeEstoque(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='gerente_de_estoque'
+        related_name='gerente_de_estoque',
     )
 
     @CachedClassProperty
@@ -201,7 +223,7 @@ class Caixeiro(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='caixeiro'
+        related_name='caixeiro',
     )
 
     @CachedClassProperty
@@ -215,7 +237,7 @@ class Vendedor(Funcionario):
         models.CASCADE,
         primary_key=True,
         parent_link=True,
-        related_name='vendedor'
+        related_name='vendedor',
     )
 
     @CachedClassProperty

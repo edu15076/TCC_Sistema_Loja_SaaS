@@ -13,13 +13,16 @@ def criar_gerente_de_contratos(apps, schema_editor):
     scope = DefaultScope.scopes.create()
 
     pessoa_usuario = PessoaUsuario.objects.create(
-        codigo_pessoa=DadosEmpresa.CNPJ,
-        scope=scope
+        codigo_pessoa=DadosEmpresa.CNPJ, scope=scope
     )
 
     from saas.models import GerenteDeContratos as _GerenteDeContratos
-    setattr(GerenteDeContratos, 'USERNAME_FIELD',
-            getattr(_GerenteDeContratos, 'USERNAME_FIELD'))
+
+    setattr(
+        GerenteDeContratos,
+        'USERNAME_FIELD',
+        getattr(_GerenteDeContratos, 'USERNAME_FIELD'),
+    )
 
     gerente_de_contratos = GerenteDeContratos.gerente._create_user(
         username=pessoa_usuario,
@@ -29,14 +32,14 @@ def criar_gerente_de_contratos(apps, schema_editor):
         is_staff=True,
         codigo=DadosEmpresa.CNPJ,
         razao_social=DadosEmpresa.RAZAO_SOCIAL,
-        nome_fantasia=DadosEmpresa.NOME_FANTASIA
+        nome_fantasia=DadosEmpresa.NOME_FANTASIA,
     )
 
     Group = apps.get_model('auth', 'Group')
 
-    gerente_de_contratos.groups.set([
-        Group.objects.get(name='saas_gerente_de_contratos')
-    ])
+    gerente_de_contratos.groups.set(
+        [Group.objects.get(name='saas_gerente_de_contratos')]
+    )
 
 
 def deletar_gerente_de_contratos(apps, schema_editor):

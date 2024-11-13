@@ -14,9 +14,7 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         queryset = self.get_page().filter(ativo=True)
 
-        return render(request, self.template_name, {
-            'contratos': queryset
-        })
-    
-    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse: 
+        return render(request, self.template_name, {'contratos': queryset})
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         return JsonResponse({'success': True}, status=200)

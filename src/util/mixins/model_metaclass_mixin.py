@@ -15,8 +15,9 @@ class ModelMetaClassMixin(MetaClassMixin):
         return field_name in cls._get_fields_names(self._meta.fields)
 
     @classmethod
-    def _find_field_for_name(cls, self,
-                             field_name: str) -> tuple[models.Field | None, bool]:
+    def _find_field_for_name(
+        cls, self, field_name: str
+    ) -> tuple[models.Field | None, bool]:
         try:
             return self._meta.get_field(field_name), True
         except FieldDoesNotExist:

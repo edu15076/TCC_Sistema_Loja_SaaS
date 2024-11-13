@@ -1,5 +1,8 @@
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.contrib import auth
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
@@ -19,8 +22,9 @@ class BaseUserPerScopeManager(BaseUserManager):
     use_in_migrations = True
 
     def _pop_username_from(self, kwargs):
-        return kwargs.pop('username', kwargs.pop(self.model.USERNAME_ACTUAL_FIELD,
-                                                 None))
+        return kwargs.pop(
+            'username', kwargs.pop(self.model.USERNAME_ACTUAL_FIELD, None)
+        )
 
     def _get_username_per_scope_cls_and_manager(self):
         username_per_scope_cls = self.model.get_username_per_scope_type()
@@ -55,7 +59,8 @@ class BaseUserPerScopeManager(BaseUserManager):
             raise ValueError('The only keyword argument accepted is "scope"')
 
         username_per_scope_cls, username_per_scope_manager = (
-            self._get_username_per_scope_cls_and_manager())
+            self._get_username_per_scope_cls_and_manager()
+        )
 
         try:
             if 'scope' not in kwargs:
@@ -77,18 +82,24 @@ class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
         if self._meta.abstract:
             return self
 
-        username_per_scope_field, found = (
-            cls._find_attribute(attrs, bases, 'USERNAME_PER_SCOPE_FIELD'))
+        username_per_scope_field, found = cls._find_attribute(
+            attrs, bases, 'USERNAME_PER_SCOPE_FIELD'
+        )
         if not found:
-            raise ValueError('Non abstract subclass or superclass must define '
-                             'USERNAME_PER_SCOPE_FIELD')
+            raise ValueError(
+                'Non abstract subclass or superclass must define '
+                'USERNAME_PER_SCOPE_FIELD'
+            )
 
-        username_per_scope, found = cls._find_field_for_name(self,
-                                                             username_per_scope_field)
+        username_per_scope, found = cls._find_field_for_name(
+            self, username_per_scope_field
+        )
         if not found:
-            raise ValueError(f'Non abstract subclass or superclass must define '
-                             f'{username_per_scope_field} for it defined '
-                             f'USERNAME_PER_SCOPE_FIELD = {username_per_scope_field}')
+            raise ValueError(
+                f'Non abstract subclass or superclass must define '
+                f'{username_per_scope_field} for it defined '
+                f'USERNAME_PER_SCOPE_FIELD = {username_per_scope_field}'
+            )
 
         if not username_per_scope.one_to_one:
             if username_per_scope.is_relation:
@@ -97,8 +108,10 @@ class BaseUserPerScopeMeta(type(AbstractBaseUser), ModelMetaClassMixin):
                     f'with {username_per_scope.remote_field.model.__name__}'
                 )
             else:
-                raise ValueError(f'{username_per_scope_field} must define a one-to-one '
-                                 f'relationship')
+                raise ValueError(
+                    f'{username_per_scope_field} must define a one-to-one '
+                    f'relationship'
+                )
 
         if not username_per_scope.unique:
             raise ValueError(f'{username_per_scope_field} must be unique')
@@ -173,25 +186,30 @@ class UserPerScopeManager(BaseUserPerScopeManager):
         return username, scope, kwargs
 
     def _create_username_per_scope_by_natural_key(
-            self, kwargs: dict) -> AbstractUsernamePerScope:
+        self, kwargs: dict
+    ) -> AbstractUsernamePerScope:
         username, scope, kwargs = self._validate_username_per_scope_natural_key(kwargs)
 
         _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
 
         return username_per_scope_manager.create_username_per_scope(
-            username=username, scope=scope,
-            **kwargs.pop('username_per_scope_extra_fields', {}))
+            username=username,
+            scope=scope,
+            **kwargs.pop('username_per_scope_extra_fields', {}),
+        )
 
     def _get_username_per_scope_by_natural_key(
-            self, kwargs: dict) -> AbstractUsernamePerScope:
+        self, kwargs: dict
+    ) -> AbstractUsernamePerScope:
         username, scope, kwargs = self._validate_username_per_scope_natural_key(kwargs)
         if 'username_per_scope_extra_fields' in kwargs:
             raise KeyError("'username_per_scope_extra_fields' should not be set.")
 
         _, username_per_scope_manager = self._get_username_per_scope_cls_and_manager()
 
-        return username_per_scope_manager.get_by_natural_key(username=username,
-                                                             scope=scope)
+        return username_per_scope_manager.get_by_natural_key(
+            username=username, scope=scope
+        )
 
     def _get_username_per_scope(self, kwargs: dict) -> AbstractUsernamePerScope:
         username_per_scope_field = self.model.USERNAME_PER_SCOPE_FIELD
@@ -254,7 +272,8 @@ class UserPerScopeManager(BaseUserPerScopeManager):
                 raise ValueError('Superuser must have scope=default_scope.')
         else:
             _, username_per_scope_manager = (
-                self._get_username_per_scope_cls_and_manager())
+                self._get_username_per_scope_cls_and_manager()
+            )
             scope = username.scope
             if not scope.is_default_scope():
                 raise ValueError('Superuser must have scope=default_scope.')
@@ -291,7 +310,7 @@ class UserPerScopeManager(BaseUserPerScopeManager):
         return self._create_user(username, password, **extra_fields)
 
     def with_perm(
-            self, perm, is_active=True, include_superusers=True, backend=None, obj=None
+        self, perm, is_active=True, include_superusers=True, backend=None, obj=None
     ):
         if backend is None:
             backends = auth._get_backends(return_tuples=True)
@@ -394,11 +413,13 @@ class UserPerScopeManager(BaseUserPerScopeManager):
         username, exists = self._get_or_create_username_from_kwargs(kwargs)
 
         if not exists:
-            return self.create_user(**{self.model.USERNAME_PER_SCOPE_FIELD: username},
-                                    **kwargs)
+            return self.create_user(
+                **{self.model.USERNAME_PER_SCOPE_FIELD: username}, **kwargs
+            )
         else:
             user = self.get_by_natural_key(
-                **{self.model.USERNAME_PER_SCOPE_FIELD: username})
+                **{self.model.USERNAME_PER_SCOPE_FIELD: username}
+            )
             user.reactivate()
             return user
 
@@ -483,8 +504,9 @@ class UserPerScopeWithEmailMeta(BaseUserPerScopeMeta):
         return self
 
 
-class AbstractUserPerScopeWithEmail(AbstractUserPerScope,
-                                    metaclass=UserPerScopeWithEmailMeta):
+class AbstractUserPerScopeWithEmail(
+    AbstractUserPerScope, metaclass=UserPerScopeWithEmailMeta
+):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['email']
 

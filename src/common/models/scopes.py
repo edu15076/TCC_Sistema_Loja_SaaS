@@ -1,11 +1,7 @@
 from scope_auth.models import Scope, ScopeManager, DefaultScope
 
 
-__all__ = (
-    'LojaScopeManager',
-    'LojaScope',
-    'ContratosScope'
-)
+__all__ = ('LojaScopeManager', 'LojaScope', 'ContratosScope')
 
 
 class LojaScopeManager(ScopeManager):

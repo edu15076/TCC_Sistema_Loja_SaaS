@@ -17,6 +17,7 @@ class AbstractBuilder(ABC):
 
     def __getattr__(self, item):
         if item.startswith('set_'):
+
             def setter(value) -> Self:
                 setattr(self, item[4:], value)
                 return self
@@ -26,9 +27,12 @@ class AbstractBuilder(ABC):
 
     def __repr__(self):
         items = tuple(self._kwargs.items())
-        return self.__class__.__name__ + '(' + ''.join(
-            tuple(f'{key}={repr(value)}, ' for key, value in items[:-1])
-        ) + f'{items[-1][0]}={repr(items[-1][1])})'
+        return (
+            self.__class__.__name__
+            + '('
+            + ''.join(tuple(f'{key}={repr(value)}, ' for key, value in items[:-1]))
+            + f'{items[-1][0]}={repr(items[-1][1])})'
+        )
 
     def __str__(self):
         return "'" + repr(self) + "'"

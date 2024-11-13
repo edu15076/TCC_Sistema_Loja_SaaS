@@ -10,12 +10,13 @@ __all__ = (
     'cnpj_validator',
     'codigo_validator',
     'PESSOA_FISICA_CODIGO_LEN',
-    'PESSOA_JURIDICA_CODIGO_LEN'
+    'PESSOA_JURIDICA_CODIGO_LEN',
 )
 
 
 PESSOA_FISICA_CODIGO_LEN = 11
 PESSOA_JURIDICA_CODIGO_LEN = 14
+
 
 def cpf_validator(cpf: str) -> None:
     # Check if the value is empty or has fewer than 11 digits
@@ -111,9 +112,13 @@ class CEPValidator:
                 if cep_data is not None:
                     return
             except Exception as e:
-                logger.warning(_((
-                    f"{e.args[0]} na solicitação ao provedor "
-                    f"{provider.provider_id}"
-                )))
+                logger.warning(
+                    _(
+                        (
+                            f"{e.args[0]} na solicitação ao provedor "
+                            f"{provider.provider_id}"
+                        )
+                    )
+                )
 
         raise ValidationError(_(f"CEP não existe"))
