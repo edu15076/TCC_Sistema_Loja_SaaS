@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
+from django.forms.models import model_to_dict
 
 
 __all__ = [
@@ -41,13 +42,14 @@ class Contrato(models.Model):
         editable=False, 
         default=0
     )
+
     periodo = models.ForeignKey(
         Periodo, 
         verbose_name=_('Periodo do contrato'), 
         on_delete=models.RESTRICT)
 
     contratos = ContratoManager()
-
+    
     def save(self, *args, **kwargs):
         self.valor_total = self.valor_por_periodo * self.periodo.numero_de_periodos
 

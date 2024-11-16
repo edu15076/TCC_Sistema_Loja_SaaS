@@ -1,14 +1,58 @@
-{% extends 'base.html' %}
+{% extends 'base_contratacao.html' %}
+{% load crispy_forms_tags %}
 {% load static %}
 
-{% block header %}
-    {% include 'navbar/top_navbar_contratacao.html' %}
-{% endblock header %}
-
-{% block main %}
+{% block main_content %}
     <h1>Contratos</h1>
-
-    <section class="container mt-3">
-        {% block main_content %}{% endblock main_content %}
+    <p>{{ contratos|yesno:"True,False"|length }} de {{ contratos|length }} contratos ativos</p>
+    <section id="filtro-form">
+        <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
+            {% crispy filter_form %}
+        </form>
     </section>
-{% endblock main %}
+    <div class="">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContratoModal">
+            Adicionar Contrato
+        </button>
+    </div>
+    <div class="modal fade" id="addContratoModal" tabindex="-1" aria-labelledby="addContratoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addContratoModalLabel">Adicionar Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form 
+                        id="cadastro-contrato-form" 
+                        hx-post="{{ action }}" 
+                        hx-target="#lista_contratos" 
+                        hx-swap="afterbegin" 
+                        hx-on::after-request="this.reset(); $('#addContratoModal').modal('hide');" 
+                        method="post">
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="error-message" class="alert alert-danger d-none" role="alert">
+        Ocorreu um erro ao cadastrar o contrato. Por favor, tente novamente.
+    </div>
+    <script>
+        document.addEventListener('htmx:afterRequest', function(event) {
+            if (!event.detail.successful) {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.classList.remove('d-none');
+                setTimeout(() => {
+                    errorMessage.classList.add('d-none');
+                }, 5000);
+            }
+        });
+    </script>
+    <section id="lista_contratos" class="container mt-3 px-0 row">
+        {% for contrato in contratos %}
+            {% include 'card_contrato.html' %}
+        {% endfor %}
+    </section>
+{% endblock main_content %}

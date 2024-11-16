@@ -145,7 +145,6 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         :return: lista com os usados para ordernar o queryset, se houver filter_form
         irá retornar o resultado de `self.get_order_parameters()`
         """
-
         ordering = self.default_order
 
         if self.filter_form is None:
@@ -155,8 +154,8 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
 
         if len(ordering) == 0:
             return super().get_ordering()
-
-        return ordering
+        
+        return ordering if ordering[0] != '' else ['pk']
 
     def get_url_filter_kwargs(self) -> dict[str, Any]:
         """
@@ -229,9 +228,12 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
             filter_params = self.get_filter_parameters()
             order_params = self.get_ordering()
 
-            queryset = queryset.filter(**filter_params)
+            try:
+                queryset = queryset.filter(**filter_params)
+            except:
+                pass
 
-            if isinstance(order_params, list):
+            if isinstance(order_params, list) and len(order_params) > 1:
                 queryset = queryset.order_by(*order_params)
 
         if self.user_attribute_name is not None:

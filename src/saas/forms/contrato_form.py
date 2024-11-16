@@ -7,8 +7,9 @@ from django.utils.translation import gettext_lazy as _
 
 from ..models import Contrato
 from common.models import Periodo
+from util.forms import CrispyFormMixin
 
-class ContratoForm(forms.ModelForm):
+class ContratoForm(CrispyFormMixin, forms.ModelForm):
     numero_de_periodos = forms.IntegerField(
         label=_('Número de períodos'),
         min_value=0,
@@ -34,11 +35,13 @@ class ContratoForm(forms.ModelForm):
             'unidades_de_tempo_por_periodo'
         ]
 
+    def get_submit_button(self) -> Submit:
+        return Submit('submit', 'Salvar')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
+        self.helper = self.create_helper()
         self.helper.form_method = 'post'
-        self.helper.add_input(Submit('submit', _('Salvar')))
 
     def save(self, commit: bool = True) -> Any:
         periodo = Periodo.periodos.create(
@@ -54,7 +57,7 @@ class ContratoForm(forms.ModelForm):
             
         return contrato
     
-class FiltroContratoForm(forms.Form):
+class FiltroContratoForm(CrispyFormMixin, forms.Form):
     STATUS_CHOICES = [
         ('todos', _('Todos')),
         (True, _('Ativos')),
@@ -72,16 +75,28 @@ class FiltroContratoForm(forms.Form):
     ativo = forms.ChoiceField(
         label=_('Status dos Contratos'),
         choices=STATUS_CHOICES,
-        initial=None
+        initial=None,
+        required=False
     )
 
     ordem = forms.ChoiceField(
         label=_('Ordem'),
-        choices=ORDER_CHOICES
+        choices=ORDER_CHOICES,
+        required=False
     )
     
+    def get_submit_button(self) -> Submit:
+        return Submit('submit', 'Filtrar')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self.create_helper()
+        self.helper.form_method = 'get'
+
     class Meta:
         order_arguments = ['ordem']
         filter_arguments = ['ativo']
+
+    
 
         

@@ -19,7 +19,7 @@ urlpatterns = [
      path('logout/',
          LogoutUsuarioContratacaoView.as_view(),
          name='logout_contratacao'),
-     re_path(r'^contratos(/(?P<pk>\d+))?/$',
+     path('contratos/',
          GestaoContratoCRUDListView.as_view(),
          name='gestao_contrato'),
 ]

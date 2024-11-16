@@ -2,9 +2,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.core.management import call_command
 from django.forms.models import model_to_dict
-from django.http import JsonResponse
 
 from saas.models import Contrato
 from common.models import Periodo
@@ -241,11 +239,18 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.filter(descricao='Novo Contrato').exists())
 
-        novo_contrato_response = response.json()['data']
-        novo_contrato_response['valor_por_periodo'] = Decimal(novo_contrato_response['valor_por_periodo'])
-        novo_contrato_dict = model_to_dict(Contrato.contratos.get(pk=novo_contrato_response['id']))
+        novo_contrato_response = response.context['contrato']
+        novo_contrato_response_dict = model_to_dict(novo_contrato_response)
+        novo_contrato_response_dict['valor_por_periodo'] = Decimal(novo_contrato_response.valor_por_periodo)
+        novo_contrato_response_dict['valor_total'] = Decimal(novo_contrato_response.valor_total)
 
-        self.assertDictEqual(novo_contrato_dict, novo_contrato_response)
+        novo_contrato = Contrato.contratos.get(descricao='Novo Contrato')
+        novo_contrato_dict = model_to_dict(novo_contrato)
+        novo_contrato_dict['valor_por_periodo'] = Decimal(novo_contrato.valor_por_periodo)
+        novo_contrato_dict['valor_total'] = Decimal(novo_contrato.valor_total)
+                                                                       
+
+        self.assertDictEqual(novo_contrato_dict, novo_contrato_response_dict)
 
         fail_data = {
             'descricao': 'Novo Contrato',
@@ -264,39 +269,35 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.login_gerente()
 
         data = {
-            'operacao': 'ativar_contrato',
             'id': self.contratos[1].id
         }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
+        response = self.client.post(f"{self.url}", data=data)
         
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
         data = {
-            'operacao': 'ativar_contrato',
             'id': 'inexistente'
         }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
-        self.assertEqual(response.status_code, 404)
+        response = self.client.post(f"{self.url}", data=data)
+        self.assertEqual(response.status_code, 400)
 
     def test_post_desativar_contrato(self):
         self.login_gerente()
 
         data = {
-            'operacao': 'desativar_contrato',
-            'id': self.contratos[1].id
+            'id': self.contratos[0].id
         }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
+        response = self.client.post(f"{self.url}", data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(Contrato.contratos.get(id=self.contratos[1].id).ativo)
+        self.assertFalse(Contrato.contratos.get(id=self.contratos[0].id).ativo)
 
         data = {
-            'operacao': 'desativar_contrato',
             'id': 'inexistente'
         }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
-        self.assertEqual(response.status_code, 404)
+        response = self.client.post(f"{self.url}", data=data)
+        self.assertEqual(response.status_code, 400)
