@@ -11,6 +11,7 @@ from common.forms.usuario_generico_forms import (
 from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
 
+
 __all__ = (
     'CreateUsuarioView',
     'LoginUsuarioView',
