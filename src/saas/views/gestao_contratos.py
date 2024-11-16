@@ -37,9 +37,6 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
             parameters.pop('ativo')
 
         return parameters
-    
-    # def get_pk_slug(self) -> tuple[int | None, str | None]:
-    #     return (self.request.POST.get('operacao'), None)
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         queryset = self.get_page()
@@ -47,9 +44,9 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         filter_form = self.filter_form()
 
         # TODO impedir acesso não autorizado
-        # if self.get_user().papel_group().name != DadosPapeis.GERENTE_DE_CONTRATOS:
-        #     # TODO criar página de acesso negado customizada
-        #     return HttpResponseForbidden("Você não tem permissão para acessar esta página.")
+        if self.user.papel_group.name != DadosPapeis.GERENTE_DE_CONTRATOS:
+            # TODO criar página de acesso negado customizada
+            return HttpResponseForbidden("Você não tem permissão para acessar esta página.")
 
         return render(request, self.template_name, {
             'form': form,
@@ -66,9 +63,9 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         # TODO impedir acesso não autorizado
-        # if self.get_user().papel_group().name != DadosPapeis.GERENTE_DE_CONTRATOS:
+        if self.user.papel_group.name != DadosPapeis.GERENTE_DE_CONTRATOS:
         #     # TODO retornar erro 403
-        #     return JsonResponse({'success': False, 'error': 'Você não tem permissão para acessar esta página.'}, status=403)
+            return JsonResponse({'success': False, 'error': 'Você não tem permissão para acessar esta página.'}, status=403)
 
         try:
             self.object_pk = request.POST.get('id')

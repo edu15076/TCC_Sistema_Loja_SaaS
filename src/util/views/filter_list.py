@@ -190,10 +190,6 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 ),
             )
 
-    def get_user(self):
-        """Retorna o usuário logado"""
-        return self.request.user
-
     def get_queryset(self) -> QuerySet[Any]:
         """
         Retorna a lista de itens do model da view filtrada pelo formulário
