@@ -51,7 +51,7 @@ class UpdateUsuarioGenericoView(LoginRequiredMixin, ScopeMixin, UsuarioMixin,
     form_class = UsuarioGenericoChangeForm
 
     def get_object(self, queryset=None):
-        return self.get_user()
+        return self.user
 
     def form_invalid(self, form):
         return super().form_invalid(form)
