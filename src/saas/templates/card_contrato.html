@@ -3,11 +3,11 @@
         <div class="card-body">
             <h5 class="card-title">{{ contrato.descricao }}</h5>
             <p class="card-text">
-                <strong>Valor por período: R$</strong> {{ contrato.valor_por_periodo }}<br>
+                <strong>Valor por período:</strong> R${{ contrato.valor_por_periodo }}<br>
                 <strong>Telas simultâneas:</strong> {{ contrato.telas_simultaneas }}<br>
                 <strong>Taxa de multa:</strong> {{ contrato.taxa_de_multa }}%<br>
                 <strong>Tempo máximo de atraso:</strong> {{ contrato.tempo_maximo_de_atraso_em_dias }} dias<br>
-                <strong>Valor total: R$</strong> {{ contrato.valor_total }}<br>
+                <strong>Valor total:</strong> R${{ contrato.valor_total }}<br>
                 <strong>Período:</strong> {{ contrato.periodo.tempo_total.days }} dias
             </p>
             <p class="card-text">
