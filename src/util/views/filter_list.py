@@ -7,6 +7,7 @@ from django.views.generic.list import MultipleObjectMixin
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.views.generic.base import View
 from django.http import Http404, HttpResponseForbidden
+from django.core.paginator import Paginator
 from django.utils.translation import gettext as _
 
 from django.core.exceptions import ImproperlyConfigured
@@ -24,6 +25,27 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     url_filter_kwargs = None
     user_attribute_name = None
     filter_form = None
+    paginate_by = None
+    default_order = []
+
+    def get_page(self) -> QuerySet:
+        """
+        Retorna os elementos de uma página
+        """
+        if self.paginate_by is None:
+            return self.get_queryset()
+        
+        queryset = self.get_queryset()
+        page_number = self.request.GET.get('page')
+
+        try:
+            page_number = int(page_number) if page_number else 1
+        except ValueError:
+            page_number = 1
+
+        paginator = Paginator(queryset, per_page=self.paginate_by)
+
+        return paginator.get_page(page_number)
 
     def url_kwargs_erro(self, exception: Exception = None, message: str = None):
         """
@@ -58,7 +80,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         parameters = form.cleaned_data
 
         try:
-            filter_arguments = self.filter_form.filter_arguments
+            filter_arguments = self.filter_form.Meta.filter_arguments
 
             if filter_arguments is None:
                 return {}
@@ -103,15 +125,15 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         parameters = []
 
         try:
-            if self.filter_form.order_arguments is None:
+            if self.filter_form.Meta.order_arguments is None:
                 return []
 
-            if not isinstance(self.filter_form.order_arguments, list):
+            if not isinstance(self.filter_form.Meta.order_arguments, list):
                 raise ImproperlyConfigured(
-                    "'self.filter_form.order_arguments' is not type list"
+                    "'self.filter_form.Meta.order_arguments' is not type list"
                 )
 
-            for param in self.filter_form.order_arguments:
+            for param in self.filter_form.Meta.order_arguments:
                 parameters.append(form.cleaned_data[param])
         except AttributeError:
             return []
@@ -123,16 +145,17 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         :return: lista com os usados para ordernar o queryset, se houver filter_form
         irá retornar o resultado de `self.get_order_parameters()`
         """
+        ordering = self.default_order
 
         if self.filter_form is None:
-            return super().get_ordering()
+            return ordering + (super().get_ordering() or [])
 
-        ordering = self.get_order_parameters()
+        ordering = (self.get_order_parameters() or ordering)
 
         if len(ordering) == 0:
             return super().get_ordering()
-
-        return ordering
+        
+        return ordering if ordering[0] != '' else ['pk']
 
     def get_url_filter_kwargs(self) -> dict[str, Any]:
         """
@@ -167,10 +190,6 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 ),
             )
 
-    def get_user(self):
-        """Retorna o usuário logado"""
-        return self.request.user
-
     def get_queryset(self) -> QuerySet[Any]:
         """
         Retorna a lista de itens do model da view filtrada pelo formulário
@@ -201,13 +220,16 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 exception=e,
             )
 
-        if issubclass(self.filter_form, forms.BaseForm):
+        if self.filter_form is not None and issubclass(self.filter_form, forms.BaseForm):
             filter_params = self.get_filter_parameters()
             order_params = self.get_ordering()
 
-            queryset = queryset.filter(**filter_params)
+            try:
+                queryset = queryset.filter(**filter_params)
+            except:
+                pass
 
-            if isinstance(order_params, list):
+            if isinstance(order_params, list) and len(order_params) > 1:
                 queryset = queryset.order_by(*order_params)
 
         if self.user_attribute_name is not None:

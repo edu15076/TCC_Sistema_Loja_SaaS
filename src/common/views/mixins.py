@@ -23,7 +23,7 @@ class UsuarioMixin:
             else [self.usuario_class]
         ) + [UsuarioGenericoPessoaFisica, UsuarioGenericoPessoaJuridica]
 
-    @CachedProperty
+    @property
     def user(self) -> UsuarioGenericoPessoa:
         return UsuarioGenericoPessoa.cast_para_primeira_subclasse(
             self._usuario_classes, self.request.user)

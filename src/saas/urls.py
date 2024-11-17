@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.views.generic import TemplateView
 
 from .views import *
@@ -19,6 +19,9 @@ urlpatterns = [
     path('logout/',
          LogoutUsuarioContratacaoView.as_view(),
          name='logout_contratacao'),
+    path('contratos/',
+         GestaoContratoCRUDListView.as_view(),
+         name='gestao_contrato'),
     path('editar_senha/',
          PasswordChangeUsuarioContratacaoView.as_view(),
          name='editar_senha_contratacao'),

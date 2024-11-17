@@ -1,0 +1,35 @@
+<div class="col-md-4 ">
+    <article class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ contrato.descricao }}</h5>
+            <p class="card-text">
+                <strong>Valor por período:</strong> R$ {{ contrato.valor_por_periodo }}<br>
+                <strong>Telas simultâneas:</strong> {{ contrato.telas_simultaneas }}<br>
+                <strong>Taxa de multa:</strong> {{ contrato.taxa_de_multa }}%<br>
+                <strong>Tempo máximo de atraso:</strong> {{ contrato.tempo_maximo_de_atraso_em_dias }} dias<br>
+                <strong>Valor total:</strong> R$ {{ contrato.valor_total }}<br>
+                <strong>Período:</strong> {{ contrato.periodo.tempo_total.days }} dias
+            </p>
+            <p class="card-text">
+                <strong>Status:</strong> 
+                <form method="post" class="form-check form-switch">
+                    {% csrf_token %}
+                    <input class="form-check-input" type="checkbox" id="status-switch-{{ contrato.id }}" 
+                        {% if contrato.ativo %}checked{% endif %} 
+                        hx-post="{% url 'gestao_contrato' %}" 
+                        hx-vals='{"id": "{{ contrato.id }}"}'
+                        hx-trigger="change"
+                        hx-swap="none"
+                        hx-on:htmx:after-on-load="$('#status-label-{{ contrato.id }}').html(this.checked ? 'Ativo' : 'Inativo')">
+                    <label class="form-check-label" id="status-label-{{ contrato.id }}" for="status-switch-{{ contrato.id }}">
+                        {% if contrato.ativo %}
+                            Ativo
+                        {% else %}
+                            Inativo
+                        {% endif %}
+                    </label>
+                </form>
+            </p>
+        </div>
+    </article>
+</div>
