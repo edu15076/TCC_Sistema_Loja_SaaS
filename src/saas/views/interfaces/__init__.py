@@ -6,4 +6,5 @@ from .metodos_pagamento import ABCMetodosPagamentoCRDView
 from .pagamento_contrato import ABCPagamentoContratoView
 from .contato_suporte import ABCContatoSuporteFormView
 from .gestao_contratos import ABCGestaoContratoCRUDListView
-from .contrato_assinado import *
+from .contrato_assinado import ABCContratoAssinadoView
+from .cancelar_contrato import ABCCancelarContratoView
