@@ -4,9 +4,12 @@ from django.http import HttpRequest, HttpResponse
 from django.views.generic import FormView
 
 from util.views import MultipleObjectFilterMixin
+from common.views.mixins import UsuarioMixin
 
 
-class ABCContratosDisponiveisCRUDView(ABC, FormView, MultipleObjectFilterMixin):
+class ABCContratosDisponiveisCRUDView(
+    ABC, FormView, MultipleObjectFilterMixin, UsuarioMixin
+):
     @abstractmethod
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """

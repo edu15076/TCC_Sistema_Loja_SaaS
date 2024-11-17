@@ -6,7 +6,12 @@
                 <strong>Valor por período:</strong> R$ {{ contrato.valor_por_periodo }}<br>
                 <strong>Telas simultâneas:</strong> {{ contrato.telas_simultaneas }}<br>
                 <strong>Período:</strong> {{ contrato.periodo.tempo_total.days }} dias<br>
-                <!-- botão -->
+                <button type="submit" class="btn btn-primary mt-2"
+                    hx-target="#modalDetalhesContent{{ contrato.id }}" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#modalDetalhes{{ contrato.id }}">
+                    Ver Detalhes
+                </button>
             </p>
         </div>
     </article>

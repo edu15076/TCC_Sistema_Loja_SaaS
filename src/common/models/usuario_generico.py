@@ -146,9 +146,9 @@ class UsuarioGenericoSimple(UsuarioGenerico):
 
     @classmethod
     def cast_para_primeira_subclasse(
-            cls,
-            subclasses: list[type['UsuarioGenericoSimple']],
-            usuario: 'UsuarioGenericoSimple'
+        cls,
+        subclasses: list[type['UsuarioGenericoSimple']],
+        usuario: 'UsuarioGenericoSimple',
     ):
         for usuario_class in subclasses:
             with suppress(usuario_class.DoesNotExist):

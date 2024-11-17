@@ -1,0 +1,28 @@
+<div class="modal fade" id="modalDetalhes{{ contrato.id }}" tabindex="-1" aria-labelledby="modalDetalhesLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetalhesLabel{{ contrato.id }}">{{ contrato.descricao }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalDetalhesContent{{ contrato.id }}">
+                <strong>Valor por período:</strong> R$ {{ contrato.valor_por_periodo }}<br>
+                <strong>Telas simultâneas:</strong> {{ contrato.telas_simultaneas }}<br>
+                <strong>Taxa de multa:</strong> {{ contrato.taxa_de_multa }}%<br>
+                <strong>Tempo máximo de atraso:</strong> {{ contrato.tempo_maximo_de_atraso_em_dias }} dias<br>
+                <strong>Valor total:</strong> R$ {{ contrato.valor_total }}<br>
+                <strong>Período:</strong> {{ contrato.periodo.tempo_total.days }} dias<br>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                {% if not possui_contrato %}
+                <form id="#formAssinar{{ contrato.id }}" method="POST" action="{% url 'contratos_disponiveis' %}" class="me-auto">
+                    {% csrf_token %}
+                    <input type="hidden" name="contrato_id" id="contrato_{{ contrato.id }}" value="{{ contrato.id }}">
+                    <button type="submit" class="btn btn-primary">Assinar</button>
+                </form>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
