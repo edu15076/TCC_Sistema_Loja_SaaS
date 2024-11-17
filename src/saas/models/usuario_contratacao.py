@@ -79,5 +79,7 @@ class ClienteContratante(UsuarioContratacao):
     @transaction.atomic
     def save(self, *args, **kwargs):
         if self._state.adding:
-            self.loja = Loja.lojas.create() if self.loja is None else self.loja
+            self.loja = (Loja.lojas.create()
+                         if not hasattr(self, 'loja') or self.loja is None
+                         else self.loja)
         return super().save(*args, **kwargs)
