@@ -19,4 +19,7 @@ urlpatterns = [
     path('logout/',
          LogoutUsuarioContratacaoView.as_view(),
          name='logout_contratacao'),
+    path('editar_senha/',
+         PasswordChangeUsuarioContratacaoView.as_view(),
+         name='editar_senha_contratacao'),
 ]
