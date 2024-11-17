@@ -32,8 +32,9 @@ class HTMXFormMixin(FormMixin):
 
     def form_invalid(self, form):
         print('AAAAAAAAAAAA')
-        return TemplateResponse(self.request, self.form_template_name,
-                                self.get_context_data(form=form))
+        return TemplateResponse(
+            self.request, self.form_template_name, self.get_context_data(form=form)
+        )
 
     def form_valid(self, form):
         return HttpResponseHTMXRedirect(self.get_success_url())

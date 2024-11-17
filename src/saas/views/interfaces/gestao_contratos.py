@@ -19,7 +19,7 @@ class ABCGestaoContratoCRUDListView(
 
         :param request: pode conter os seguintes campos de filtro
         - `ordem`: um valor que informa a ordem de exibição
-        - `filtro`: um valor que informa se será exibido os contratos ativos 
+        - `filtro`: um valor que informa se será exibido os contratos ativos
             ou inativos
         ? - `query`: talvez tenha como pesquisar pelo possivel titulo de um contrato
         - `page`: retorna a respectiva pagina.

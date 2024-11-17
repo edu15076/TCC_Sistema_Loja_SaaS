@@ -1,54 +1,40 @@
-from abc import ABC, abstractmethod
-
 from django.http import HttpRequest, HttpResponse
-from django.views.generic import ListView, CreateView
-from django.views.generic.edit import DeletionMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.detail import DetailView
 from django.shortcuts import render, redirect
-
-from common.views.mixins import UsuarioMixin
-from saas.models.contrato import Contrato
+from django.contrib import messages
+from django.views import View
 from saas.models.contrato_assinado import ContratoAssinado
-from saas.views.interfaces import ABCCancelarContratoAssinado
-from .interfaces import ABCContratoAssinadoView
+from saas.views.interfaces import ABCContratoAssinadoView
 
-class ContratoAssinadoView(ABCContratoAssinadoView):
+class ContratoAssinadoView(ABCContratoAssinadoView, View):
     template_name = 'gestao_cliente_contratante.html'
 
-    def get_contrato_assinado(self):
-        return ContratoAssinado.contratos_assinados.get(cliente_contratante=self.get_user(), vigente=True)
+    def get_contrato_assinado(self, contrato_id=None) -> ContratoAssinado:
+        """
+        Implementação do método para buscar o contrato assinado vigente do cliente logado.
+        Caso contrato_id seja fornecido, retorna um contrato específico, caso contrário, busca o contrato ativo.
+        """
+        try:
+            # Busca o contrato ativo para o usuário logado
+            contrato = ContratoAssinado.objects.get(
+                cliente_contratante=self.request.user,
+                vigente=True
+            )
+            return contrato
+        except ContratoAssinado.DoesNotExist:
+            # Caso nenhum contrato vigente seja encontrado, retornará None
+            return None
 
-    # def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-    #     queryset = self.get_page()
-    #     form = self.form_class()
-        
-    #     return render(request, self.template_name, {
-    #         'form': form,
-    #         'contrato': queryset
-    #     })
-    
-    # def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Exibe os detalhes do contrato assinado vigente"""
+        contrato = self.get_contrato_assinado()
 
-    #     return super().post(request, *args, **kwargs)
-    
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     usuario = UsuarioMixin.get_user()
-    #     usuario
-    #     context["contrato"]
-    #     context["contrato"] 
-    #     return context
+        if not contrato:
+            # Adiciona a mensagem de erro
+            messages.error(request, "Nenhum contrato vigente encontrado.")
+            # Exibe a mensagem e renderiza a página com as mensagens
+            return render(request, self.template_name, {
+                'mensagem_erro': "Nenhum contrato vigente encontrado."
+            })
 
-
-class CancelarContratoAssinado(ABCCancelarContratoAssinado):
-    template_name = 'card_cancelar_contrato.html'
-
-    def get(self, request):
-        """Carrega o card de cancelamento do contrato"""
-        pass
-
-    def post(self, request):
-        """Cancela o contrato"""
-        pass
-    
+        # Caso encontre o contrato, renderiza o template com o contrato encontrado
+        return render(request, self.template_name, {"contrato": contrato})

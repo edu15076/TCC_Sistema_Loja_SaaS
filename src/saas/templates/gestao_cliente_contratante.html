@@ -6,9 +6,18 @@
 {% endblock header %}
 
 {% block main %}
+    <!-- Botão para cancelar contrato com HTMX -->
     <button class="btn btn-primary" hx-get="{% url 'cancelar_contrato' %}" hx-target="#cancelar-contrato" hx-swap="innerHTML">
         Cancelar contrato
     </button>
 
+    <!-- Local onde o conteúdo do cancelamento será carregado -->
     <div id="cancelar-contrato" class="mt-4"></div>
+
+    <!-- Exibindo a mensagem de erro caso haja -->
+    {% if mensagem_erro %}
+        <div class="alert alert-danger mt-4">
+            <p>{{ mensagem_erro }}</p>
+        </div>
+    {% endif %}
 {% endblock main %}

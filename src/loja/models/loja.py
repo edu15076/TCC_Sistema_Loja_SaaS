@@ -6,16 +6,15 @@ from common.models import LojaScope
 
 from .funcionario import Funcionario, FuncionarioQuerySet
 
-__all__ = (
-    'Loja',
-)
+__all__ = ('Loja',)
 
 
 class LojaQuerySet(models.QuerySet):
     def funcionarios_por_loja(self, funcionarios: FuncionarioQuerySet = None):
         if funcionarios is None:
-            funcionarios = (Funcionario.funcionarios.filter(loja=OuterRef('pk'))
-                            .values_list('pk', flat=True))
+            funcionarios = Funcionario.funcionarios.filter(
+                loja=OuterRef('pk')
+            ).values_list('pk', flat=True)
         return self.values('pk').annotate(funcionarios=Subquery(funcionarios))
 
 
@@ -32,8 +31,9 @@ class LojaManager(models.Manager):
 
 
 class Loja(models.Model):
-    scope = models.OneToOneField(LojaScope, on_delete=models.CASCADE, primary_key=True,
-                                 related_name='loja')
+    scope = models.OneToOneField(
+        LojaScope, on_delete=models.CASCADE, primary_key=True, related_name='loja'
+    )
     nome = models.CharField(max_length=100)
     logo = models.ImageField(upload_to='dynamic_files/images/logos_loja/')
 

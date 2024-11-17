@@ -55,7 +55,7 @@ class CSVFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         # record.message = record.message.replace(',',' ')
         return super().formatTime(record, datefmt=datefmt)
-    
+
     def format(self, record):
         record.exc_text = None
         record.exc_info = None
@@ -71,8 +71,9 @@ class ExcInfoInlineFormatter(logging.Formatter):
         s = s.replace('\n', ' ')
         s = s.replace('   ', ' ')
         s = s.replace(record.message, f'{record.message}:')
-        
+
         return s
+
 
 class AppLabelFilter(logging.Filter):
     def filter(self, record):

@@ -8,6 +8,7 @@ from common.models import Periodo
 from saas.views import GestaoContratoCRUDListView
 from common.mixins import TestLoginRequiredMixin
 
+
 class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     multi_db = True
 
@@ -20,55 +21,55 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.periodos = []
         self.periodos.append(
             Periodo.periodos.create(
-                numero_de_periodos=2, 
-                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.ANO
+                numero_de_periodos=2,
+                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.ANO,
             )
         )
         self.periodos.append(
             Periodo.periodos.create(
-                numero_de_periodos=6, 
-                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.MES
+                numero_de_periodos=6,
+                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.MES,
             )
         )
         self.periodos.append(
             Periodo.periodos.create(
-                numero_de_periodos=7, 
-                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.DIA
+                numero_de_periodos=7,
+                unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.DIA,
             )
         )
 
         self.contratos = []
         self.contratos.append(
             Contrato.contratos.create(
-                descricao='Contrato 1', 
-                ativo=True, 
-                valor_por_periodo=1000, 
-                telas_simultaneas=2, 
-                taxa_de_multa=10, 
-                tempo_maximo_de_atraso_em_dias=30, 
-                periodo=self.periodos[0]
+                descricao='Contrato 1',
+                ativo=True,
+                valor_por_periodo=1000,
+                telas_simultaneas=2,
+                taxa_de_multa=10,
+                tempo_maximo_de_atraso_em_dias=30,
+                periodo=self.periodos[0],
             )
         )
         self.contratos.append(
             Contrato.contratos.create(
-                descricao='Contrato 2', 
-                ativo=False, 
-                valor_por_periodo=2000, 
-                telas_simultaneas=3, 
-                taxa_de_multa=15, 
-                tempo_maximo_de_atraso_em_dias=60, 
-                periodo=self.periodos[1]
+                descricao='Contrato 2',
+                ativo=False,
+                valor_por_periodo=2000,
+                telas_simultaneas=3,
+                taxa_de_multa=15,
+                tempo_maximo_de_atraso_em_dias=60,
+                periodo=self.periodos[1],
             )
         )
         self.contratos.append(
             Contrato.contratos.create(
-                descricao='Contrato 3', 
-                ativo=True, 
-                valor_por_periodo=3000, 
-                telas_simultaneas=4, 
-                taxa_de_multa=20, 
-                tempo_maximo_de_atraso_em_dias=90, 
-                periodo=self.periodos[2]
+                descricao='Contrato 3',
+                ativo=True,
+                valor_por_periodo=3000,
+                telas_simultaneas=4,
+                taxa_de_multa=20,
+                tempo_maximo_de_atraso_em_dias=90,
+                periodo=self.periodos[2],
             )
         )
 
@@ -83,8 +84,6 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertTemplateUsed(response, 'lista_contratos.html')
         self.assertIn('form', response.context)
         self.assertIn('contratos', response.context)
-
-
 
     def test_get_filter_contratos_ativos(self):
         pass
@@ -109,9 +108,8 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
             'taxa_de_multa': 25,
             'tempo_maximo_de_atraso_em_dias': 120,
             'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.MES,
-            'numero_de_periodos': 12
+            'numero_de_periodos': 12,
         }
-
 
         response = self.client.post(self.url, data)
 
@@ -136,7 +134,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
             'telas_simultaneas': 5,
             'taxa_de_multa': 25,
             'tempo_maximo_de_atraso_em_dias': 120,
-            'numero_de_periodos': 12
+            'numero_de_periodos': 12,
         }
 
         fail_response = self.client.post(self.url, fail_data)
@@ -148,20 +146,14 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_post_ativar_contrato(self):
         self.login_gerente()
 
-        data = {
-            'operacao': 'ativar_contrato',
-            'id': self.contratos[1].id
-        }
+        data = {'operacao': 'ativar_contrato', 'id': self.contratos[1].id}
 
         response = self.client.post(f"{self.url}{data['id']}/", data)
-        
+
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
-        data = {
-            'operacao': 'ativar_contrato',
-            'id': 'inexistente'
-        }
+        data = {'operacao': 'ativar_contrato', 'id': 'inexistente'}
 
         response = self.client.post(f"{self.url}{data['id']}/", data)
         self.assertEqual(response.status_code, 404)
@@ -169,19 +161,13 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_post_desativar_contrato(self):
         self.login_gerente()
 
-        data = {
-            'operacao': 'desativar_contrato',
-            'id': self.contratos[1].id
-        }
+        data = {'operacao': 'desativar_contrato', 'id': self.contratos[1].id}
 
         response = self.client.post(f"{self.url}{data['id']}/", data)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
-        data = {
-            'operacao': 'desativar_contrato',
-            'id': 'inexistente'
-        }
+        data = {'operacao': 'desativar_contrato', 'id': 'inexistente'}
 
         response = self.client.post(f"{self.url}{data['id']}/", data)
         self.assertEqual(response.status_code, 404)

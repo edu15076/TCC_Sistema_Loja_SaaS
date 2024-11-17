@@ -4,8 +4,11 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from ..models import Pessoa, PessoaFisica, PessoaJuridica
-from ..validators import (codigo_validator, PESSOA_FISICA_CODIGO_LEN,
-                          PESSOA_JURIDICA_CODIGO_LEN)
+from ..validators import (
+    codigo_validator,
+    PESSOA_FISICA_CODIGO_LEN,
+    PESSOA_JURIDICA_CODIGO_LEN,
+)
 
 
 __all__ = (
@@ -59,15 +62,21 @@ class PessoaFisicaCreationForm(PessoaCreationForm):
             codigo = super().clean_codigo()
         except ValidationError:
             raise validation_error
-        if (codigo and isinstance(codigo, str) and
-                len(codigo) != PESSOA_FISICA_CODIGO_LEN):
+        if (
+            codigo
+            and isinstance(codigo, str)
+            and len(codigo) != PESSOA_FISICA_CODIGO_LEN
+        ):
             raise validation_error
         return codigo
 
     class Meta:
         model = PessoaFisica
-        fields = (PessoaCreationForm.Meta.fields
-                  + ('nome', 'sobrenome', 'data_nascimento'))
+        fields = PessoaCreationForm.Meta.fields + (
+            'nome',
+            'sobrenome',
+            'data_nascimento',
+        )
         labels = {
             'codigo': 'CPF',
         }
@@ -87,15 +96,17 @@ class PessoaJuridicaCreationForm(PessoaCreationForm):
             codigo = super().clean_codigo()
         except ValidationError:
             raise validation_error
-        if (codigo and isinstance(codigo, str) and
-                len(codigo) != PESSOA_JURIDICA_CODIGO_LEN):
+        if (
+            codigo
+            and isinstance(codigo, str)
+            and len(codigo) != PESSOA_JURIDICA_CODIGO_LEN
+        ):
             raise validation_error
         return codigo
 
     class Meta:
         model = PessoaJuridica
-        fields = (PessoaCreationForm.Meta.fields
-                  + ('razao_social', 'nome_fantasia'))
+        fields = PessoaCreationForm.Meta.fields + ('razao_social', 'nome_fantasia')
         labels = {
             'codigo': 'CNPJ',
         }
