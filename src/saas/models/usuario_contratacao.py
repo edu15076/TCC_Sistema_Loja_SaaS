@@ -68,11 +68,3 @@ class ClienteContratante(UsuarioContratacao):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='saas_clientes_contratantes')
-
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        if self._state.adding:
-            self.loja = (Loja.lojas.create()
-                         if not hasattr(self, 'loja') or self.loja is None
-                         else self.loja)
-        return super().save(*args, **kwargs)
