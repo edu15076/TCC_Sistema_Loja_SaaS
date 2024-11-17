@@ -9,7 +9,7 @@ class ModelScopeBackend(ModelBackend):
         if username is None or password is None:
             return
 
-        scope = get_scope_from_request(request)
+        scope = get_scope_from_request(request) if kwargs.get('scope') is None else kwargs['scope']
         if scope is None:
             return
 

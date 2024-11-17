@@ -1,0 +1,1 @@
+from .gestao_contratos_test import TestGestaoContratoCRUDListView
