@@ -14,14 +14,12 @@ class ContratoAssinadoView(ABCContratoAssinadoView, View):
         Caso contrato_id seja fornecido, retorna um contrato específico, caso contrário, busca o contrato ativo.
         """
         try:
-            # Busca o contrato ativo para o usuário logado
             contrato = ContratoAssinado.objects.get(
                 cliente_contratante=self.request.user,
                 vigente=True
             )
             return contrato
         except ContratoAssinado.DoesNotExist:
-            # Caso nenhum contrato vigente seja encontrado, retornará None
             return None
 
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -29,12 +27,9 @@ class ContratoAssinadoView(ABCContratoAssinadoView, View):
         contrato = self.get_contrato_assinado()
 
         if not contrato:
-            # Adiciona a mensagem de erro
             messages.error(request, "Nenhum contrato vigente encontrado.")
-            # Exibe a mensagem e renderiza a página com as mensagens
             return render(request, self.template_name, {
                 'mensagem_erro': "Nenhum contrato vigente encontrado."
             })
 
-        # Caso encontre o contrato, renderiza o template com o contrato encontrado
         return render(request, self.template_name, {"contrato": contrato})
