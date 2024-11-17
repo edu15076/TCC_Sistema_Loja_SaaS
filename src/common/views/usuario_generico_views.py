@@ -7,16 +7,10 @@ from common.forms.usuario_generico_forms import (
     UsuarioGenericoCreationForm,
     UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoAuthenticationForm,
-<<<<<<< HEAD
-    UsuarioGenericoPessoaJuridicaAuthenticationForm,
-    UsuarioGenericoChangeForm,
-    UsuarioGenericoPessoaJuridicaChangeForm,
-)
-=======
     UsuarioGenericoPessoaJuridicaAuthenticationForm, UsuarioGenericoChangeForm,
     UsuarioGenericoPessoaJuridicaChangeForm)
+
 from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
->>>>>>> origin/main
 from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
 
