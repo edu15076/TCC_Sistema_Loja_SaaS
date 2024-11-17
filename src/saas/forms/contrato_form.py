@@ -9,6 +9,7 @@ from ..models import Contrato
 from common.models import Periodo
 from util.forms import CrispyFormMixin
 
+
 class ContratoForm(CrispyFormMixin, forms.ModelForm):
     numero_de_periodos = forms.IntegerField(
         label=_('Número de períodos'),
@@ -56,9 +57,10 @@ class ContratoForm(CrispyFormMixin, forms.ModelForm):
 
         if commit:
             contrato.save()
-            
+
         return contrato
-    
+
+
 class FiltroContratoForm(CrispyFormMixin, forms.Form):
     STATUS_CHOICES = [
         ('todos', _('Todos')),
@@ -78,15 +80,11 @@ class FiltroContratoForm(CrispyFormMixin, forms.Form):
         label=_('Status dos Contratos'),
         choices=STATUS_CHOICES,
         initial=None,
-        required=False
+        required=False,
     )
 
-    ordem = forms.ChoiceField(
-        label=_('Ordem'),
-        choices=ORDER_CHOICES,
-        required=False
-    )
-    
+    ordem = forms.ChoiceField(label=_('Ordem'), choices=ORDER_CHOICES, required=False)
+
     def get_submit_button(self) -> Submit:
         return Submit('submit', 'Filtrar')
 
@@ -98,7 +96,3 @@ class FiltroContratoForm(CrispyFormMixin, forms.Form):
     class Meta:
         order_arguments = ['ordem']
         filter_arguments = ['ativo']
-
-    
-
-        

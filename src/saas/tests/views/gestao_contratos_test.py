@@ -53,13 +53,13 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         )
         self.contratos.append(
             Contrato.contratos.create(
-                descricao='Contrato 2', 
-                ativo=False, 
-                valor_por_periodo=500, 
-                telas_simultaneas=3, 
-                taxa_de_multa=15, 
-                tempo_maximo_de_atraso_em_dias=60, 
-                periodo=self.periodos[1]
+                descricao='Contrato 2',
+                ativo=False,
+                valor_por_periodo=500,
+                telas_simultaneas=3,
+                taxa_de_multa=15,
+                tempo_maximo_de_atraso_em_dias=60,
+                periodo=self.periodos[1],
             )
         )
         self.contratos.append(
@@ -93,10 +93,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_get_filter_contratos_ativos(self):
         self.login_gerente()
 
-        data = {
-            'ativo':True,
-            'ordem':'id'
-        }
+        data = {'ativo': True, 'ordem': 'id'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -115,10 +112,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_get_filter_contratos_inativos(self):
         self.login_gerente()
 
-        data = {
-            'ativo':False,
-            'ordem':'id'
-        }
+        data = {'ativo': False, 'ordem': 'id'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -137,10 +131,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_get_order_valor_por_periodo(self):
         self.login_gerente()
 
-        data = {
-            'ativo': 'todos',
-            'ordem': 'valor_por_periodo'
-        }
+        data = {'ativo': 'todos', 'ordem': 'valor_por_periodo'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -159,10 +150,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_get_order_valor_por_periodo_decrescente(self):
         self.login_gerente()
 
-        data = {
-            'ativo': 'todos',
-            'ordem': '-valor_por_periodo'
-        }
+        data = {'ativo': 'todos', 'ordem': '-valor_por_periodo'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -172,19 +160,16 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertIn('contratos', response.context)
 
         contratos_response = list(response.context['contratos'])
-        
+
         contratos = Contrato.contratos.order_by('-valor_por_periodo')
-        
+
         self.assertCountEqual(contratos, contratos_response)
         self.assertListEqual(list(contratos), contratos_response)
 
     def test_get_order_valor_valor_total(self):
         self.login_gerente()
 
-        data = {
-            'ativo': 'todos',
-            'ordem': 'valor_total'
-        }
+        data = {'ativo': 'todos', 'ordem': 'valor_total'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -202,10 +187,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_get_order_valor_total_decrescente(self):
         self.login_gerente()
 
-        data = {
-            'ativo': 'todos',
-            'ordem': '-valor_total'
-        }
+        data = {'ativo': 'todos', 'ordem': '-valor_total'}
 
         response = self.client.get(self.url, data=data)
         self.assertEqual(response.status_code, 200)
@@ -215,9 +197,9 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertIn('contratos', response.context)
 
         contratos_response = list(response.context['contratos'])
-        
+
         contratos = Contrato.contratos.order_by('-valor_total')
-        
+
         self.assertCountEqual(contratos, contratos_response)
         self.assertListEqual(list(contratos), contratos_response)
 
@@ -242,14 +224,19 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
 
         novo_contrato_response = response.context['contrato']
         novo_contrato_response_dict = model_to_dict(novo_contrato_response)
-        novo_contrato_response_dict['valor_por_periodo'] = Decimal(novo_contrato_response.valor_por_periodo)
-        novo_contrato_response_dict['valor_total'] = Decimal(novo_contrato_response.valor_total)
+        novo_contrato_response_dict['valor_por_periodo'] = Decimal(
+            novo_contrato_response.valor_por_periodo
+        )
+        novo_contrato_response_dict['valor_total'] = Decimal(
+            novo_contrato_response.valor_total
+        )
 
         novo_contrato = Contrato.contratos.get(descricao='Novo Contrato')
         novo_contrato_dict = model_to_dict(novo_contrato)
-        novo_contrato_dict['valor_por_periodo'] = Decimal(novo_contrato.valor_por_periodo)
+        novo_contrato_dict['valor_por_periodo'] = Decimal(
+            novo_contrato.valor_por_periodo
+        )
         novo_contrato_dict['valor_total'] = Decimal(novo_contrato.valor_total)
-                                                                       
 
         self.assertDictEqual(novo_contrato_dict, novo_contrato_response_dict)
 
@@ -269,18 +256,14 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_post_ativar_contrato(self):
         self.login_gerente()
 
-        data = {
-            'id': self.contratos[1].id
-        }
+        data = {'id': self.contratos[1].id}
 
         response = self.client.post(f"{self.url}", data=data)
-        
+
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
-        data = {
-            'id': 'inexistente'
-        }
+        data = {'id': 'inexistente'}
 
         response = self.client.post(f"{self.url}", data=data)
         self.assertEqual(response.status_code, 400)
@@ -288,17 +271,13 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
     def test_post_desativar_contrato(self):
         self.login_gerente()
 
-        data = {
-            'id': self.contratos[0].id
-        }
+        data = {'id': self.contratos[0].id}
 
         response = self.client.post(f"{self.url}", data=data)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Contrato.contratos.get(id=self.contratos[0].id).ativo)
 
-        data = {
-            'id': 'inexistente'
-        }
+        data = {'id': 'inexistente'}
 
         response = self.client.post(f"{self.url}", data=data)
         self.assertEqual(response.status_code, 400)

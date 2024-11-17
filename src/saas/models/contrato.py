@@ -38,11 +38,7 @@ class Contrato(models.Model):
         validators=[MinValueValidator(0, _('Tempo não pode ser negativo.'))],
     )
     valor_total = models.DecimalField(
-        _('Valor Total'),
-        max_digits=11,
-        decimal_places=2,
-        editable=False, 
-        default=0
+        _('Valor Total'), max_digits=11, decimal_places=2, editable=False, default=0
     )
 
     periodo = models.ForeignKey(
@@ -50,9 +46,8 @@ class Contrato(models.Model):
     )
 
     contratos = ContratoManager()
-    
+
     def save(self, *args, **kwargs):
         self.valor_total = self.valor_por_periodo * self.periodo.numero_de_periodos
 
         super().save(*args, **kwargs)
-    

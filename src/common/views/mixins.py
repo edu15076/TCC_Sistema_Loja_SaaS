@@ -1,18 +1,12 @@
-from contextlib import suppress
-
 from common.models import UsuarioGenericoPessoa, UsuarioGenericoPessoaFisica, \
     UsuarioGenericoPessoaJuridica
 from scope_auth.util import get_scope_from_request
-from django.shortcuts import get_object_or_404
-
+from util.decorators import CachedProperty
 
 __all__ = (
     'ScopeMixin',
     'UsuarioMixin',
 )
-
-from util.decorators import CachedProperty
-
 
 class ScopeMixin:
     def get_scope(self):
@@ -29,7 +23,7 @@ class UsuarioMixin:
             else [self.usuario_class]
         ) + [UsuarioGenericoPessoaFisica, UsuarioGenericoPessoaJuridica]
 
-    @CachedProperty
+    @property
     def user(self) -> UsuarioGenericoPessoa:
         return UsuarioGenericoPessoa.cast_para_primeira_subclasse(
             self._usuario_classes, self.request.user)
