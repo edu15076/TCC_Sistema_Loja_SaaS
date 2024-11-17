@@ -21,7 +21,7 @@ __all__ = (
 class PessoaCreationForm(forms.ModelForm):
     error_messages = {
         'codigo_invalido': _('O código é inválido'),
-        'scope_dne': _('O escpo passado não existe'),
+        'scope_dne': _('O escopo passado não existe'),
     }
 
     def __init__(self, *args, **kwargs):

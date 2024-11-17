@@ -35,7 +35,11 @@ class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
     def get_form_kwargs(self):
         return super().get_form_kwargs() | {'scope': self.get_scope()}
 
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
     def form_valid(self, form):
+        print('form_valid')
         response = super().form_valid(form)
         login(self.request, self.object)
         return response
