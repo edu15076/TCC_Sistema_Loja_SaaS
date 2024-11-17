@@ -7,6 +7,7 @@ from saas.views.interfaces import ABCGestaoContratoCRUDListView
 from saas.forms import ContratoForm
 from saas.models import Contrato
 
+
 class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'lista_contratos.html'
@@ -26,11 +27,10 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         queryset = self.get_page()
         form = self.form_class()
 
-        return render(request, self.template_name, {
-            'form': form,
-            'contratos': queryset
-        })
-    
+        return render(
+            request, self.template_name, {'form': form, 'contratos': queryset}
+        )
+
     def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         contrato = self.get_object()
 
@@ -40,7 +40,7 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
             return JsonResponse({'success': True}, status=204)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    
+
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         try:
             operacao = request.POST.get('operacao')
@@ -57,5 +57,5 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
                 return a
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
-        
+
         return JsonResponse({'success': True}, status=200)

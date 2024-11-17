@@ -1,16 +1,28 @@
 from crispy_forms.layout import Submit
-from django.contrib.auth.forms import BaseUserCreationForm, AuthenticationForm, \
-    UserChangeForm
+from django.contrib.auth.forms import (
+    BaseUserCreationForm,
+    AuthenticationForm,
+    UserChangeForm,
+)
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
 from scope_auth.models import Scope
 from util.forms import CrispyFormMixin
-from .pessoa_forms import (PessoaCreationForm, PessoaFisicaCreationForm,
-                           PessoaJuridicaCreationForm, PessoaChangeForm,
-                           PessoaFisicaChangeForm, PessoaJuridicaChangeForm)
-from ..models import (UsuarioGenerico, PessoaUsuario, UsuarioGenericoPessoaFisica,
-                      UsuarioGenericoPessoaJuridica)
+from .pessoa_forms import (
+    PessoaCreationForm,
+    PessoaFisicaCreationForm,
+    PessoaJuridicaCreationForm,
+    PessoaChangeForm,
+    PessoaFisicaChangeForm,
+    PessoaJuridicaChangeForm,
+)
+from ..models import (
+    UsuarioGenerico,
+    PessoaUsuario,
+    UsuarioGenericoPessoaFisica,
+    UsuarioGenericoPessoaJuridica,
+)
 from ..validators import PESSOA_FISICA_CODIGO_LEN, PESSOA_JURIDICA_CODIGO_LEN
 
 
@@ -28,13 +40,17 @@ __all__ = (
 
 
 class UsuarioGenericoCreationForm(
-        CrispyFormMixin, BaseUserCreationForm, PessoaCreationForm):
+    CrispyFormMixin, BaseUserCreationForm, PessoaCreationForm
+):
     error_messages = (
-            BaseUserCreationForm.error_messages | PessoaCreationForm.error_messages
-            | {
-                'usuario_pre_existente': _('O usuário com esse código já está '
-                                           'cadastrado'),
-            })
+        BaseUserCreationForm.error_messages
+        | PessoaCreationForm.error_messages
+        | {
+            'usuario_pre_existente': _(
+                'O usuário com esse código já está ' 'cadastrado'
+            ),
+        }
+    )
 
     def __init__(self, *args, scope: Scope, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,14 +65,15 @@ class UsuarioGenericoCreationForm(
         if not codigo:
             return codigo
         try:
-            PessoaUsuario.codigos.get_by_natural_key(codigo_pessoa=codigo,
-                                                     scope=self.scope)
+            PessoaUsuario.codigos.get_by_natural_key(
+                codigo_pessoa=codigo, scope=self.scope
+            )
         except PessoaUsuario.DoesNotExist:
             return codigo
         else:
             raise ValidationError(
                 self.error_messages['usuario_pre_existente'],
-                code='usuario_pre_existente'
+                code='usuario_pre_existente',
             )
 
     def _save_pessoa_usuario(self, instance):
@@ -80,10 +97,13 @@ class UsuarioGenericoCreationForm(
         fields = PessoaCreationForm.Meta.fields
 
 
-class UsuarioGenericoPessoaFisicaCreationForm(UsuarioGenericoCreationForm,
-                                              PessoaFisicaCreationForm):
-    error_messages = (UsuarioGenericoCreationForm.error_messages
-                      | PessoaFisicaCreationForm.error_messages)
+class UsuarioGenericoPessoaFisicaCreationForm(
+    UsuarioGenericoCreationForm, PessoaFisicaCreationForm
+):
+    error_messages = (
+        UsuarioGenericoCreationForm.error_messages
+        | PessoaFisicaCreationForm.error_messages
+    )
 
     class Meta:
         model = UsuarioGenericoPessoaFisica
@@ -91,10 +111,13 @@ class UsuarioGenericoPessoaFisicaCreationForm(UsuarioGenericoCreationForm,
         labels = getattr(PessoaFisicaCreationForm.Meta, 'labels', {})
 
 
-class UsuarioGenericoPessoaJuridicaCreationForm(UsuarioGenericoCreationForm,
-                                                PessoaJuridicaCreationForm):
-    error_messages = (UsuarioGenericoCreationForm.error_messages
-                      | PessoaJuridicaCreationForm.error_messages)
+class UsuarioGenericoPessoaJuridicaCreationForm(
+    UsuarioGenericoCreationForm, PessoaJuridicaCreationForm
+):
+    error_messages = (
+        UsuarioGenericoCreationForm.error_messages
+        | PessoaJuridicaCreationForm.error_messages
+    )
 
     class Meta:
         model = UsuarioGenericoPessoaJuridica
@@ -103,10 +126,9 @@ class UsuarioGenericoPessoaJuridicaCreationForm(UsuarioGenericoCreationForm,
 
 
 class UsuarioGenericoAuthenticationForm(CrispyFormMixin, AuthenticationForm):
-    error_messages = (AuthenticationForm.error_messages
-                      | {
-                          'tipo_usuario_invalido': _('O tipo do usuário é inválido')
-                      })
+    error_messages = AuthenticationForm.error_messages | {
+        'tipo_usuario_invalido': _('O tipo do usuário é inválido')
+    }
     username_length = None
     username_label = 'Código'
 
@@ -124,18 +146,16 @@ class UsuarioGenericoAuthenticationForm(CrispyFormMixin, AuthenticationForm):
             if len(username) != self.username_length:
                 raise ValidationError(
                     self.error_messages['tipo_usuario_invalido'],
-                    code='tipo_usuario_invalido'
+                    code='tipo_usuario_invalido',
                 )
 
         return username
 
 
 class UsuarioGenericoPessoaFisicaAuthenticationForm(UsuarioGenericoAuthenticationForm):
-    error_messages = (UsuarioGenericoAuthenticationForm.error_messages
-                      | {
-                          'tipo_usuario_invalido':
-                              _('O tipo do usuário deve ser um CPF')
-                      })
+    error_messages = UsuarioGenericoAuthenticationForm.error_messages | {
+        'tipo_usuario_invalido': _('O tipo do usuário deve ser um CPF')
+    }
     username_length = PESSOA_FISICA_CODIGO_LEN
     username_label = 'CPF'
 
@@ -144,13 +164,11 @@ class UsuarioGenericoPessoaFisicaAuthenticationForm(UsuarioGenericoAuthenticatio
 
 
 class UsuarioGenericoPessoaJuridicaAuthenticationForm(
-        UsuarioGenericoAuthenticationForm
+    UsuarioGenericoAuthenticationForm
 ):
-    error_messages = (UsuarioGenericoAuthenticationForm.error_messages
-                      | {
-                          'tipo_usuario_invalido':
-                              _('O tipo do usuário deve ser um CNPJ')
-                      })
+    error_messages = UsuarioGenericoAuthenticationForm.error_messages | {
+        'tipo_usuario_invalido': _('O tipo do usuário deve ser um CNPJ')
+    }
     username_length = PESSOA_JURIDICA_CODIGO_LEN
     username_label = 'CNPJ'
 
@@ -173,17 +191,21 @@ class UsuarioGenericoChangeForm(CrispyFormMixin, UserChangeForm, PessoaChangeFor
         fields = PessoaChangeForm.Meta.fields
 
 
-class UsuarioGenericoPessoaFisicaChangeForm(UsuarioGenericoChangeForm,
-                                            PessoaFisicaChangeForm):
+class UsuarioGenericoPessoaFisicaChangeForm(
+    UsuarioGenericoChangeForm, PessoaFisicaChangeForm
+):
     class Meta:
         model = UsuarioGenericoPessoaFisica
-        fields = (UsuarioGenericoChangeForm.Meta.fields
-                  + PessoaFisicaChangeForm.Meta.fields)
+        fields = (
+            UsuarioGenericoChangeForm.Meta.fields + PessoaFisicaChangeForm.Meta.fields
+        )
 
 
-class UsuarioGenericoPessoaJuridicaChangeForm(UsuarioGenericoChangeForm,
-                                              PessoaJuridicaChangeForm):
+class UsuarioGenericoPessoaJuridicaChangeForm(
+    UsuarioGenericoChangeForm, PessoaJuridicaChangeForm
+):
     class Meta:
         model = UsuarioGenericoPessoaJuridica
-        fields = (UsuarioGenericoChangeForm.Meta.fields
-                  + PessoaJuridicaChangeForm.Meta.fields)
+        fields = (
+            UsuarioGenericoChangeForm.Meta.fields + PessoaJuridicaChangeForm.Meta.fields
+        )

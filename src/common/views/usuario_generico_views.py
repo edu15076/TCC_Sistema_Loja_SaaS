@@ -4,10 +4,13 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 
 from common.forms.usuario_generico_forms import (
-    UsuarioGenericoCreationForm, UsuarioGenericoPessoaJuridicaCreationForm,
+    UsuarioGenericoCreationForm,
+    UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoAuthenticationForm,
-    UsuarioGenericoPessoaJuridicaAuthenticationForm, UsuarioGenericoChangeForm,
-    UsuarioGenericoPessoaJuridicaChangeForm)
+    UsuarioGenericoPessoaJuridicaAuthenticationForm,
+    UsuarioGenericoChangeForm,
+    UsuarioGenericoPessoaJuridicaChangeForm,
+)
 from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
 
@@ -45,8 +48,9 @@ class LoginUsuarioGenericoView(ScopeMixin, HTMXFormMixin, LoginView):
         return super().form_valid(form)
 
 
-class UpdateUsuarioGenericoView(LoginRequiredMixin, ScopeMixin, UsuarioMixin,
-                                UpdateHTMXView):
+class UpdateUsuarioGenericoView(
+    LoginRequiredMixin, ScopeMixin, UsuarioMixin, UpdateHTMXView
+):
     form_class = UsuarioGenericoChangeForm
 
     def get_object(self, queryset=None):

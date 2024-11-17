@@ -6,4 +6,3 @@ class ClassProperty:
 
     def __get__(self, instance, owner):
         return self._f(owner)
-    

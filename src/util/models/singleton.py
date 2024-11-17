@@ -43,7 +43,7 @@ class SingletonMixin(AbstractSingleton):
         choices=OnlyChoice.choices,
         default=OnlyChoice.SINGLETON,
         editable=False,
-        unique=True
+        unique=True,
     )
 
     class Meta:

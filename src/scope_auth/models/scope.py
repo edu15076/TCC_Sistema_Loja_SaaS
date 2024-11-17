@@ -43,7 +43,7 @@ class DefaultScope(Scope, SingletonMixin):
         on_delete=models.CASCADE,
         parent_link=True,
         primary_key=True,
-        related_name='default_scope'
+        related_name='default_scope',
     )
 
     @classmethod

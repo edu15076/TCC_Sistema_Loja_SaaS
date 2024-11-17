@@ -3,8 +3,11 @@ from django.apps import apps
 import unicodedata
 
 from .scope import Scope
-from .unique_per_scope import (UniquePerScopeModelManager, UniquePerScopeMeta,
-                               AbstractUniquePerScopeModel)
+from .unique_per_scope import (
+    UniquePerScopeModelManager,
+    UniquePerScopeMeta,
+    AbstractUniquePerScopeModel,
+)
 
 
 class UsernamePerScopeMeta(UniquePerScopeMeta):
@@ -15,8 +18,9 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
         username_field, found = cls._find_attribute(attrs, bases, 'USERNAME_FIELD')
 
         if not found:
-            raise ValueError('Non abstract subclass or any superclass must define '
-                             'USERNAME_FIELD')
+            raise ValueError(
+                'Non abstract subclass or any superclass must define ' 'USERNAME_FIELD'
+            )
 
         unique_in_scope = cls._get_unique_in_scope(attrs, bases)
 
@@ -33,9 +37,11 @@ class UsernamePerScopeMeta(UniquePerScopeMeta):
 
         if not found:
             # raise ValueError(f'{attrs}')
-            raise ValueError(f"Non abstract subclass or superclass must define "
-                             f"{attrs['USERNAME_FIELD']} for it defined USERNAME_FIELD "
-                             f"= {attrs['USERNAME_FIELD']}")
+            raise ValueError(
+                f"Non abstract subclass or superclass must define "
+                f"{attrs['USERNAME_FIELD']} for it defined USERNAME_FIELD "
+                f"= {attrs['USERNAME_FIELD']}"
+            )
 
         return self
 
@@ -49,16 +55,19 @@ class UsernamePerScopeManager(UniquePerScopeModelManager):
     def get_by_natural_key(self, *, scope: Scope = None, **kwargs):
         username = self._pop_username_from(kwargs)
         return super().get_by_natural_key(
-            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs)
+            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs
+        )
 
     def create_username_per_scope(self, *, scope: Scope = None, **kwargs):
         GlobalUsernamePerScopeModel = apps.get_model(
             self.model._meta.app_label, self.model._meta.object_name
         )
         username = GlobalUsernamePerScopeModel.normalize_username(
-            self._pop_username_from(kwargs))
+            self._pop_username_from(kwargs)
+        )
         return self.create_by_scope(
-            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs)
+            scope=scope, **{self.model.USERNAME_FIELD: username}, **kwargs
+        )
 
     def get_or_create_by_natural_key(self, **kwargs):
         try:
@@ -67,8 +76,9 @@ class UsernamePerScopeManager(UniquePerScopeModelManager):
             return self.create_username_per_scope(**kwargs)
 
 
-class AbstractUsernamePerScope(AbstractUniquePerScopeModel,
-                               metaclass=UsernamePerScopeMeta):
+class AbstractUsernamePerScope(
+    AbstractUniquePerScopeModel, metaclass=UsernamePerScopeMeta
+):
     objects = UsernamePerScopeManager()
 
     def get_username(self):
