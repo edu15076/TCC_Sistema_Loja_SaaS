@@ -22,7 +22,7 @@ urlpatterns = [
     re_path(r'^contratos(/(?P<pk>\d+))?/$',
         GestaoContratoCRUDListView.as_view(),
         name='gestao_contrato'),
-    path('cancelar_contrato_assinado/',
-        CancelarContratoAssinadoView.as_view(),
-        name='cancelar_contrato')
+    # path('cancelar_contrato_assinado/',
+    #     CancelarContratoAssinadoView.as_view(),
+    #     name='cancelar_contrato')
 ]

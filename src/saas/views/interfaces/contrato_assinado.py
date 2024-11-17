@@ -9,7 +9,6 @@ from common.views.mixins import UsuarioMixin
 from ...models import ContratoAssinado
 
 __all__ = (
-    'ABCGestaoContratoCRUDListView',
     'ABCCancelarContratoAssinado',
 )
 
