@@ -20,6 +20,8 @@ __all__ = (
     'UpdateUsuarioContratacaoView',
 )
 
+from saas.models import GerenteDeContratos, ClienteContratante
+
 
 class LogoutUsuarioContratacaoView(LogoutUsuarioGenericoView):
     next_page = reverse_lazy('login_contratacao')
@@ -45,3 +47,4 @@ class UpdateUsuarioContratacaoView(UpdateUsuarioGenericoView):
     success_url = reverse_lazy('home_contratacao')
     login_url = reverse_lazy('login_contratacao')
     form_action = reverse_lazy('editar_usuario_contratacao')
+    usuario_class = [GerenteDeContratos, ClienteContratante]

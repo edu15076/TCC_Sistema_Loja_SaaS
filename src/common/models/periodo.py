@@ -29,9 +29,9 @@ class Periodo(models.Model):
 
     @property
     def tempo_total(self):
-        if self.unidades_de_tempo_por_periodo == self.UnidadesDeTempo.DIA:
+        if self.unidades_de_tempo_por_periodo == self.UnidadeDeTempo.DIA:
             return timedelta(days=self.numero_de_periodos)
-        elif self.unidades_de_tempo_por_periodo == self.UnidadesDeTempo.MES:
+        elif self.unidades_de_tempo_por_periodo == self.UnidadeDeTempo.MES:
             return timedelta(days=30 * self.numero_de_periodos)
         else:
             return timedelta(days=365 * self.numero_de_periodos)

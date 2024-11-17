@@ -98,6 +98,16 @@ class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessForm
             self.get_context_data(object_list=self.object_list, form=form)
         )
 
+    def get_data(self):
+        return model_to_dict(self.object)
+    
+    def form_valid(self, form):
+        self.object = form.save()
+        return JsonResponse({
+            'success': True,
+            'data': self.get_data()
+            }, status=200
+        )
 
 class CreateOrUpdateListView(
     BaseCreateOrUpdateListView, MultipleObjectTemplateResponseMixin
@@ -122,6 +132,7 @@ class CreateOrUpdateListHTMXView(
 
     def form_valid(self, form):
         self.object = form.save()
-        return JsonResponse(
-            {'success': True, 'data': model_to_dict(self.object)}, status=200
-        )
+        return JsonResponse({
+            'success': True,
+            'data': self.get_data()
+            }, status=200)

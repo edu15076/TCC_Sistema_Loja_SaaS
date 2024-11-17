@@ -1,3 +1,5 @@
+from contextlib import suppress
+
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import F
@@ -140,6 +142,17 @@ class UsuarioGenericoSimple(UsuarioGenerico):
     @classmethod
     def from_usuario(cls, usuario):
         usuario.__class__ = UsuarioGenericoSimple
+        return usuario
+
+    @classmethod
+    def cast_para_primeira_subclasse(
+            cls,
+            subclasses: list[type['UsuarioGenericoSimple']],
+            usuario: 'UsuarioGenericoSimple'
+    ):
+        for usuario_class in subclasses:
+            with suppress(usuario_class.DoesNotExist):
+                return usuario_class._default_manager.get(pk=usuario.pk)
         return usuario
 
     @property

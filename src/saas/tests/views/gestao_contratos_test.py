@@ -1,7 +1,8 @@
+from decimal import Decimal
+
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.core.management import call_command
-from django.http import JsonResponse
+from django.forms.models import model_to_dict
 
 from saas.models import Contrato
 from common.models import Periodo
@@ -52,13 +53,13 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         )
         self.contratos.append(
             Contrato.contratos.create(
-                descricao='Contrato 2',
-                ativo=False,
-                valor_por_periodo=2000,
-                telas_simultaneas=3,
-                taxa_de_multa=15,
-                tempo_maximo_de_atraso_em_dias=60,
-                periodo=self.periodos[1],
+                descricao='Contrato 2', 
+                ativo=False, 
+                valor_por_periodo=500, 
+                telas_simultaneas=3, 
+                taxa_de_multa=15, 
+                tempo_maximo_de_atraso_em_dias=60, 
+                periodo=self.periodos[1]
             )
         )
         self.contratos.append(
@@ -73,8 +74,11 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
             )
         )
 
-    def test_acesso_nao_autenticado(self):
-        pass
+    def test_acesso_cliente(self):
+        self.login_cliente(0)
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
 
     def test_get_contratos(self):
         self.login_gerente()
@@ -83,19 +87,139 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'lista_contratos.html')
         self.assertIn('form', response.context)
+        self.assertIn('filter_form', response.context)
         self.assertIn('contratos', response.context)
 
     def test_get_filter_contratos_ativos(self):
-        pass
+        self.login_gerente()
+
+        data = {
+            'ativo':True,
+            'ordem':'id'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+
+        contratos_ativos = Contrato.contratos.filter(ativo=True).order_by('id')
+
+        self.assertCountEqual(contratos_ativos, contratos_response)
+        self.assertListEqual(list(contratos_ativos), contratos_response)
 
     def test_get_filter_contratos_inativos(self):
-        pass
+        self.login_gerente()
+
+        data = {
+            'ativo':False,
+            'ordem':'id'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+
+        contratos_inativos = Contrato.contratos.filter(ativo=False).order_by('id')
+
+        self.assertCountEqual(contratos_inativos, contratos_response)
+        self.assertListEqual(list(contratos_inativos), contratos_response)
 
     def test_get_order_valor_por_periodo(self):
-        pass
+        self.login_gerente()
 
-    def test_get_order_valor_total(self):
-        pass
+        data = {
+            'ativo': 'todos',
+            'ordem': 'valor_por_periodo'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+
+        contratos = Contrato.contratos.order_by('valor_por_periodo')
+
+        self.assertCountEqual(contratos, contratos_response)
+        self.assertListEqual(list(contratos), contratos_response)
+
+    def test_get_order_valor_por_periodo_decrescente(self):
+        self.login_gerente()
+
+        data = {
+            'ativo': 'todos',
+            'ordem': '-valor_por_periodo'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+        
+        contratos = Contrato.contratos.order_by('-valor_por_periodo')
+        
+        self.assertCountEqual(contratos, contratos_response)
+        self.assertListEqual(list(contratos), contratos_response)
+
+    def test_get_order_valor_valor_total(self):
+        self.login_gerente()
+
+        data = {
+            'ativo': 'todos',
+            'ordem': 'valor_total'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+        contratos = Contrato.contratos.order_by('valor_total')
+
+        self.assertCountEqual(contratos, contratos_response)
+        self.assertListEqual(list(contratos), contratos_response)
+
+    def test_get_order_valor_total_decrescente(self):
+        self.login_gerente()
+
+        data = {
+            'ativo': 'todos',
+            'ordem': '-valor_total'
+        }
+
+        response = self.client.get(self.url, data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lista_contratos.html')
+        self.assertIn('filter_form', response.context)
+        self.assertIn('form', response.context)
+        self.assertIn('contratos', response.context)
+
+        contratos_response = list(response.context['contratos'])
+        
+        contratos = Contrato.contratos.order_by('-valor_total')
+        
+        self.assertCountEqual(contratos, contratos_response)
+        self.assertListEqual(list(contratos), contratos_response)
 
     def test_post_criar_contrato(self):
         self.login_gerente()
@@ -116,16 +240,18 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.filter(descricao='Novo Contrato').exists())
 
-        novo_contrato = response.json()['data']
-        novo_contrato_dict = response.json()['data']
-        novo_contrato_dict['periodo_id'] = novo_contrato_dict['periodo']
-        del novo_contrato_dict['periodo']
-        print(Contrato.contratos.filter(descricao='Novo Contrato').values())
-        print(novo_contrato_dict)
-        # novo_contrato_dict['tempo_maximo_de_atraso_em_dias'] = novo_contrato.periodo.numero_de_periodos
-        # novo_contrato_dict['unidades_de_tempo_por_periodo'] = novo_contrato.periodo.unidades_de_tempo_por_periodo
+        novo_contrato_response = response.context['contrato']
+        novo_contrato_response_dict = model_to_dict(novo_contrato_response)
+        novo_contrato_response_dict['valor_por_periodo'] = Decimal(novo_contrato_response.valor_por_periodo)
+        novo_contrato_response_dict['valor_total'] = Decimal(novo_contrato_response.valor_total)
 
-        self.assertDictEqual(data, novo_contrato_dict)
+        novo_contrato = Contrato.contratos.get(descricao='Novo Contrato')
+        novo_contrato_dict = model_to_dict(novo_contrato)
+        novo_contrato_dict['valor_por_periodo'] = Decimal(novo_contrato.valor_por_periodo)
+        novo_contrato_dict['valor_total'] = Decimal(novo_contrato.valor_total)
+                                                                       
+
+        self.assertDictEqual(novo_contrato_dict, novo_contrato_response_dict)
 
         fail_data = {
             'descricao': 'Novo Contrato',
@@ -140,52 +266,39 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         fail_response = self.client.post(self.url, fail_data)
         self.assertNotEqual(fail_response.status_code, 200)
 
-    def test_post_atualizar_contrato(self):
-        pass
-
     def test_post_ativar_contrato(self):
         self.login_gerente()
 
-        data = {'operacao': 'ativar_contrato', 'id': self.contratos[1].id}
+        data = {
+            'id': self.contratos[1].id
+        }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
-
+        response = self.client.post(f"{self.url}", data=data)
+        
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Contrato.contratos.get(id=self.contratos[1].id).ativo)
 
-        data = {'operacao': 'ativar_contrato', 'id': 'inexistente'}
+        data = {
+            'id': 'inexistente'
+        }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
-        self.assertEqual(response.status_code, 404)
+        response = self.client.post(f"{self.url}", data=data)
+        self.assertEqual(response.status_code, 400)
 
     def test_post_desativar_contrato(self):
         self.login_gerente()
 
-        data = {'operacao': 'desativar_contrato', 'id': self.contratos[1].id}
+        data = {
+            'id': self.contratos[0].id
+        }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
+        response = self.client.post(f"{self.url}", data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(Contrato.contratos.get(id=self.contratos[1].id).ativo)
+        self.assertFalse(Contrato.contratos.get(id=self.contratos[0].id).ativo)
 
-        data = {'operacao': 'desativar_contrato', 'id': 'inexistente'}
+        data = {
+            'id': 'inexistente'
+        }
 
-        response = self.client.post(f"{self.url}{data['id']}/", data)
-        self.assertEqual(response.status_code, 404)
-
-    def test_post_view(self):
-        pass
-        # data = {
-        #     # Preencha com os dados necessários para criar um contrato
-        #     'campo1': 'novo_valor1',
-        #     'campo2': 'novo_valor2',
-        # }
-        # response = self.client.post(self.url, data)
-        # self.assertEqual(response.status_code, 302)  # Verifica se redireciona após o POST
-        # self.assertTrue(Contrato.objects.filter(campo1='novo_valor1').exists())
-
-    def test_delete_contratos(self):
-        pass
-        # delete_url = reverse('nome_da_sua_view_delete', args=[self.contrato.id])  # Ajuste para a URL de delete
-        # response = self.client.delete(delete_url)
-        # self.assertEqual(response.status_code, 204)
-        # self.assertFalse(Contrato.objects.filter(id=self.contrato.id).exists())
+        response = self.client.post(f"{self.url}", data=data)
+        self.assertEqual(response.status_code, 400)

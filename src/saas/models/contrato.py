@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
+from django.forms.models import model_to_dict
 
 
 __all__ = ['ContratoQuerySet', 'ContratoManager', 'Contrato']
@@ -18,7 +19,6 @@ class ContratoManager(models.Manager):
 
 
 class Contrato(models.Model):
-    # * colocar um apelido
     descricao = models.CharField(_('Descrição'), max_length=512, blank=True)
     ativo = models.BooleanField(_('Ativo'), default=False)
     valor_por_periodo = models.DecimalField(
@@ -37,12 +37,22 @@ class Contrato(models.Model):
         _('Tempo máximo de atraso em dias'),
         validators=[MinValueValidator(0, _('Tempo não pode ser negativo.'))],
     )
+    valor_total = models.DecimalField(
+        _('Valor Total'),
+        max_digits=11,
+        decimal_places=2,
+        editable=False, 
+        default=0
+    )
+
     periodo = models.ForeignKey(
         Periodo, verbose_name=_('Periodo do contrato'), on_delete=models.RESTRICT
     )
 
     contratos = ContratoManager()
+    
+    def save(self, *args, **kwargs):
+        self.valor_total = self.valor_por_periodo * self.periodo.numero_de_periodos
 
-    @property
-    def valor_total(self):
-        return self.valor_por_periodo * self.periodo.numero_de_periodos
+        super().save(*args, **kwargs)
+    
