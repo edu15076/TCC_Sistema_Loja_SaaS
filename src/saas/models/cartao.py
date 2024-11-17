@@ -26,6 +26,7 @@ class CartaoManager(models.Manager):
 
         raise NotImplementedError()
 
+
 class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     padrao = models.BooleanField(_('Padrão'), default=False)
     numero = models.PositiveBigIntegerField(_('Numero'))
@@ -40,7 +41,7 @@ class Cartao(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
         verbose_name=_('Cliente Contratante'),
         on_delete=models.CASCADE,
     )
-    
+
     endereco = models.OneToOneField(
         Endereco, verbose_name=_('Endereço do titular'), on_delete=models.CASCADE
     )

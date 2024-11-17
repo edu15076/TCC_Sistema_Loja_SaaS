@@ -9,30 +9,31 @@ from ..models import Contrato
 from common.models import Periodo
 from util.forms import CrispyFormMixin
 
+
 class ContratoForm(CrispyFormMixin, forms.ModelForm):
     numero_de_periodos = forms.IntegerField(
         label=_('Número de períodos'),
         min_value=0,
-        error_messages={'min_value': _('Número não pode ser negativo.')}
+        error_messages={'min_value': _('Número não pode ser negativo.')},
     )
-    
+
     unidades_de_tempo_por_periodo = forms.ChoiceField(
         label=_('Unidade de tempo por período'),
         choices=Periodo.UnidadeDeTempo.choices,
-        initial=Periodo.UnidadeDeTempo.MES
+        initial=Periodo.UnidadeDeTempo.MES,
     )
 
     class Meta:
         model = Contrato
         fields = [
-            'descricao', 
-            'ativo', 
-            'valor_por_periodo', 
-            'telas_simultaneas', 
-            'taxa_de_multa', 
-            'tempo_maximo_de_atraso_em_dias', 
-            'numero_de_periodos', 
-            'unidades_de_tempo_por_periodo'
+            'descricao',
+            'ativo',
+            'valor_por_periodo',
+            'telas_simultaneas',
+            'taxa_de_multa',
+            'tempo_maximo_de_atraso_em_dias',
+            'numero_de_periodos',
+            'unidades_de_tempo_por_periodo',
         ]
 
     def get_submit_button(self) -> Submit:
@@ -46,7 +47,9 @@ class ContratoForm(CrispyFormMixin, forms.ModelForm):
     def save(self, commit: bool = True) -> Any:
         periodo = Periodo.periodos.create(
             numero_de_periodos=self.cleaned_data.get('numero_de_periodos'),
-            unidades_de_tempo_por_periodo=self.cleaned_data.get('unidades_de_tempo_por_periodo')
+            unidades_de_tempo_por_periodo=self.cleaned_data.get(
+                'unidades_de_tempo_por_periodo'
+            ),
         )
 
         contrato = super().save(commit=False)
@@ -54,9 +57,10 @@ class ContratoForm(CrispyFormMixin, forms.ModelForm):
 
         if commit:
             contrato.save()
-            
+
         return contrato
-    
+
+
 class FiltroContratoForm(CrispyFormMixin, forms.Form):
     STATUS_CHOICES = [
         ('todos', _('Todos')),
@@ -76,15 +80,11 @@ class FiltroContratoForm(CrispyFormMixin, forms.Form):
         label=_('Status dos Contratos'),
         choices=STATUS_CHOICES,
         initial=None,
-        required=False
+        required=False,
     )
 
-    ordem = forms.ChoiceField(
-        label=_('Ordem'),
-        choices=ORDER_CHOICES,
-        required=False
-    )
-    
+    ordem = forms.ChoiceField(label=_('Ordem'), choices=ORDER_CHOICES, required=False)
+
     def get_submit_button(self) -> Submit:
         return Submit('submit', 'Filtrar')
 
@@ -96,7 +96,3 @@ class FiltroContratoForm(CrispyFormMixin, forms.Form):
     class Meta:
         order_arguments = ['ordem']
         filter_arguments = ['ativo']
-
-    
-
-        

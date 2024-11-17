@@ -10,20 +10,29 @@ __all__ = [
     'HistoricoPagamentos',
 ]
 
+
 class HistoricoPagamentosQuerySet(models.QuerySet):
     pass
 
 
 class HistoricoPagamentosManager(models.Manager):
     def get_queryset(self):
-        return HistoricoPagamentosQuerySet(self.model, using==self._db).all()
-    
+        return HistoricoPagamentosQuerySet(self.model, using == self._db).all()
+
 
 class HistoricoPagamentos(models.Model):
-    valor_a_ser_pago = models.DecimalField(_('Valor a ser pago'), max_digits=11, decimal_places=2)
-    data_pagamento = models.DateField(_('Data do pagamento'), auto_now=False, auto_now_add=False)
-    data_inicio_prazo_pagamento = models.DateField(_('Data de inicio do pagamento'), auto_now=False, auto_now_add=False)
-    data_fim_prazo_pagamento = models.DateField(_('Data final do pagamento'), auto_now=False, auto_now_add=False)
+    valor_a_ser_pago = models.DecimalField(
+        _('Valor a ser pago'), max_digits=11, decimal_places=2
+    )
+    data_pagamento = models.DateField(
+        _('Data do pagamento'), auto_now=False, auto_now_add=False
+    )
+    data_inicio_prazo_pagamento = models.DateField(
+        _('Data de inicio do pagamento'), auto_now=False, auto_now_add=False
+    )
+    data_fim_prazo_pagamento = models.DateField(
+        _('Data final do pagamento'), auto_now=False, auto_now_add=False
+    )
 
     contrato_assinado = models.ForeignKey(ContratoAssinado, on_delete=models.RESTRICT)
 

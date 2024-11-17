@@ -17,18 +17,17 @@ class ContratoAssinadoQuerySet(models.QuerySet):
 
 class ContratoAssinadoManager(models.Manager):
     def get_queryset(self):
-        return ContratoAssinadoQuerySet(self.model, using==self._db).all()
-    
+        return ContratoAssinadoQuerySet(self.model, using == self._db).all()
+
 
 class ContratoAssinado(models.Model):
     vigente = models.BooleanField(_('Assinatura vigente'), default=False)
     data_contratacao = models.DateField(
-        _('Data da contratação'), 
-        auto_now=False, 
-        auto_now_add=True
+        _('Data da contratação'), auto_now=False, auto_now_add=True
     )
     contrato = models.ForeignKey(Contrato, on_delete=models.RESTRICT)
-    cliente_contratante = models.ForeignKey(ClienteContratante, on_delete=models.RESTRICT)
-
+    cliente_contratante = models.ForeignKey(
+        ClienteContratante, on_delete=models.RESTRICT
+    )
 
     contratos_assinados = ContratoAssinadoManager()
