@@ -18,8 +18,13 @@ class ContratoAssinadoQuerySet(models.QuerySet):
 
 class ContratoAssinadoManager(models.Manager):
     def get_queryset(self):
-        # Corrigido o erro de sintaxe em `using`
         return ContratoAssinadoQuerySet(self.model, using=self._db)
+
+    def contratos_disponiveis(self):
+        """
+        Retorna contratos que estão disponíveis para assinatura.
+        """
+        return self.get_queryset().filter(vigente=True)
 
 
 class ContratoAssinado(models.Model):
