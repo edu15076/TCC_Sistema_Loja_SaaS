@@ -19,4 +19,7 @@ urlpatterns = [
     path('loja/logout/',
          LogoutUsuarioLojaView.as_view(),
          name='logout_loja'),
+    path('loja/editar_senha/',
+         PasswordChangeUsuarioLojaView.as_view(),
+         name='editar_senha_loja'),
 ]
