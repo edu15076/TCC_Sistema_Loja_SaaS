@@ -11,6 +11,9 @@ from common.views import (
     UpdateUsuarioGenericoView,
     LogoutUsuarioGenericoView,
 )
+from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
+                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
+                          PasswordChangeUsuarioGenericoView)
 
 
 __all__ = (
@@ -18,7 +21,14 @@ __all__ = (
     'LoginUsuarioLojaView',
     'CreateUsuarioLojaView',
     'UpdateUsuarioLojaView',
+    'PasswordChangeUsuarioLojaView',
 )
+
+
+class PasswordChangeUsuarioLojaView(PasswordChangeUsuarioGenericoView):
+    success_url = reverse_lazy('home_loja')
+    form_action = reverse_lazy('editar_senha_loja')
+    login_url = reverse_lazy('login_loja')
 
 
 class LogoutUsuarioLojaView(LogoutUsuarioGenericoView):

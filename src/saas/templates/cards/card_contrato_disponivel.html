@@ -1,0 +1,13 @@
+<div class="col-md-4 ">
+    <article class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ contrato.descricao }}</h5>
+            <p class="card-text">
+                <strong>Valor por período:</strong> R$ {{ contrato.valor_por_periodo }}<br>
+                <strong>Telas simultâneas:</strong> {{ contrato.telas_simultaneas }}<br>
+                <strong>Período:</strong> {{ contrato.periodo.tempo_total.days }} dias<br>
+                <!-- botão -->
+            </p>
+        </div>
+    </article>
+</div>

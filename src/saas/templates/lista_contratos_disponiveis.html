@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% load static %}
 {% include '' %}
 
@@ -7,22 +8,15 @@
 {% endblock header %}
 
 {% block main %}
-    <h1>Contratos Disponíveis</h1>
-
-    <section class="container mt-3">
-        {% block contratos %}
-            <ul id="lista-contratos-disponiveis">
-                {% for contrato in contratos %}
-                    <li>
-                        <h2>Contrato: {{ contrato.descricao }}</h2>
-                        <p>Ativo: {{ contrato.ativo }}</p>
-                        <p>Valor: {{ contrato.valor_por_periodo }}</p>
-                        <p>Período: {{ contrato.periodo.unidades_de_tempo_por_periodo }}</p>
-                    </li>
-                {% empty %}
-                    <li>Nenhum contrato encontrado.</li>
-                {% endfor %}
-            </ul>
-        {% endblock contratos %}
+    <h1 class="p-4 pb-0">Contratos Disponíveis</h1>
+    <section id="filtro-form" class="card m-4 pt-3 pb-2 p-4 d-flex flex-row">
+        <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
+            {% crispy filter_form %}
+        </form>
+    </section>
+    <section id="lista_contratos" class="container mt-3 pt-0 p-4 row">
+        {% for contrato in contratos %}
+            {% include 'cards/card_contrato_disponivel.html' %}
+        {% endfor %}
     </section>
 {% endblock main %}

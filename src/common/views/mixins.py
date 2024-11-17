@@ -1,14 +1,12 @@
-from contextlib import suppress
-
-from common.models import UsuarioGenericoPessoa
+from common.models import UsuarioGenericoPessoa, UsuarioGenericoPessoaFisica, \
+    UsuarioGenericoPessoaJuridica
 from scope_auth.util import get_scope_from_request
-
+from util.decorators import CachedProperty
 
 __all__ = (
     'ScopeMixin',
     'UsuarioMixin',
 )
-
 
 class ScopeMixin:
     def get_scope(self):
@@ -16,10 +14,16 @@ class ScopeMixin:
 
 
 class UsuarioMixin:
-    usuario_class: type(UsuarioGenericoPessoa) = UsuarioGenericoPessoa
+    usuario_class: type[UsuarioGenericoPessoa] | list[type[UsuarioGenericoPessoa]] = UsuarioGenericoPessoa
 
-    def get_user(self):
-        user = self.request.user
-        with suppress(TypeError):
-            user = self.usuario_class.from_usuario(user)
-        return user    
+    @CachedProperty
+    def _usuario_classes(self):
+        return (
+            self.usuario_class if isinstance(self.usuario_class, list)
+            else [self.usuario_class]
+        ) + [UsuarioGenericoPessoaFisica, UsuarioGenericoPessoaJuridica]
+
+    @property
+    def user(self) -> UsuarioGenericoPessoa:
+        return UsuarioGenericoPessoa.cast_para_primeira_subclasse(
+            self._usuario_classes, self.request.user)

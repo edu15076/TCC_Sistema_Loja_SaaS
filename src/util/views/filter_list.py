@@ -80,7 +80,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         parameters = form.cleaned_data
 
         try:
-            filter_arguments = self.filter_form.filter_arguments
+            filter_arguments = self.filter_form.Meta.filter_arguments
 
             if filter_arguments is None:
                 return {}
@@ -127,15 +127,15 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         parameters = []
 
         try:
-            if self.filter_form.order_arguments is None:
+            if self.filter_form.Meta.order_arguments is None:
                 return []
 
-            if not isinstance(self.filter_form.order_arguments, list):
+            if not isinstance(self.filter_form.Meta.order_arguments, list):
                 raise ImproperlyConfigured(
-                    "'self.filter_form.order_arguments' is not type list"
+                    "'self.filter_form.Meta.order_arguments' is not type list"
                 )
 
-            for param in self.filter_form.order_arguments:
+            for param in self.filter_form.Meta.order_arguments:
                 parameters.append(form.cleaned_data[param])
         except AttributeError:
             return []
@@ -147,18 +147,17 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         :return: lista com os usados para ordernar o queryset, se houver filter_form
         irá retornar o resultado de `self.get_order_parameters()`
         """
-
         ordering = self.default_order
 
         if self.filter_form is None:
             return ordering + (super().get_ordering() or [])
 
-        ordering += self.get_order_parameters() or []
+        ordering = (self.get_order_parameters() or ordering)
 
         if len(ordering) == 0:
             return super().get_ordering()
-
-        return ordering
+        
+        return ordering if ordering[0] != '' else ['pk']
 
     def get_url_filter_kwargs(self) -> dict[str, Any]:
         """
@@ -192,10 +191,6 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                     )
                 ),
             )
-
-    def get_user(self):
-        """Retorna o usuário logado"""
-        return self.request.user
 
     def get_queryset(self) -> QuerySet[Any]:
         """
@@ -233,9 +228,12 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
             filter_params = self.get_filter_parameters()
             order_params = self.get_ordering()
 
-            queryset = queryset.filter(**filter_params)
+            try:
+                queryset = queryset.filter(**filter_params)
+            except:
+                pass
 
-            if isinstance(order_params, list):
+            if isinstance(order_params, list) and len(order_params) > 1:
                 queryset = queryset.order_by(*order_params)
 
         if self.user_attribute_name is not None:

@@ -37,11 +37,14 @@ class TestLoginRequiredMixin:
 
     def login_gerente(self):
         from scope_auth.models import Scope
-
+        return self.client.login(username=self.gerente.cnpj, password=self.gerente_password, scope=Scope.scopes.default_scope())
+    
+    def login_cliente(self, id):
+        from scope_auth.models import Scope
         return self.client.login(
-            username=self.gerente.cnpj,
-            password=self.gerente_password,
-            scope=Scope.scopes.default_scope(),
+            username=self.clientes_contratantes[id].cnpj, 
+            password=self.clientes_contratantes_password, 
+            scope=Scope.scopes.default_scope()
         )
 
     def test_login_required(self):

@@ -6,7 +6,10 @@ from common.models import LojaScope
 
 from .funcionario import Funcionario, FuncionarioQuerySet
 
-__all__ = ('Loja',)
+
+__all__ = (
+    'Loja',
+)
 
 
 class LojaQuerySet(models.QuerySet):

@@ -7,12 +7,13 @@ from common.forms.usuario_generico_forms import (
     UsuarioGenericoCreationForm,
     UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoAuthenticationForm,
-    UsuarioGenericoPessoaJuridicaAuthenticationForm,
-    UsuarioGenericoChangeForm,
-    UsuarioGenericoPessoaJuridicaChangeForm,
-)
+    UsuarioGenericoPessoaJuridicaAuthenticationForm, UsuarioGenericoChangeForm,
+    UsuarioGenericoPessoaJuridicaChangeForm)
+
+from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
 from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
+
 
 __all__ = (
     'CreateUsuarioView',
@@ -22,7 +23,12 @@ __all__ = (
     'CreateUsuarioGenericoView',
     'LoginUsuarioGenericoView',
     'UpdateUsuarioGenericoView',
+    'PasswordChangeUsuarioGenericoView',
 )
+
+
+class PasswordChangeUsuarioGenericoView(PasswordChangeUserPerScopeWithEmailView):
+    template_name = 'editar_senha.html'
 
 
 class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
@@ -54,7 +60,7 @@ class UpdateUsuarioGenericoView(
     form_class = UsuarioGenericoChangeForm
 
     def get_object(self, queryset=None):
-        return self.get_user()
+        return self.user
 
     def form_invalid(self, form):
         return super().form_invalid(form)
