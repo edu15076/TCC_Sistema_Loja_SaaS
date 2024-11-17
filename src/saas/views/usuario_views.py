@@ -11,9 +11,13 @@ from common.views import (
     UpdateUsuarioGenericoView,
     LogoutUsuarioGenericoView,
 )
-from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
-                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
-                          PasswordChangeUsuarioGenericoView)
+from common.views import (
+    LoginUsuarioGenericoView,
+    CreateUsuarioGenericoView,
+    UpdateUsuarioGenericoView,
+    LogoutUsuarioGenericoView,
+    PasswordChangeUsuarioGenericoView,
+)
 from saas.models import GerenteDeContratos, ClienteContratante
 
 

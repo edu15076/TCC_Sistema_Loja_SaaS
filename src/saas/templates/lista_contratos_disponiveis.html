@@ -17,6 +17,8 @@
     <section id="lista_contratos" class="container mt-3 pt-0 p-4 row">
         {% for contrato in contratos %}
             {% include 'cards/card_contrato_disponivel.html' %}
+            {% include 'modal_detalhes_contrato.html' %}
         {% endfor %}
     </section>
+    {% include 'modal_detalhes_contrato.html' %}
 {% endblock main %}

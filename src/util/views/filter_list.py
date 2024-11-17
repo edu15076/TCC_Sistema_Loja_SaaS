@@ -152,11 +152,11 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         if self.filter_form is None:
             return ordering + (super().get_ordering() or [])
 
-        ordering = (self.get_order_parameters() or ordering)
+        ordering = self.get_order_parameters() or ordering
 
         if len(ordering) == 0:
             return super().get_ordering()
-        
+
         return ordering if ordering[0] != '' else ['pk']
 
     def get_url_filter_kwargs(self) -> dict[str, Any]:

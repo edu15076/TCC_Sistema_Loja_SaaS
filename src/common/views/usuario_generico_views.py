@@ -7,8 +7,10 @@ from common.forms.usuario_generico_forms import (
     UsuarioGenericoCreationForm,
     UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoAuthenticationForm,
-    UsuarioGenericoPessoaJuridicaAuthenticationForm, UsuarioGenericoChangeForm,
-    UsuarioGenericoPessoaJuridicaChangeForm)
+    UsuarioGenericoPessoaJuridicaAuthenticationForm,
+    UsuarioGenericoChangeForm,
+    UsuarioGenericoPessoaJuridicaChangeForm,
+)
 
 from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
 from .mixins import ScopeMixin, UsuarioMixin
