@@ -1,9 +1,7 @@
 from crispy_forms.layout import Submit
-from django.contrib.auth.forms import (
-    BaseUserCreationForm,
-    AuthenticationForm,
-    UserChangeForm,
-)
+from django.contrib.auth.forms import BaseUserCreationForm, AuthenticationForm, \
+    UserChangeForm
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -82,11 +80,12 @@ class UsuarioGenericoCreationForm(
         )
         instance.pessoa_usuario = pessoa_usuario
 
+    @transaction.atomic
     def save(self, commit=True):
         user: UsuarioGenerico = super().save(commit=False)
-        self._save_pessoa_usuario(user)
 
         if commit:
+            self._save_pessoa_usuario(user)
             user.save()
             if hasattr(self, 'save_m2m'):
                 self.save_m2m()

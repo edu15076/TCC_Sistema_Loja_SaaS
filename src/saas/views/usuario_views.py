@@ -5,19 +5,10 @@ from common.forms import (
     UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoPessoaJuridicaChangeForm,
 )
-from common.views import (
-    LoginUsuarioGenericoView,
-    CreateUsuarioGenericoView,
-    UpdateUsuarioGenericoView,
-    LogoutUsuarioGenericoView,
-)
-from common.views import (
-    LoginUsuarioGenericoView,
-    CreateUsuarioGenericoView,
-    UpdateUsuarioGenericoView,
-    LogoutUsuarioGenericoView,
-    PasswordChangeUsuarioGenericoView,
-)
+from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
+                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
+                          PasswordChangeUsuarioGenericoView)
+from saas.forms.usuario_contratacao_forms import ClienteContratanteCreationForm
 from saas.models import GerenteDeContratos, ClienteContratante
 
 
@@ -48,7 +39,7 @@ class LoginUsuarioContratacaoView(LoginUsuarioGenericoView):
 
 
 class CreateUsuarioContratacaoView(CreateUsuarioGenericoView):
-    form_class = UsuarioGenericoPessoaJuridicaCreationForm
+    form_class = ClienteContratanteCreationForm
     template_name = 'create_user.html'
     success_url = reverse_lazy('home_contratacao')
     form_action = reverse_lazy('criar_usuario_contratacao')
