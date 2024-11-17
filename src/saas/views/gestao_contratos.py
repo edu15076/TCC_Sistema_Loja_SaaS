@@ -22,7 +22,7 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     object_pk = None
 
     def get_pk_slug(self) -> tuple[int | None, str | None]:
-        return (self.object_pk, None)
+        return self.object_pk, None
 
     def alterar_status_contrato(self, contrato) -> None:
         if contrato is None:
