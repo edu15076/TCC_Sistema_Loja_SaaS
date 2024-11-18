@@ -35,3 +35,11 @@ class Periodo(models.Model):
             return timedelta(days=30 * self.numero_de_periodos)
         else:
             return timedelta(days=365 * self.numero_de_periodos)
+
+    @property
+    def unidades_de_tempo_por_periodo_em_dias(self) -> int:
+        return {
+            'DIA': 1,
+            'MES': 30,
+            'ANO': 365,
+        }.get(self.unidades_de_tempo_por_periodo, 1)
