@@ -56,22 +56,14 @@ class ContratoAssinado(models.Model):
             'periodo': self.contrato.periodo.tempo_total.days,  # Ajuste conforme necessário
         }
 
-    def calcular_multa(self, valor_por_periodo: float, taxa_de_multa: float, total_periodos: int) -> float:
+    def calcular_multa(self) -> float:
         """
         Calcula a multa restante para o cliente contratante com base no tempo restante.
         """
-        dias_passados = (date.today() - self.data_contratacao).days
-        # A quantidade de períodos passados deve ser simplesmente a divisão dos dias passados pelos períodos
-        periodos_decorridos = dias_passados // (total_periodos // self.contrato.periodo.tempo_total.days)
-        
-        # Calcula os períodos restantes
-        periodos_restantes = total_periodos - periodos_decorridos
-        
-        if periodos_restantes <= 0:
-            return 0  # Nenhuma multa se o contrato já terminou
-        
-        valor_restante = periodos_restantes * valor_por_periodo
-        # Converte a taxa de multa para decimal.Decimal
-        valor_multa = valor_restante * Decimal(taxa_de_multa) / 100  # A taxa de multa deve ser dividida por 100 para calcular o percentual
-        
-        return valor_multa
+        dias_restantes = (self.contrato.periodo.tempo_total - (date.today() - self.data_contratacao)).days
+        if dias_restantes <= 0:
+            return 0
+
+        periodos_restantes = dias_restantes // self.contrato.periodo.unidades_de_tempo_por_periodo_em_dias
+
+        return periodos_restantes * float(self.contrato.valor_por_periodo) * (1 + self.contrato.taxa_de_multa / 100)
