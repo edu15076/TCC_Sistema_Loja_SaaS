@@ -2,9 +2,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
 
-__all__ = (
-    'CrispyFormMixin',
-)
+__all__ = ('CrispyFormMixin',)
 
 
 class CrispyFormMixin:

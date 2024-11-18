@@ -50,11 +50,13 @@ class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessForm
                 self.object = queryset.get()
         except queryset.model.DoesNotExist:
             raise Http404(
-                _((
+                _(
+                    (
                         f"Não foi encontrado nenhum "
                         f"{queryset.model._meta.verbose_name}"
                         f" correspondendo a consulta"
-                ))
+                    )
+                )
             )
 
         return self.object
@@ -66,10 +68,12 @@ class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessForm
 
         if not allow_empty and len(self.object_list) == 0:
             raise Http404(
-                _((
+                _(
+                    (
                         f"Não encontrados objetos correspondentes"
                         f"{self.queryset.model._meta.verbose_name}s"
-                ))
+                    )
+                )
             )
 
         form_class = self.get_form_class()
@@ -89,31 +93,30 @@ class BaseCreateOrUpdateListView(BaseFilterListView, ModelFormMixin, ProcessForm
 
     def form_invalid(self, form):
         self.object_list = self.get_queryset()
-        
+
         return self.render_to_response(
             self.get_context_data(object_list=self.object_list, form=form)
         )
-    
+
     def get_data(self):
         return model_to_dict(self.object)
-    
+
     def form_valid(self, form):
         self.object = form.save()
-        return JsonResponse({
-            'success': True,
-            'data': self.get_data()
-            }, status=200
-        )
+        return JsonResponse({'success': True, 'data': self.get_data()}, status=200)
+
 
 class CreateOrUpdateListView(
-    BaseCreateOrUpdateListView, MultipleObjectTemplateResponseMixin):
+    BaseCreateOrUpdateListView, MultipleObjectTemplateResponseMixin
+):
     """
     View que permite visualizar uma lista de objetos, cadastrar e editar eles
     """
 
+
 class CreateOrUpdateListHTMXView(
     HTMXModelFormMixin,
-    BaseCreateOrUpdateListView, 
+    BaseCreateOrUpdateListView,
     MultipleObjectTemplateResponseMixin,
 ):
     """
@@ -126,8 +129,4 @@ class CreateOrUpdateListHTMXView(
 
     def form_valid(self, form):
         self.object = form.save()
-        return JsonResponse({
-            'success': True,
-            'data': self.get_data()
-            }, status=200
-        )
+        return JsonResponse({'success': True, 'data': self.get_data()}, status=200)

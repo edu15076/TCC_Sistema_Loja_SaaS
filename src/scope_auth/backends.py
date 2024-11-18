@@ -9,13 +9,18 @@ class ModelScopeBackend(ModelBackend):
         if username is None or password is None:
             return
 
-        scope = get_scope_from_request(request) if kwargs.get('scope') is None else kwargs['scope']
+        scope = (
+            get_scope_from_request(request)
+            if kwargs.get('scope') is None
+            else kwargs['scope']
+        )
         if scope is None:
             return
 
         try:
-            user = UserModel._default_manager.get_by_natural_key(username=username,
-                                                                 scope=scope)
+            user = UserModel._default_manager.get_by_natural_key(
+                username=username, scope=scope
+            )
         except UserModel.DoesNotExist:
             # Run the default password hasher once to reduce the timing
             # difference between an existing and a nonexistent user (#20760).

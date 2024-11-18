@@ -13,9 +13,9 @@ __all__ = ('DadosEmpresa',)
 class _DadosEmpresaMeta(type):
     @CachedClassProperty
     def _dados_empresa(cls) -> dict:
-        src_path = next((parent
-                         for parent in Path(__file__).parents
-                         if parent.name == 'src'), None)
+        src_path = next(
+            (parent for parent in Path(__file__).parents if parent.name == 'src'), None
+        )
         return cls._parse_dados_empresa(src_path / 'empresa.csv')
 
     @classmethod
@@ -26,9 +26,9 @@ class _DadosEmpresaMeta(type):
 
             # transforma as chaves para uppercase
             dados_empresa: dict[str, str] = {
-                unidecode(
-                    key.strip().upper().replace(' ', '_')
-                ): str(dados_empresa_dirty[key])
+                unidecode(key.strip().upper().replace(' ', '_')): str(
+                    dados_empresa_dirty[key]
+                )
                 for key in dados_empresa_dirty
             }
 
@@ -50,6 +50,7 @@ class _DadosEmpresa(metaclass=_DadosEmpresaMeta):
     `RAZAO_SOCIAL`, `NOME_FANTASIA`, `CNPJ`, `SENHA_DEFAULT`, `TELEFONE`, `EMAIL`,
     `EMAIL_TECNICO`, `EMAIL_PAGAMENTO`
     """
+
     pass
 
 

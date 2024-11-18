@@ -4,8 +4,11 @@ from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.db.models.functions import Length
 
-from ..validators import (codigo_validator, PESSOA_FISICA_CODIGO_LEN,
-                          PESSOA_JURIDICA_CODIGO_LEN)
+from ..validators import (
+    codigo_validator,
+    PESSOA_FISICA_CODIGO_LEN,
+    PESSOA_JURIDICA_CODIGO_LEN,
+)
 
 
 models.CharField.register_lookup(Length, 'length')
@@ -32,11 +35,10 @@ class Pessoa(models.Model):
         _('Código'),
         max_length=max(PESSOA_JURIDICA_CODIGO_LEN, PESSOA_FISICA_CODIGO_LEN),
         db_column='codigo',
-        validators=[codigo_validator]
+        validators=[codigo_validator],
     )
 
-    telefone = models.CharField(_('Telefone'), max_length=15, blank=True,
-                                null=True)
+    telefone = models.CharField(_('Telefone'), max_length=15, blank=True, null=True)
     email = models.EmailField(_('Endereço de email'), blank=True)
 
     pessoas = PessoaManager()
@@ -86,8 +88,9 @@ class PessoaFisica(Pessoa):
 
     @classmethod
     def is_pessoa_fisica(cls, pessoa: Pessoa):
-        return (hasattr(pessoa, 'codigo') and
-                len(pessoa.codigo) == PESSOA_FISICA_CODIGO_LEN)
+        return (
+            hasattr(pessoa, 'codigo') and len(pessoa.codigo) == PESSOA_FISICA_CODIGO_LEN
+        )
 
     @property
     def cpf(self) -> str:
@@ -131,17 +134,19 @@ class PessoaJuridicaManager(PessoaManager):
 
 
 class PessoaJuridica(Pessoa):
-    razao_social = models.CharField(_('Razão social'), max_length=100,
-                                    blank=True, unique=True)
-    nome_fantasia = models.CharField(_('Nome fantasia'), max_length=100,
-                                     blank=True)
+    razao_social = models.CharField(
+        _('Razão social'), max_length=100, blank=True, unique=True
+    )
+    nome_fantasia = models.CharField(_('Nome fantasia'), max_length=100, blank=True)
 
     pessoas = PessoaJuridicaManager()
 
     @classmethod
     def is_pessoa_juridica(cls, pessoa: Pessoa):
-        return (hasattr(pessoa, 'codigo') and
-                len(pessoa.codigo) == PESSOA_JURIDICA_CODIGO_LEN)
+        return (
+            hasattr(pessoa, 'codigo')
+            and len(pessoa.codigo) == PESSOA_JURIDICA_CODIGO_LEN
+        )
 
     @property
     def cnpj(self) -> str:
