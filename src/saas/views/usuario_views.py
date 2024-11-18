@@ -5,6 +5,19 @@ from common.forms import (
     UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoPessoaJuridicaChangeForm,
 )
+from common.views import (
+    LoginUsuarioGenericoView,
+    CreateUsuarioGenericoView,
+    UpdateUsuarioGenericoView,
+    LogoutUsuarioGenericoView,
+)
+from common.views import (
+    LoginUsuarioGenericoView,
+    CreateUsuarioGenericoView,
+    UpdateUsuarioGenericoView,
+    LogoutUsuarioGenericoView,
+    PasswordChangeUsuarioGenericoView,
+)
 from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
                           UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
                           PasswordChangeUsuarioGenericoView)

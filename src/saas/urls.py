@@ -9,7 +9,11 @@ urlpatterns = [
         CreateUsuarioContratacaoView.as_view(),
         name='criar_usuario_contratacao',
     ),
-    path('login/', LoginUsuarioContratacaoView.as_view(), name='login_contratacao'),
+    path(
+        'login/',
+        LoginUsuarioContratacaoView.as_view(),
+        name='login_contratacao'
+    ),
     path(
         '',
         TemplateView.as_view(template_name='home_contratacao.html'),
@@ -20,8 +24,16 @@ urlpatterns = [
         UpdateUsuarioContratacaoView.as_view(),
         name='editar_usuario_contratacao',
     ),
-    path('logout/', LogoutUsuarioContratacaoView.as_view(), name='logout_contratacao'),
-    path('contratos/', GestaoContratoCRUDListView.as_view(), name='gestao_contrato'),
+    path(
+        'logout/',
+        LogoutUsuarioContratacaoView.as_view(),
+        name='logout_contratacao'
+    ),
+    path(
+        'contratos/',
+        GestaoContratoCRUDListView.as_view(),
+        name='gestao_contrato'
+    ),
     path(
         'contratos_disponiveis/',
         ContratosDisponiveisCRUDView.as_view(),

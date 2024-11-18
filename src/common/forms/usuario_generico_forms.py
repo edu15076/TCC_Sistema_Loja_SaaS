@@ -1,7 +1,11 @@
 from crispy_forms.layout import Submit
-from django.contrib.auth.forms import BaseUserCreationForm, AuthenticationForm, \
-    UserChangeForm
+
 from django.db import transaction
+from django.contrib.auth.forms import (
+    BaseUserCreationForm,
+    AuthenticationForm,
+    UserChangeForm,
+)
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
