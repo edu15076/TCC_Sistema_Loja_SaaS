@@ -39,12 +39,20 @@ class ContratoAssinado(models.Model):
     # Gerenciador personalizado
     objects = ContratoAssinadoManager()
 
-    # Métodos do modelo
     def values_visualizacao_cliente_contratante(self) -> dict:
+        """
+        Retorna um dicionário com os valores calculados ou atributos do contrato
+        para visualização no cliente contratante.
+        """
         return {
             'data_contratacao': self.data_contratacao,
-            'contrato': self.contrato.values_visualizacao_cliente_contratante(),
-            # Adicione mais atributos conforme necessário
+            'contrato': self.contrato.descricao,
+            'valor_por_periodo': float(self.contrato.valor_por_periodo),
+            'telas_simultaneas': self.contrato.telas_simultaneas,
+            'taxa_de_multa': self.contrato.taxa_de_multa,
+            'tempo_maximo_de_atraso_em_dias': self.contrato.tempo_maximo_de_atraso_em_dias,
+            'valor_total': float(self.contrato.valor_total),
+            'periodo': self.contrato.periodo.tempo_total.days,  # Ajuste conforme necessário
         }
 
     def calcular_multa(self, valor_por_periodo: float, taxa_de_multa: float, total_periodos: int) -> float:

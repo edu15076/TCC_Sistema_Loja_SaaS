@@ -1,5 +1,5 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib import messages
 from django.views import View
 from saas.models.contrato_assinado import ContratoAssinado
@@ -32,4 +32,11 @@ class ContratoAssinadoView(ABCContratoAssinadoView, View):
                 'mensagem_erro': "Nenhum contrato vigente encontrado."
             })
 
-        return render(request, self.template_name, {"contrato": contrato})
+        # Obtendo os valores para visualização do cliente contratante
+        valores = contrato.values_visualizacao_cliente_contratante()
+
+        # Renderizando o template com os valores do contrato
+        return render(request, self.template_name, {
+            'contrato': contrato,
+            'valores': valores,
+        })

@@ -12,7 +12,7 @@
         <!-- Verifica se há um contrato para cancelar -->
         {% if contrato %}
             <section id="cancelar-contrato-section" class="card p-4 mb-4">
-                <h2 class="mb-3">Cancelar Contrato</h2>
+                <h2 class="mb-3">Contrato</h2>
                 <p><strong>Contrato assinado:</strong> {{ contrato.contrato }}</p>
                 <p><strong>Data de contratação:</strong> {{ contrato.data_contratacao }}</p>
                 <p><strong>Valor por período:</strong> R$ {{ valores.valor_por_periodo }}</p>
@@ -21,8 +21,11 @@
                 <p><strong>Tempo máximo de atraso:</strong> {{ valores.tempo_maximo_de_atraso_em_dias }} dias</p>
                 <p><strong>Valor total:</strong> R$ {{ valores.valor_total }}</p>
                 <p><strong>Período:</strong> {{ valores.periodo }} dias</p>
-                <button class="btn btn-danger" hx-get="{% url 'cancelar_contrato' %}" hx-target="#cancelar-contrato" hx-swap="innerHTML">
-                    Cancelar contrato
+                <button class="btn btn-danger"
+                hx-get="{% url 'cancelar_contrato' %}"
+                hx-target="#cancelar-contrato"
+                hx-swap="innerHTML">
+                Cancelar contrato
                 </button>
             </section>
         {% else %}
