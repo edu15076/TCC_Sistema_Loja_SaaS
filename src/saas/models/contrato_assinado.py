@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from datetime import date
 from saas.models.contrato import Contrato
 from saas.models.usuario_contratacao import ClienteContratante
+from decimal import Decimal
 
 __all__ = [
     'ContratoAssinadoQuerySet',
@@ -60,14 +61,17 @@ class ContratoAssinado(models.Model):
         Calcula a multa restante para o cliente contratante com base no tempo restante.
         """
         dias_passados = (date.today() - self.data_contratacao).days
-        # Total de períodos decorridos desde a contratação
-        periodos_decorridos = dias_passados // total_periodos
+        # A quantidade de períodos passados deve ser simplesmente a divisão dos dias passados pelos períodos
+        periodos_decorridos = dias_passados // (total_periodos // self.contrato.periodo.tempo_total.days)
+        
+        # Calcula os períodos restantes
         periodos_restantes = total_periodos - periodos_decorridos
-
+        
         if periodos_restantes <= 0:
             return 0  # Nenhuma multa se o contrato já terminou
         
         valor_restante = periodos_restantes * valor_por_periodo
-        valor_multa = valor_restante * taxa_de_multa
+        # Converte a taxa de multa para decimal.Decimal
+        valor_multa = valor_restante * Decimal(taxa_de_multa) / 100  # A taxa de multa deve ser dividida por 100 para calcular o percentual
         
         return valor_multa

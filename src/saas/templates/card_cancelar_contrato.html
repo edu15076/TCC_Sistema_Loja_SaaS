@@ -1,0 +1,32 @@
+<div class="card" id="cancelamento-card">
+    <div class="card-body">
+        <h5 class="card-title">Cancelar Contrato</h5>
+        <p class="card-text">Você está prestes a cancelar o contrato: {{ contrato.contrato.nome }}</p>
+        <p class="card-text">Multa de cancelamento: R$ {{ multa|floatformat:2 }}</p>
+
+        <!-- Formulário de cancelamento com hx-post -->
+        <form method="POST" hx-post="{% url 'cancelar_contrato' %}" hx-target="#feedback" hx-swap="innerHTML">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" id="cancel-btn">
+                Confirmar Cancelamento
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Div para exibir o feedback com a mensagem de sucesso ou erro -->
+<!-- Por algum diabo renderiza novamente o card, então estou apagando ele-->
+<div id="feedback" class="mt-3">
+    {% if mensagem %}
+        <div class="alert alert-success">
+            {{ mensagem }}
+        </div>
+        <script>
+            document.getElementById('cancelamento-card').style.display = 'none';
+            
+            setTimeout(function() {
+                window.location.reload();  
+            }, 1000);  
+        </script>
+    {% endif %}
+</div>

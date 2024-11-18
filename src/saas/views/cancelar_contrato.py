@@ -19,14 +19,17 @@ class CancelarContratoView(View):
         ).first()
 
         if not contrato_assinado:
-            return redirect('contratos_disponiveis')  # Redireciona para a página de contratos disponíveis
+            return redirect('contratos_disponiveis') 
 
         try:
+            # Calcula o total de períodos em dias (baseado no tempo total do contrato)
+            total_periodos = contrato_assinado.contrato.periodo.tempo_total.days
+            
             # Cálculo da multa
             multa = contrato_assinado.calcular_multa(
                 valor_por_periodo=contrato_assinado.contrato.valor_por_periodo,
                 taxa_de_multa=contrato_assinado.contrato.taxa_de_multa,
-                total_periodos=contrato_assinado.contrato.periodo.tempo_total.days
+                total_periodos=total_periodos
             )
         except AttributeError as e:
             return JsonResponse({'error': 'Erro ao calcular a multa. Verifique os dados do contrato.', 'details': str(e)}, status=500)
@@ -52,4 +55,12 @@ class CancelarContratoView(View):
         contrato_assinado.vigente = False
         contrato_assinado.save()
 
-        return JsonResponse({'message': 'Contrato cancelado com sucesso!'}, status=200)
+        return render(request, self.template_name, {
+            'contrato': contrato_assinado,
+            'multa': contrato_assinado.calcular_multa(
+                valor_por_periodo=contrato_assinado.contrato.valor_por_periodo,
+                taxa_de_multa=contrato_assinado.contrato.taxa_de_multa,
+                total_periodos=contrato_assinado.contrato.periodo.tempo_total.days
+            ),
+            'mensagem': 'Contrato cancelado com sucesso!'
+        })

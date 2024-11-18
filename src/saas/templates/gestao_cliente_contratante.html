@@ -22,10 +22,10 @@
                 <p><strong>Valor total:</strong> R$ {{ valores.valor_total }}</p>
                 <p><strong>Período:</strong> {{ valores.periodo }} dias</p>
                 <button class="btn btn-danger"
-                hx-get="{% url 'cancelar_contrato' %}"
-                hx-target="#cancelar-contrato"
-                hx-swap="innerHTML">
-                Cancelar contrato
+                    hx-get="{% url 'cancelar_contrato' %}"
+                    hx-target="#cancelar-contrato"
+                    hx-swap="innerHTML">
+                    Cancelar contrato
                 </button>
             </section>
         {% else %}
