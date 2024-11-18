@@ -5,5 +5,5 @@ from django.contrib.auth.models import Group
 
 @dataclass
 class DadosPapeis:
-    CLIENTE_CONTRATANTE = Group.objects.get(name='saas_clientes_contratantes').name
-    GERENTE_DE_CONTRATOS = Group.objects.get(name='saas_gerente_de_contratos').name
+    CLIENTE_CONTRATANTE = 'saas_clientes_contratantes'
+    GERENTE_DE_CONTRATOS = 'saas_gerente_de_contratos'

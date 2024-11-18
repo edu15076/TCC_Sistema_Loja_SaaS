@@ -1,4 +1,6 @@
 from crispy_forms.layout import Submit
+
+from django.db import transaction
 from django.contrib.auth.forms import (
     BaseUserCreationForm,
     AuthenticationForm,
@@ -82,11 +84,12 @@ class UsuarioGenericoCreationForm(
         )
         instance.pessoa_usuario = pessoa_usuario
 
+    @transaction.atomic
     def save(self, commit=True):
         user: UsuarioGenerico = super().save(commit=False)
-        self._save_pessoa_usuario(user)
 
         if commit:
+            self._save_pessoa_usuario(user)
             user.save()
             if hasattr(self, 'save_m2m'):
                 self.save_m2m()
