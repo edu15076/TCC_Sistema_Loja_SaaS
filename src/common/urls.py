@@ -3,5 +3,4 @@ from django.views.generic import TemplateView
 
 from .views import *
 
-urlpatterns = [
-]
+urlpatterns = []

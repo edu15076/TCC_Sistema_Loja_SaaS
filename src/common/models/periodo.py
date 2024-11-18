@@ -5,9 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 
 
-__all__ = [
-    'Periodo'
-]
+__all__ = ['Periodo']
 
 
 class Periodo(models.Model):
@@ -18,13 +16,13 @@ class Periodo(models.Model):
 
     numero_de_periodos = models.IntegerField(
         _('Numero de periodos'),
-        validators=[MinValueValidator(0, _('Numero de  não pode ser negativo.'))]
+        validators=[MinValueValidator(0, _('Numero de  não pode ser negativo.'))],
     )
     unidades_de_tempo_por_periodo = models.CharField(
-        _('Unidade de tempo por periodo'), 
+        _('Unidade de tempo por periodo'),
         max_length=3,
         choices=UnidadeDeTempo,
-        default=UnidadeDeTempo.MES
+        default=UnidadeDeTempo.MES,
     )
 
     periodos = models.Manager()

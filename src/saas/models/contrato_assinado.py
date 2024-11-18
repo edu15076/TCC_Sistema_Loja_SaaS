@@ -17,7 +17,7 @@ class ContratoAssinadoQuerySet(models.QuerySet):
 
 class ContratoAssinadoManager(models.Manager):
     def get_queryset(self):
-        return ContratoAssinadoQuerySet(self.model, using == self._db).all()
+        return ContratoAssinadoQuerySet(self.model, using=self._db).all()
 
 
 class ContratoAssinado(models.Model):

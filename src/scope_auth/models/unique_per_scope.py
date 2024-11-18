@@ -37,8 +37,9 @@ class UniquePerScopeMeta(ModelBase, ModelMetaClassMixin):
         # make each UNIQUE_IN_SCOPE fields unique_together with scope
         unique_in_scope = cls._get_unique_in_scope(attrs, bases)
 
-        unique_together = tuple((unique_field, 'scope')
-                                for unique_field in unique_in_scope)
+        unique_together = tuple(
+            (unique_field, 'scope') for unique_field in unique_in_scope
+        )
 
         cls._add_unique_together(attrs, unique_together)
 
@@ -59,11 +60,7 @@ class UniquePerScopeModelManager(models.Manager):
 
 
 class AbstractUniquePerScopeModel(models.Model, metaclass=UniquePerScopeMeta):
-    scope = models.ForeignKey(
-        Scope,
-        models.CASCADE,
-        related_name='unique_per_scope'
-    )
+    scope = models.ForeignKey(Scope, models.CASCADE, related_name='unique_per_scope')
 
     UNIQUE_IN_SCOPE = []
 

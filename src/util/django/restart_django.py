@@ -12,7 +12,6 @@ def restart_django(*, imprimir_versoes: bool = False):
     sys.path.append('../..')
 
     # configura o ambiente
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE',
-                          'sistema_loja_saas.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistema_loja_saas.settings')
     os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = 'true'
     django.setup()

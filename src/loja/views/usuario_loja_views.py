@@ -3,11 +3,21 @@ from django.urls import reverse_lazy
 from common.forms import (
     UsuarioGenericoPessoaJuridicaAuthenticationForm,
     UsuarioGenericoPessoaJuridicaCreationForm,
-    UsuarioGenericoPessoaJuridicaChangeForm
+    UsuarioGenericoPessoaJuridicaChangeForm,
 )
-from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
-                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
-                          PasswordChangeUsuarioGenericoView)
+from common.views import (
+    LoginUsuarioGenericoView,
+    CreateUsuarioGenericoView,
+    UpdateUsuarioGenericoView,
+    LogoutUsuarioGenericoView,
+)
+from common.views import (
+    LoginUsuarioGenericoView,
+    CreateUsuarioGenericoView,
+    UpdateUsuarioGenericoView,
+    LogoutUsuarioGenericoView,
+    PasswordChangeUsuarioGenericoView,
+)
 
 
 __all__ = (

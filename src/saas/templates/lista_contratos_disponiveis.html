@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% include '' %}
+
+{% block header %}
+    {% include 'navbar/top_navbar_contratacao.html' %}
+{% endblock header %}
+
+{% block main %}
+    <h1 class="p-4 pb-0">Contratos Disponíveis</h1>
+    <section id="filtro-form" class="card m-4 pt-3 pb-2 p-4 d-flex flex-row">
+        <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
+            {% crispy filter_form %}
+        </form>
+    </section>
+    <section id="lista_contratos" class="container mt-3 pt-0 p-4 row">
+        {% for contrato in contratos %}
+            {% include 'cards/card_contrato_disponivel.html' %}
+            {% include 'modal_detalhes_contrato.html' %}
+        {% endfor %}
+    </section>
+    {% include 'modal_detalhes_contrato.html' %}
+{% endblock main %}
