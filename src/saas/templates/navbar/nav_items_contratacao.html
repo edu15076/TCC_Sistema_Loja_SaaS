@@ -1,3 +1,20 @@
-<li class="nav-item">
-    <a href="{% url 'home_contratacao' %}" class="nav-link">Home</a>
-</li>
+{% if user.is_authenticated %}
+    <li class="nav-item">
+        <a href="{% url 'home_contratacao' %}" class="nav-link">Home</a>
+    </li>
+    {% if perms.saas.gerir_contratos %}
+        <li class="nav-item">
+            <a href="{% url 'gestao_contrato' %}" class="nav-link">Gerir Contratos</a>
+        </li>
+    {% endif %}
+    {% if perms.saas.consultar_contratos_disponiveis %}
+        <li class="nav-item">
+            <a href="{% url 'contratos_disponiveis' %}" class="nav-link">Contratos Disponíveis</a>
+        </li>
+    {% endif %}
+    {% if perms.saas.gerir_assinatura_do_contrato %}
+        <li class="nav-item">
+            <a href="{% url 'visualizar_contrato_assinado' %}" class="nav-link">Minha Assinatura</a>
+        </li>
+    {% endif %}
+{% endif %}

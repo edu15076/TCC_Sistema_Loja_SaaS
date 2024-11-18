@@ -25,10 +25,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             lambda apps, schema_editor: criar_grupos_usuarios(
-                apps, schema_editor, grupos_funcionarios
+                apps, schema_editor, grupos_funcionarios, 'loja'
             ),
             lambda apps, schema_editor: deletar_grupos_usuarios(
-                apps, schema_editor, grupos_funcionarios
+                apps, schema_editor, grupos_funcionarios, 'loja'
             ),
         )
     ]

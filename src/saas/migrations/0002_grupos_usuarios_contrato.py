@@ -7,8 +7,15 @@ from common.grupos_create_delete import criar_grupos_usuarios, deletar_grupos_us
 
 # TODO: Associar permissões aos grupos criados
 grupos_usuarios_contrato = {
-    'saas_gerente_de_contratos': [],
-    'saas_clientes_contratantes': [],
+    'saas_gerente_de_contratos': [
+        'gerenciar_perfil',
+        'gerir_contratos',
+    ],
+    'saas_clientes_contratantes': [
+        'gerenciar_perfil',
+        'consultar_contratos_disponiveis',
+        'gerir_assinatura_do_contrato',
+    ],
 }
 
 
@@ -21,10 +28,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             lambda apps, schema_editor: criar_grupos_usuarios(
-                apps, schema_editor, grupos_usuarios_contrato
+                apps, schema_editor, grupos_usuarios_contrato, 'saas'
             ),
             lambda apps, schema_editor: deletar_grupos_usuarios(
-                apps, schema_editor, grupos_usuarios_contrato
+                apps, schema_editor, grupos_usuarios_contrato, 'saas'
             ),
         )
     ]
