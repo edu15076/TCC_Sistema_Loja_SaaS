@@ -67,7 +67,8 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     def form_valid(self, form):
         contrato = form.save()
         return render(
-            self.request, 'card_contrato.html', {'contrato': contrato, 'success': True}
+            self.request,
+            'cards/card_contrato.html', {'contrato': contrato, 'success': True}
         )
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:

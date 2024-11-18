@@ -50,7 +50,7 @@ class ABCCancelarContratoView(
         return super().post(request, *args, **kwargs)
 
 class ABCCancelarContratoAssinado(ABCCancelarContratoView):
-    template_name = 'card_cancelar_contrato.html'
+    template_name = 'cards/card_cancelar_contrato.html'
 
     def get_contrato_assinado(self, contrato_id=None) -> ContratoAssinado:
         """
