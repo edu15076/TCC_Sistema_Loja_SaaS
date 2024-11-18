@@ -51,3 +51,18 @@ class Contrato(models.Model):
         self.valor_total = self.valor_por_periodo * self.periodo.numero_de_periodos
 
         super().save(*args, **kwargs)
+    
+    def values_visualizacao_cliente_contratante(self, contrato) -> dict:
+        """
+        Retorna um dicionário com os valores calculados ou atributos do contrato
+        para visualização no cliente contratante.
+        """
+        return {
+            'descricao': contrato.descricao,
+            'valor_por_periodo': contrato.valor_por_periodo,
+            'telas_simultaneas': contrato.telas_simultaneas,
+            'taxa_de_multa': contrato.taxa_de_multa,
+            'tempo_maximo_de_atraso_em_dias': contrato.tempo_maximo_de_atraso_em_dias,
+            'valor_total': contrato.valor_total,
+            'periodo': contrato.periodo.tempo_total.days,
+        }

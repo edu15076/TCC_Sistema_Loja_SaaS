@@ -39,9 +39,18 @@ urlpatterns = [
         ContratosDisponiveisCRUDView.as_view(),
         name='contratos_disponiveis',
     ),
-    path(
-        'editar_senha/',
-        PasswordChangeUsuarioContratacaoView.as_view(),
-        name='editar_senha_contratacao',
+    re_path(
+        r'^contratos(/(?P<pk>\d+))?/$',
+        GestaoContratoCRUDListView.as_view(),
+        name='gestao_contrato',
     ),
+    path('editar_senha/',
+         PasswordChangeUsuarioContratacaoView.as_view(),
+         name='editar_senha_contratacao'),
+    path('visualizar_contrato_assinado/',
+        ContratoAssinadoView.as_view(),
+        name='visualizar_contrato_assinado'),
+    path('cancelar_contrato/',
+        CancelarContratoView.as_view(),
+        name='cancelar_contrato')
 ]

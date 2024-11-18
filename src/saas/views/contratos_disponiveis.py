@@ -22,7 +22,7 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
             cnpj=self.user.codigo
         )
 
-        possui_contrato = ContratoAssinado.contratos_assinados.filter(
+        possui_contrato = ContratoAssinado.objects.contratos_disponiveis().filter(
             cliente_contratante=cliente_contratante
         ).exists()
 

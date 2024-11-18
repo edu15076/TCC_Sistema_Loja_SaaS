@@ -4,7 +4,7 @@
 
 {% block main_content %}
     <h1>Contratos</h1>
-    <p>{{ contratos|yesno:"True,False"|length }} de {{ contratos|length }} contratos ativos</p>
+    <p>{{ contratos_ativos_count }} de {{ contratos|length }} contratos ativos</p>
     <section id="filtro-form">
         <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
             {% crispy filter_form %}
