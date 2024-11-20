@@ -54,12 +54,7 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         return render(
             request,
             self.template_name,
-            {
-                'form': form,
-                'filter_form': filter_form,
-                'contratos': queryset,
-                'contratos_ativos_count': Contrato.contratos.filter(ativo=True).count(),
-            },
+            {'form': form, 'filter_form': filter_form, 'contratos': queryset, 'contratos_ativos_count': Contrato.contratos.filter(ativo=True).count()},
         )
 
     def form_valid(self, form):
