@@ -30,8 +30,6 @@ class UsuarioContratacaoManager(UsuarioGenericoPessoaJuridicaManager):
             telefone=telefone,
             **dados_pessoa,
         )
-        if self.model.papel_group is not None:
-            usuario.groups.set([self.model.papel_group])
         return usuario
 
 
@@ -41,6 +39,12 @@ class UsuarioContratacao(UsuarioGenericoPessoaJuridica):
     @CachedClassProperty
     def papel_group(cls) -> Group | None:
         return None
+
+    def save(self, *args, **kwargs) -> None:
+        is_being_created = self.pk is None
+        super().save(*args, **kwargs)
+        if is_being_created and self.papel_group is not None:
+            self.groups.add(self.papel_group)
 
     class Meta:
         proxy = True
@@ -75,3 +79,16 @@ class ClienteContratante(UsuarioContratacao):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='saas_clientes_contratantes')
+
+    def save(self, *args, **kwargs):
+        self.loja = (
+            Loja.lojas.create()
+            if not hasattr(self, 'loja') or self.loja is None
+            else self.loja
+        )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        loja = self.loja
+        super().delete(*args, **kwargs)
+        loja.delete()

@@ -37,7 +37,7 @@ class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
     form_class = UsuarioGenericoCreationForm
 
     def get_form_kwargs(self):
-        return super().get_form_kwargs() | {'scope': self.get_scope()}
+        return super().get_form_kwargs() | {'scope': self.scope}
 
     def form_valid(self, form):
         response = super().form_valid(form)
