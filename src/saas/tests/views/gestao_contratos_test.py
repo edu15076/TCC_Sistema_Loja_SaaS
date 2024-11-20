@@ -6,7 +6,6 @@ from django.forms.models import model_to_dict
 
 from saas.models import Contrato
 from common.models import Periodo
-from saas.views import GestaoContratoCRUDListView
 from common.mixins import TestLoginRequiredMixin
 
 
