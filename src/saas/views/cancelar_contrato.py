@@ -4,7 +4,7 @@ from django.views import View
 from saas.models.contrato_assinado import ContratoAssinado
 
 class CancelarContratoView(View):
-    template_name = 'card_cancelar_contrato.html'
+    template_name = 'cards/card_cancelar_contrato.html'
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """

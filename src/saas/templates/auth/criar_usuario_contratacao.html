@@ -1,0 +1,9 @@
+{% extends 'base_contratacao.html' %}
+
+{% block title %}Cadastrar empresa{% endblock title %}
+
+{% block main_content %}
+    <h1>Cadastrar empresa</h1>
+    {% include 'forms/htmx_form_post_template.html' %}
+    <a href="{% url 'login_contratacao' %}">Já tenho uma conta</a>
+{% endblock main_content %}
