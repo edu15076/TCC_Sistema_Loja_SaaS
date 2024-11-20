@@ -6,17 +6,24 @@ from common.forms import (
     UsuarioGenericoPessoaJuridicaChangeForm
 )
 from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
-                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView)
+                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
+                          PasswordChangeUsuarioGenericoView)
+from saas.models import GerenteDeContratos, ClienteContratante
 
 
 __all__ = (
     'LogoutUsuarioContratacaoView',
     'LoginUsuarioContratacaoView',
     'CreateUsuarioContratacaoView',
-    'UpdateUsuarioContratacaoView'
+    'UpdateUsuarioContratacaoView',
+    'PasswordChangeUsuarioContratacaoView',
 )
 
-from saas.models import GerenteDeContratos, ClienteContratante
+
+class PasswordChangeUsuarioContratacaoView(PasswordChangeUsuarioGenericoView):
+    success_url = reverse_lazy('home_contratacao')
+    form_action = reverse_lazy('editar_senha_contratacao')
+    login_url = reverse_lazy('login_contratacao')
 
 
 class LogoutUsuarioContratacaoView(LogoutUsuarioGenericoView):

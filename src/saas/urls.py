@@ -22,4 +22,7 @@ urlpatterns = [
     path('contratos/',
          GestaoContratoCRUDListView.as_view(),
          name='gestao_contrato'),
+    path('editar_senha/',
+         PasswordChangeUsuarioContratacaoView.as_view(),
+         name='editar_senha_contratacao'),
 ]
