@@ -1,28 +1,34 @@
 from django.contrib.auth.models import Group
-from django.db import models
+from django.db import models, transaction
 
-from common.models import (UsuarioGenericoPessoaJuridica,
-                           UsuarioGenericoPessoaJuridicaManager)
+from common.models import (
+    UsuarioGenericoPessoaJuridica,
+    UsuarioGenericoPessoaJuridicaManager,
+)
 from common.models import ContratosScope
 from loja.models import Loja
 from util.decorators import CachedClassProperty
 from util.models.singleton import AbstractSingleton, SingletonManager, SingletonMixin
 
-__all__ = (
-    'UsuarioContratacao',
-    'GerenteDeContratos',
-    'ClienteContratante'
-)
+__all__ = ('UsuarioContratacao', 'GerenteDeContratos', 'ClienteContratante')
 
 
 class UsuarioContratacaoManager(UsuarioGenericoPessoaJuridicaManager):
     def criar_usuario_contratacao(
-            self, cnpj: str, password: str = None, email: str = None,
-            telefone: str = None, **dados_pessoa
+        self,
+        cnpj: str,
+        password: str = None,
+        email: str = None,
+        telefone: str = None,
+        **dados_pessoa,
     ):
         usuario = self.criar_usuario(
-            cnpj=cnpj, scope=ContratosScope.instance, password=password, email=email,
-            telefone=telefone, **dados_pessoa
+            cnpj=cnpj,
+            scope=ContratosScope.instance,
+            password=password,
+            email=email,
+            telefone=telefone,
+            **dados_pessoa,
         )
         if self.model.papel_group is not None:
             usuario.groups.set([self.model.papel_group])
@@ -60,8 +66,9 @@ class ClienteContratanteManager(UsuarioContratacaoManager):
 
 
 class ClienteContratante(UsuarioContratacao):
-    loja = models.OneToOneField(Loja, on_delete=models.CASCADE,
-                                related_name='contratante')
+    loja = models.OneToOneField(
+        Loja, on_delete=models.CASCADE, related_name='contratante'
+    )
 
     contratantes = ClienteContratanteManager()
 

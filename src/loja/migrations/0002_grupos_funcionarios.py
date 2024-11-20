@@ -7,24 +7,12 @@ from common.grupos_create_delete import criar_grupos_usuarios, deletar_grupos_us
 
 # TODO: Associar permissões aos grupos criados
 grupos_funcionarios = {
-    'loja_chefes': [
-
-    ],
-    'loja_gerentes_de_rh': [
-
-    ],
-    'loja_gerentes_de_estoque': [
-
-    ],
-    'loja_gerentes_de_vendas': [
-
-    ],
-    'loja_caixeiros': [
-
-    ],
-    'loja_vendedores': [
-
-    ]
+    'loja_chefes': [],
+    'loja_gerentes_de_rh': [],
+    'loja_gerentes_de_estoque': [],
+    'loja_gerentes_de_vendas': [],
+    'loja_caixeiros': [],
+    'loja_vendedores': [],
 }
 
 
@@ -36,9 +24,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            lambda apps, schema_editor: criar_grupos_usuarios(apps, schema_editor,
-                                                              grupos_funcionarios),
-            lambda apps, schema_editor: deletar_grupos_usuarios(apps, schema_editor,
-                                                                grupos_funcionarios)
+            lambda apps, schema_editor: criar_grupos_usuarios(
+                apps, schema_editor, grupos_funcionarios, 'loja'
+            ),
+            lambda apps, schema_editor: deletar_grupos_usuarios(
+                apps, schema_editor, grupos_funcionarios, 'loja'
+            ),
         )
     ]

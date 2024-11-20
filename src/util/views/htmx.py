@@ -31,8 +31,9 @@ class HTMXFormMixin(FormMixin):
             self.extra_context.update({'action': self.form_action})
 
     def form_invalid(self, form):
-        return TemplateResponse(self.request, self.form_template_name,
-                                self.get_context_data(form=form))
+        return TemplateResponse(
+            self.request, self.form_template_name, self.get_context_data(form=form)
+        )
 
     def form_valid(self, form):
         return HttpResponseHTMXRedirect(self.get_success_url())

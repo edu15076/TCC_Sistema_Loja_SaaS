@@ -1,0 +1,9 @@
+{% extends 'base_contratacao.html' %}
+
+{% block title %}Entrar na contratação{% endblock title %}
+
+{% block main_content %}
+    <h1>Entrar na contratação</h1>
+    {% include 'forms/htmx_form_post_template.html' %}
+    <a href="{% url 'criar_usuario_contratacao' %}">Não tenho uma conta</a>
+{% endblock main_content %}

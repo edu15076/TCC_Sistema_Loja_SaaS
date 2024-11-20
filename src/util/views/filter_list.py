@@ -34,7 +34,7 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         """
         if self.paginate_by is None:
             return self.get_queryset()
-        
+
         queryset = self.get_queryset()
         page_number = self.request.GET.get('page')
 
@@ -98,10 +98,12 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 parameters = cleaned_parameters
             else:
                 raise ImproperlyConfigured(
-                    _((
+                    _(
+                        (
                             f"'{self.__class__.__name__}.filter_form.filter_arguments'"
                             f" is not type dict or list"
-                    ))
+                        )
+                    )
                 )
 
         except AttributeError:
@@ -150,11 +152,11 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         if self.filter_form is None:
             return ordering + (super().get_ordering() or [])
 
-        ordering = (self.get_order_parameters() or ordering)
+        ordering = self.get_order_parameters() or ordering
 
         if len(ordering) == 0:
             return super().get_ordering()
-        
+
         return ordering if ordering[0] != '' else ['pk']
 
     def get_url_filter_kwargs(self) -> dict[str, Any]:
@@ -193,10 +195,10 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     def get_queryset(self) -> QuerySet[Any]:
         """
         Retorna a lista de itens do model da view filtrada pelo formulário
-        `self.filter_form` e pelos argumentos de url, alem de filtrar pelo 
+        `self.filter_form` e pelos argumentos de url, alem de filtrar pelo
         atributo de usuário do model definido em `self.user_attribute_name`,
         se definido, com o usuário retornado por `self.get_user()`.
-        
+
         Também define `self.queryset` com o valor de retorno.
 
         :return: lista de itens do modelo
@@ -220,7 +222,9 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
                 exception=e,
             )
 
-        if self.filter_form is not None and issubclass(self.filter_form, forms.BaseForm):
+        if self.filter_form is not None and issubclass(
+            self.filter_form, forms.BaseForm
+        ):
             filter_params = self.get_filter_parameters()
             order_params = self.get_ordering()
 

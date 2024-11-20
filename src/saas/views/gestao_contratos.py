@@ -54,13 +54,21 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         return render(
             request,
             self.template_name,
-            {'form': form, 'filter_form': filter_form, 'contratos': queryset, 'contratos_ativos_count': Contrato.contratos.filter(ativo=True).count()},
+            {
+                'form': form,
+                'filter_form': filter_form,
+                'contratos': queryset,
+                'contratos_ativos_count': self.model.contratos.filter(
+                    ativo=True
+                ).count(),
+            },
         )
 
     def form_valid(self, form):
         contrato = form.save()
         return render(
-            self.request, 'card_contrato.html', {'contrato': contrato, 'success': True}
+            self.request,
+            'cards/card_contrato.html', {'contrato': contrato, 'success': True}
         )
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:

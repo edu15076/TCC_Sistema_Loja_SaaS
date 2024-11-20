@@ -1,0 +1,9 @@
+{% extends 'base_contratacao.html' %}
+
+{% block title %}Editar Perfil{% endblock title %}
+
+{% block main_content %}
+    <h1>Editar Perfil</h1>
+    {% include 'forms/htmx_form_post_template.html' %}
+    <a href="{% url 'editar_senha_contratacao' %}">Alterar senha</a>
+{% endblock main_content %}
