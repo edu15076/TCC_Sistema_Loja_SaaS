@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 
 from django.http import HttpRequest, HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from common.views.mixins import UsuarioMixin
 
 
 class ABCGestaoContratoCRUDListView(
-    ABC, LoginRequiredMixin, UsuarioMixin, CreateOrUpdateListHTMXView
+    ABC, LoginRequiredMixin, PermissionRequiredMixin, UsuarioMixin, CreateOrUpdateListHTMXView
 ):
+
     @abstractmethod
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
@@ -20,12 +21,10 @@ class ABCGestaoContratoCRUDListView(
         - `ordem`: um valor que informa a ordem de exibição
         - `filtro`: um valor que informa se será exibido os contratos ativos
             ou inativos
-        ? - `query`: talvez tenha como pesquisar pelo possivel titulo de um contrato
         - `page`: retorna a respectiva pagina.
 
         :type request: HttpRequest
         :return: um `context` contendo:
-            // - `usuario`
             - `contratos`:
                 - ...
             - `form`: formulário de cadastro de contratos
@@ -41,12 +40,9 @@ class ABCGestaoContratoCRUDListView(
         atualizações)
 
         :param request: deve conter os seguintes campos:
-        //- `action`: informa a ação realizada;
+        - `id`: o id do contrato será ativado ou desativado;
 
-        pode conter os seguintes campos:
-
-        - `id`: o id do contrato será alterado ou excluido;
-        - `form`: formulário para criar um contrato;
+        pode conter os seguintes campos do formulário
 
         :type request: HttpRequest
         :return: Resultado da operação.
