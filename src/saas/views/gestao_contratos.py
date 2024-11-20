@@ -1,6 +1,6 @@
 from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseForbidden
 from django.core.paginator import Paginator
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect
 
 from common.data import DadosPapeis
@@ -20,6 +20,10 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     paginate_by = 20
     usuario_class = [GerenteDeContratos, ClienteContratante]
     object_pk = None
+    permission_required = 'saas.gerir_contratos'
+
+    def handle_no_permission(self):
+        return redirect(reverse('acesso_nao_autorizado'))
 
     def get_pk_slug(self) -> tuple[int | None, str | None]:
         return self.object_pk, None
@@ -44,13 +48,6 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         form = self.form_class()
         filter_form = self.filter_form()
 
-        # TODO impedir acesso não autorizado
-        if self.user.papel_group.name != DadosPapeis.GERENTE_DE_CONTRATOS:
-            # TODO criar página de acesso negado customizada
-            return HttpResponseForbidden(
-                "Você não tem permissão para acessar esta página."
-            )
-
         return render(
             request,
             self.template_name,
@@ -72,17 +69,6 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
         )
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        # TODO impedir acesso não autorizado
-        if self.user.papel_group.name != DadosPapeis.GERENTE_DE_CONTRATOS:
-            #     # TODO retornar erro 403
-            return JsonResponse(
-                {
-                    'success': False,
-                    'error': 'Você não tem permissão para acessar esta página.',
-                },
-                status=403,
-            )
-
         try:
             self.object_pk = request.POST.get('id')
             contrato = self.get_object()
@@ -97,5 +83,3 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
 
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
-
-        return JsonResponse({'success': True}, status=200)

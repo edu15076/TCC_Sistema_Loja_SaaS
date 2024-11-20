@@ -78,7 +78,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.login_cliente(0)
 
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_get_contratos(self):
         self.login_gerente()
