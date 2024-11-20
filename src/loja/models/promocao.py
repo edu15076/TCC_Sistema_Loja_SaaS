@@ -17,7 +17,7 @@ class PromocaoQuerySet(models.QuerySet):
 class PromocaoManager(models.Manager):
     def get_queryset(self):
         return PromocaoQuerySet(self.model, using=self._db).all()
-    
+
 
 class Promocao(ValidateModelMixin, models.Model):
     porcentagem_desconto = models.IntegerField(
@@ -26,13 +26,19 @@ class Promocao(ValidateModelMixin, models.Model):
         validators=[
             MaxValueValidator(100, _('Porcentagem não pode exceder 100%.')),
             MinValueValidator(0, _('Porcentagem não pode ser negativo.')),
-        ]
+        ],
     )
     data_inicio = models.DateField(_('Data de início'), blank=False)
     descricao = models.CharField(_('Descrição'), max_length=246, blank=True)
-    periodo = models.ForeignKey(Periodo, verbose_name=_('Período'), on_delete=models.RESTRICT)
-    loja = models.ForeignKey(Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False)
-    produtos = models.ManyToManyField(Produto, verbose_name=_('Produtos'), related_name='promocoes')
+    periodo = models.ForeignKey(
+        Periodo, verbose_name=_('Período'), on_delete=models.RESTRICT
+    )
+    loja = models.ForeignKey(
+        Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False
+    )
+    produtos = models.ManyToManyField(
+        Produto, verbose_name=_('Produtos'), related_name='promocoes'
+    )
 
     promocoes = PromocaoManager()
 
@@ -45,7 +51,7 @@ class Promocao(ValidateModelMixin, models.Model):
             data_inicio=data_inicio,
             descricao=self.descricao,
             periodo=self.periodo,
-            loja=self.loja
+            loja=self.loja,
         )
         promocao.save()
         return promocao
