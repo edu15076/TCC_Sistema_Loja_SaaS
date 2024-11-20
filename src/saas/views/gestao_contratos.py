@@ -1,10 +1,7 @@
-from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseForbidden
-from django.core.paginator import Paginator
-from django.urls import reverse_lazy, reverse
-from django.shortcuts import render, redirect
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.urls import reverse_lazy
+from django.shortcuts import render
 
-from common.data import DadosPapeis
-from saas.models.usuario_contratacao import ClienteContratante, GerenteDeContratos
 from saas.views.interfaces import ABCGestaoContratoCRUDListView
 from saas.forms import ContratoForm, FiltroContratoForm
 from saas.models import Contrato
@@ -18,12 +15,9 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
     model = Contrato
     default_order = ['id']
     paginate_by = 20
-    usuario_class = [GerenteDeContratos, ClienteContratante]
     object_pk = None
     permission_required = 'saas.gerir_contratos'
-
-    def handle_no_permission(self):
-        return redirect(reverse('acesso_nao_autorizado'))
+    raise_exception = True
 
     def get_pk_slug(self) -> tuple[int | None, str | None]:
         return self.object_pk, None

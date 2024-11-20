@@ -6,7 +6,6 @@ from django.forms.models import model_to_dict
 
 from saas.models import Contrato
 from common.models import Periodo
-from saas.views import GestaoContratoCRUDListView
 from common.mixins import TestLoginRequiredMixin
 
 
@@ -78,7 +77,7 @@ class TestGestaoContratoCRUDListView(TestLoginRequiredMixin, TestCase):
         self.login_cliente(0)
 
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
     def test_get_contratos(self):
         self.login_gerente()
