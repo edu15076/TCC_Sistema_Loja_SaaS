@@ -79,6 +79,10 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         related_name='funcionario_loja',
     )
 
+    _porcentagem_comissao = models.DecimalField(
+        max_digits=4, decimal_places=2, null=True
+    )
+
     funcionarios = FuncionarioManager()
 
     @CachedClassProperty
@@ -193,6 +197,14 @@ class Vendedor(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='loja_vendedores')
+
+    @property
+    def porcentagem_comissao(self):
+        return self._porcentagem_comissao
+
+    @porcentagem_comissao.setter
+    def porcentagem_comissao(self, porcentagem_comissao: float):
+        self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = FuncionarioPapelManager()
 

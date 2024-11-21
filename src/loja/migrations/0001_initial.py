@@ -31,6 +31,10 @@ class Migration(migrations.Migration):
                         to='common.usuariogenericopessoafisica',
                     ),
                 ),
+                (
+                    '_porcentagem_comissao',
+                    models.DecimalField(decimal_places=2, max_digits=4, null=True),
+                ),
             ],
             options={
                 'abstract': False,
