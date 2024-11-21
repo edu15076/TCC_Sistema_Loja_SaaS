@@ -13,7 +13,6 @@ from scope_auth.models import (
 from util.decorators import CachedClassProperty
 from util.models import cast_to_model
 from .pessoa import PessoaFisica, PessoaJuridica, Pessoa
-
 from .pessoa_usuario import PessoaUsuario
 
 __all__ = (

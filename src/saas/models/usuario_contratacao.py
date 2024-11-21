@@ -1,14 +1,14 @@
 from django.contrib.auth.models import Group
-from django.db import models, transaction
+from django.db import models
 
+from common.models import ContratosScope
 from common.models import (
     UsuarioGenericoPessoaJuridica,
     UsuarioGenericoPessoaJuridicaManager,
 )
-from common.models import ContratosScope
 from loja.models import Loja
 from util.decorators import CachedClassProperty
-from util.models.singleton import AbstractSingleton, SingletonManager, SingletonMixin
+from util.models.singleton import SingletonManager, SingletonMixin
 
 __all__ = ('UsuarioContratacao', 'GerenteDeContratos', 'ClienteContratante')
 

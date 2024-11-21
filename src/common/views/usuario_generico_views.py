@@ -11,11 +11,9 @@ from common.forms.usuario_generico_forms import (
     UsuarioGenericoChangeForm,
     UsuarioGenericoPessoaJuridicaChangeForm,
 )
-
 from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
-from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
-
+from .mixins import ScopeMixin, UsuarioMixin
 
 __all__ = (
     'CreateUsuarioView',

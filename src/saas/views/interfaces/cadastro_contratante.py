@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 from django.http import HttpRequest, HttpResponse
 from django.views.generic.edit import UpdateView
 
-from common.models import UsuarioGenericoPessoaJuridica
-
 
 class ABCContratanteFormView(ABC, UpdateView):
     @abstractmethod

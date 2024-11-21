@@ -1,9 +1,10 @@
-from typing import ClassVar
-import pandas as pd
-from dataclasses import dataclass
-from unidecode import unidecode
 import re
+from dataclasses import dataclass
 from pathlib import Path
+from typing import ClassVar
+
+import pandas as pd
+from unidecode import unidecode
 
 from util.decorators import CachedClassProperty
 

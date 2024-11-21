@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 
 from common.models import (
     UsuarioGenericoPessoa,
@@ -12,6 +12,7 @@ from util.decorators import CachedProperty
 __all__ = (
     'ScopeMixin',
     'UsuarioMixin',
+    'UserInScopeRequiredMixin',
 )
 
 
@@ -41,8 +42,11 @@ class UsuarioMixin:
         )
 
 
-class UserInScopeRequiredMixin(ScopeMixin, UsuarioMixin, UserPassesTestMixin):
-    def is_user_in_scope(self):
+class UserInScopeRequiredMixin(
+    LoginRequiredMixin, ScopeMixin, UsuarioMixin, UserPassesTestMixin
+):
+    """Classe que valida se o usuário está logado e está acessando o escopo correto"""
+    def is_user_in_scope(self) -> bool:
         return self.user.scope == self.scope
 
     def get_test_func(self):

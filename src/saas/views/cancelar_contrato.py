@@ -1,7 +1,9 @@
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
+
 from saas.models.contrato_assinado import ContratoAssinado
+
 
 class CancelarContratoView(View):
     template_name = 'cards/card_cancelar_contrato.html'

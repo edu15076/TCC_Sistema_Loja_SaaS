@@ -7,9 +7,7 @@ from common.models import (
     UsuarioGenericoPessoaFisicaManager,
     UsuarioGenericoPessoaFisicaQuerySet,
     LojaScope,
-    UsuarioGenerico,
 )
-
 
 __all__ = (
     'Funcionario',
