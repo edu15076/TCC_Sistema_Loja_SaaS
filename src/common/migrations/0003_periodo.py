@@ -37,10 +37,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     'unidades_de_tempo_por_periodo',
-                    models.CharField(
-                        choices=[('ANO', 'Ano'), ('MES', 'Mes'), ('DIA', 'Dia')],
-                        default='MES',
-                        max_length=3,
+                    models.IntegerField(
+                        choices=[(365, 'Ano'), (30, 'Mes'), (1, 'Dia')],
+                        default=30,
                         verbose_name='Unidade de tempo por periodo',
                     ),
                 ),

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from django.db import models
 from django.db.models import F
@@ -6,7 +6,9 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 
 from util.mixins import ValidateModelMixin
-from loja.models import Loja, Promocao
+from loja.models import Loja
+
+# from .promocao import Promocao
 
 
 __all__ = ['Produto', 'ProdutoPorLote']
@@ -22,6 +24,7 @@ class ProdutoManager(models.Manager):
 
 
 class Produto(ValidateModelMixin, models.Model):
+    descricao = models.CharField(_('Descrição'), max_length=246)
     preco_de_venda = models.DecimalField(
         _('Preço de venda'),
         max_digits=11,
@@ -40,32 +43,31 @@ class Produto(ValidateModelMixin, models.Model):
 
     @property
     def qtd_em_estoque(self):
-        return sum(
-            [
-                p.qtd_em_estoque
-                for p in self.lotes.produtos_por_lote.filter(produto=self)
-            ]
-        )
+        return sum([p.qtd_em_estoque for p in self.lotes.filter(produto=self)])
 
-    def promocao_por_data(self, data: datetime) -> 'Promocao' | None:
+    def promocao_por_data(self, data: date):
         """
         Retorna a promoção ativa para a data passada.
         """
 
-        promocao = (
-            self.promocoes.filter(data_inicio__lte=data)
-            .annotate(tempo_total=F('periodo__tempo_total'))
-            .filter(tempo_total__gte=(data - F('data_inicio')))
-            .first()
+        promocoes = self.promocoes.filter(data_inicio__lte=data)
+
+        promocao_ativa = next(
+            (
+                promocao
+                for promocao in promocoes
+                if (data - promocao.data_inicio) < promocao.periodo.tempo_total
+            ),
+            None,
         )
 
-        return promocao if promocao else None
+        return promocao_ativa
 
-    def promocao_ativa(self) -> 'Promocao' | None:
+    def promocao_ativa(self):
         """
         Retorna a promoção ativa para a data atual.
         """
-        return self.promocao_por_data(datetime.now())
+        return self.promocao_por_data(date.today())
 
 
 class ProdutoPorLoteQuerySet(models.QuerySet):

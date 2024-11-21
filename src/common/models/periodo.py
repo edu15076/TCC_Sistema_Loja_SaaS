@@ -9,18 +9,17 @@ __all__ = ['Periodo']
 
 
 class Periodo(models.Model):
-    class UnidadeDeTempo(models.TextChoices):
-        ANO = "ANO", _('Ano')
-        MES = "MES", _("Mes")
-        DIA = "DIA", _("Dia")
+    class UnidadeDeTempo(models.IntegerChoices):
+        ANO = 365, _('Ano')
+        MES = 30, _("Mes")
+        DIA = 1, _("Dia")
 
     numero_de_periodos = models.IntegerField(
         _('Numero de periodos'),
         validators=[MinValueValidator(0, _('Numero de  não pode ser negativo.'))],
     )
-    unidades_de_tempo_por_periodo = models.CharField(
+    unidades_de_tempo_por_periodo = models.IntegerField(
         _('Unidade de tempo por periodo'),
-        max_length=3,
         choices=UnidadeDeTempo,
         default=UnidadeDeTempo.MES,
     )
@@ -38,8 +37,4 @@ class Periodo(models.Model):
 
     @property
     def unidades_de_tempo_por_periodo_em_dias(self) -> int:
-        return {
-            'DIA': 1,
-            'MES': 30,
-            'ANO': 365,
-        }.get(self.unidades_de_tempo_por_periodo, 1)
+        return self.unidades_de_tempo_por_periodo

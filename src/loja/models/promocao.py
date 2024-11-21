@@ -6,8 +6,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from common.models.periodo import Periodo
 from django.forms.models import model_to_dict
 
+from loja.validators import validate_unique_promocao
 from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
-from loja.models import Loja, Produto
+from loja.models import Loja
+from .produto import Produto
+
+__all__ = ['Promocao']
 
 
 class PromocaoQuerySet(models.QuerySet):
@@ -37,10 +41,22 @@ class Promocao(ValidateModelMixin, models.Model):
         Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False
     )
     produtos = models.ManyToManyField(
-        Produto, verbose_name=_('Produtos'), related_name='promocoes'
+        Produto,
+        verbose_name=_('Produtos'),
+        related_name='promocoes',
+        default=None,
     )
 
     promocoes = PromocaoManager()
+
+    def clean(self) -> None:
+        super().clean()
+
+        if self.pk is None or self.produtos is None:
+            return
+
+        for produto in self.produtos.all():
+            validate_unique_promocao(produto, self)
 
     def clonar_promocao(self, data_inicio: datetime) -> 'Promocao':
         """
