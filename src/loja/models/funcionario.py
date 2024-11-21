@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import Group
 from django.db import models
 from django.db.models import F, Model
+from django.db.models.functions import Coalesce
 
 from common.models import (
     UsuarioGenericoPessoaFisica,
@@ -130,12 +133,19 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     def remover_papel(self, group: Group):
         self.groups.remove(group)
 
-    # TODO: Criar métodos para verificar se um usuário é de um tipo
+
+class FuncionarioPapelQuerySet(FuncionarioQuerySet):
+    def complete(self):
+        return (
+            super()
+            .complete()
+            .filter(groups=self.model.papel_group)
+        )
 
 
 class FuncionarioPapelManager(FuncionarioManager):
     def get_queryset(self):
-        return super().get_queryset().filter(groups=self.model.papel_group)
+        return FuncionarioQuerySet(self.model, using=self._db).complete()
 
 
 class FuncionarioPapel(Funcionario):
@@ -193,6 +203,37 @@ class Caixeiro(FuncionarioPapel):
         proxy = True
 
 
+class VendedorQuerySet(FuncionarioQuerySet):
+    def complete(self):
+        return (
+            super()
+            .complete()
+            .annotate(
+                porcentagem_comissao=Coalesce(F('_porcentagem_comissao'), Decimal(0.0))
+            )
+        )
+
+    def simple(self):
+        return self.values(
+            'telefone',
+            'email',
+            'scope',
+            'nome',
+            'sobrenome',
+            'data_nascimento',
+            'cpf',
+            'loja',
+            'porcentagem_comissao',
+        )
+
+
+class VendedorManager(FuncionarioPapelManager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            porcentagem_comissao=Coalesce(F('_porcentagem_comissao'), Decimal(0.0))
+        )
+
+
 class Vendedor(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
@@ -200,13 +241,17 @@ class Vendedor(FuncionarioPapel):
 
     @property
     def porcentagem_comissao(self):
-        return self._porcentagem_comissao
+        return (
+            self._porcentagem_comissao
+            if self._porcentagem_comissao is not None
+            else 0.0
+        )
 
     @porcentagem_comissao.setter
     def porcentagem_comissao(self, porcentagem_comissao: float):
         self._porcentagem_comissao = porcentagem_comissao
 
-    vendedores = FuncionarioPapelManager()
+    vendedores = VendedorManager()
 
     class Meta:
         proxy = True
