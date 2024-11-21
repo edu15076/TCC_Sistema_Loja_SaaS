@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Model
 
 from common.models import (
     UsuarioGenericoPessoaFisica,
@@ -11,9 +11,8 @@ from common.models import (
 
 __all__ = (
     'Funcionario',
-    'Chefe',
     'GerenteDeRH',
-    'GerenteDeVendas',
+    'GerenteFinanceiro',
     'GerenteDeEstoque',
     'Caixeiro',
     'Vendedor',
@@ -68,26 +67,10 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
             telefone=telefone,
             **dados_pessoa,
         )
-        if self.model.papel_group is not None:
-            usuario.groups.set([self.model.papel_group])
         return usuario
-
-    def _criar_ou_recuperar_de_funcionario(
-        self, funcionario: 'Funcionario', **extra_fields
-    ):
-        """Cria ou recupera uma instância da subclasse a partir de um funcionario"""
-        try:
-            funcionario = self.get(funcionario=funcionario)
-        except self.model.DoesNotExist:
-            funcionario = self.model(funcionario=funcionario, **extra_fields)
-            funcionario.save_base(raw=True)
-        funcionario.groups.set([self.model.papel_group])
-        return funcionario
 
 
 class Funcionario(UsuarioGenericoPessoaFisica):
-    # TODO: Adicionar fields de Funcionario
-
     usuario = models.OneToOneField(
         UsuarioGenericoPessoaFisica,
         models.CASCADE,
@@ -105,9 +88,8 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     @CachedClassProperty
     def papel_por_funcionario(self):
         return {
-            'loja_chefes': Chefe,
             'loja_gerentes_de_rh': GerenteDeRH,
-            'loja_gerentes_de_vendas': GerenteDeVendas,
+            'loja_gerentes_financeiros': GerenteFinanceiro,
             'loja_gerentes_de_estoque': GerenteDeEstoque,
             'loja_caixeiros': Caixeiro,
             'loja_vendedores': Vendedor,
@@ -135,109 +117,84 @@ class Funcionario(UsuarioGenericoPessoaFisica):
             self.scope = loja.scope
         self.scope = loja
 
-    def adicionar_papel(self, group: Group, **extra_fields):
-        """Adiciona o papel criando uma instância do model relacionado"""
-        class_for_papel = self.papel_por_funcionario[group.name]
-        class_for_papel._default_manager._criar_ou_recuperar_de_funcionario(
-            self, **extra_fields
-        )
+    def adicionar_papel(self, group: Group):
+        self.groups.add(group)
+
+    def adicionar_papeis(self, *groups: Group):
+        self.groups.add(*groups)
 
     def remover_papel(self, group: Group):
         self.groups.remove(group)
 
     # TODO: Criar métodos para verificar se um usuário é de um tipo
 
-    class Meta:
-        # TODO: Definir permissões genéricas para trabalhar com o funcionário
-        pass
+
+class FuncionarioPapelManager(FuncionarioManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(groups=self.model.papel_group)
 
 
-# TODO: Avaliar possibilidade de colocar algumas das classes como proxy, como o Chefe
-#       outras classes podem ter relações adicionais à funcionário
-
-
-class Chefe(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='chefe',
-    )
-
-    @CachedClassProperty
-    def papel_group(cls):
-        return Group.objects.get(name='loja_chefes')
+class FuncionarioPapel(Funcionario):
+    def save(self, *args, **kwargs):
+        is_being_created = self.pk is None
+        super().save(*args, **kwargs)
+        if is_being_created and self.papel_group is not None:
+            self.groups.add(self.papel_group)
 
     class Meta:
-        permissions = (('criar_chefe', 'Pode criar chefe'),)
+        proxy = True
 
 
-class GerenteDeRH(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='gerente_de_rh',
-    )
-
+class GerenteDeRH(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='loja_gerentes_de_rh')
 
+    gerentes_de_rh = FuncionarioPapelManager()
 
-class GerenteDeVendas(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='gerente_de_vendas',
-    )
+    class Meta:
+        proxy = True
 
+
+class GerenteFinanceiro(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
-        return Group.objects.get(name='loja_gerentes_de_vendas')
+        return Group.objects.get(name='loja_gerentes_financeiros')
+
+    gerentes_financeiros = FuncionarioPapelManager()
+
+    class Meta:
+        proxy = True
 
 
-class GerenteDeEstoque(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='gerente_de_estoque',
-    )
-
+class GerenteDeEstoque(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='loja_gerentes_de_estoque')
 
+    gerentes_de_estoque = FuncionarioPapelManager()
 
-class Caixeiro(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='caixeiro',
-    )
+    class Meta:
+        proxy = True
 
+
+class Caixeiro(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='loja_caixeiros')
 
+    caixeiros = FuncionarioPapelManager()
 
-class Vendedor(Funcionario):
-    funcionario = models.OneToOneField(
-        Funcionario,
-        models.CASCADE,
-        primary_key=True,
-        parent_link=True,
-        related_name='vendedor',
-    )
+    class Meta:
+        proxy = True
 
+
+class Vendedor(FuncionarioPapel):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='loja_vendedores')
+
+    vendedores = FuncionarioPapelManager()
+
+    class Meta:
+        proxy = True
