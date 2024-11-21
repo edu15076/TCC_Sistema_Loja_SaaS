@@ -1,11 +1,8 @@
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import OuterRef, Subquery
 
 from common.models import LojaScope
-
 from .funcionario import Funcionario, FuncionarioQuerySet
-
 
 __all__ = ('Loja',)
 

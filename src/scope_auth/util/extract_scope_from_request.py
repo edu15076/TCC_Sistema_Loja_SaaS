@@ -7,8 +7,12 @@ __all__ = ['get_scope_from_request']
 
 
 def get_scope_from_request(request):
-    scope = request.GET.get(
-        'scope', request.POST.get('scope', Scope.scopes.default_scope().pk)
+    scope = request.POST.get(
+        'scope',
+        request.resolver_match.kwargs.get(
+            'scope',
+            request.GET.get('scope', Scope.scopes.default_scope().pk)
+        )
     )
     try:
         return Scope.scopes.get(pk=int(scope))

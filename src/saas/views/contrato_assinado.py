@@ -1,9 +1,11 @@
+from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.contrib import messages
 from django.views import View
+
 from saas.models.contrato_assinado import ContratoAssinado
 from saas.views.interfaces import ABCContratoAssinadoView
+
 
 class ContratoAssinadoView(ABCContratoAssinadoView, View):
     template_name = 'gestao_cliente_contratante.html'

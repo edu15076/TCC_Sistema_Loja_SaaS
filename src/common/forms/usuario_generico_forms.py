@@ -1,13 +1,12 @@
 from crispy_forms.layout import Submit
-
-from django.db import transaction
 from django.contrib.auth.forms import (
     BaseUserCreationForm,
     AuthenticationForm,
     UserChangeForm,
 )
-from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.utils.translation import gettext_lazy as _
 
 from scope_auth.models import Scope
 from util.forms import CrispyFormMixin
@@ -26,7 +25,6 @@ from ..models import (
     UsuarioGenericoPessoaJuridica,
 )
 from ..validators import PESSOA_FISICA_CODIGO_LEN, PESSOA_JURIDICA_CODIGO_LEN
-
 
 __all__ = (
     'UsuarioGenericoCreationForm',

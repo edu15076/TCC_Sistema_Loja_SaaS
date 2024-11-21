@@ -11,11 +11,9 @@ from common.forms.usuario_generico_forms import (
     UsuarioGenericoChangeForm,
     UsuarioGenericoPessoaJuridicaChangeForm,
 )
-
 from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
-from .mixins import ScopeMixin, UsuarioMixin
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
-
+from .mixins import ScopeMixin, UsuarioMixin
 
 __all__ = (
     'CreateUsuarioView',
@@ -37,7 +35,7 @@ class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
     form_class = UsuarioGenericoCreationForm
 
     def get_form_kwargs(self):
-        return super().get_form_kwargs() | {'scope': self.get_scope()}
+        return super().get_form_kwargs() | {'scope': self.scope}
 
     def form_valid(self, form):
         response = super().form_valid(form)

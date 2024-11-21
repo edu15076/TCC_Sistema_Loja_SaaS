@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from saas.models.contrato_assinado import ContratoAssinado
-from saas.models.usuario_contratacao import ClienteContratante
 
 __all__ = [
     'HistoricoPagamentosQuerySet',

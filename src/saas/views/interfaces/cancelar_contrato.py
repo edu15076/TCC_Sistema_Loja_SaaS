@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
+
 from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.views import View
+
 from common.views.mixins import UsuarioMixin
 from ...models import ContratoAssinado
 
 __all__ = (
-    'ABCGestaoContratoCRUDListView',
+    'ABCCancelarContratoView',
     'ABCCancelarContratoAssinado',
 )
 

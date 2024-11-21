@@ -1,9 +1,10 @@
+from datetime import date
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from datetime import date
+
 from saas.models.contrato import Contrato
 from saas.models.usuario_contratacao import ClienteContratante
-from decimal import Decimal
 
 __all__ = [
     'ContratoAssinadoQuerySet',

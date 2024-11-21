@@ -2,7 +2,6 @@ from django.urls import reverse_lazy
 
 from common.forms import (
     UsuarioGenericoPessoaJuridicaAuthenticationForm,
-    UsuarioGenericoPessoaJuridicaCreationForm,
     UsuarioGenericoPessoaJuridicaChangeForm,
 )
 from common.views import (
@@ -10,20 +9,10 @@ from common.views import (
     CreateUsuarioGenericoView,
     UpdateUsuarioGenericoView,
     LogoutUsuarioGenericoView,
+    PasswordChangeUsuarioGenericoView
 )
-from common.views import (
-    LoginUsuarioGenericoView,
-    CreateUsuarioGenericoView,
-    UpdateUsuarioGenericoView,
-    LogoutUsuarioGenericoView,
-    PasswordChangeUsuarioGenericoView,
-)
-from common.views import (LoginUsuarioGenericoView, CreateUsuarioGenericoView,
-                          UpdateUsuarioGenericoView, LogoutUsuarioGenericoView,
-                          PasswordChangeUsuarioGenericoView)
 from saas.forms.usuario_contratacao_forms import ClienteContratanteCreationForm
 from saas.models import GerenteDeContratos, ClienteContratante
-
 
 __all__ = (
     'LogoutUsuarioContratacaoView',

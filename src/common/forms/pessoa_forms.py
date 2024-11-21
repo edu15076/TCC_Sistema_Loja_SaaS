@@ -10,7 +10,6 @@ from ..validators import (
     PESSOA_JURIDICA_CODIGO_LEN,
 )
 
-
 __all__ = (
     'PessoaCreationForm',
     'PessoaFisicaCreationForm',
