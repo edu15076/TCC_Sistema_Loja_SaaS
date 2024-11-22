@@ -1,9 +1,8 @@
-from django.db import models
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from scope_auth.models import AbstractUsernamePerScope, UsernamePerScopeManager, Scope
-
 
 __all__ = ('PessoaUsuarioManager', 'PessoaUsuario')
 

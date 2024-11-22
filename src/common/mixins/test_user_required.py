@@ -55,4 +55,4 @@ class TestLoginRequiredMixin:
 
     def test_login_required(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)

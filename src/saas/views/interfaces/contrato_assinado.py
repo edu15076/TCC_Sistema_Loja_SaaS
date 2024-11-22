@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from django.http import HttpRequest, HttpResponse
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpRequest, HttpResponse
 from django.views import View
+
 from common.views.mixins import UsuarioMixin
 from ...models import ContratoAssinado
 
