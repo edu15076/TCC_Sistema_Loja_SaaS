@@ -80,6 +80,9 @@ class ClienteContratante(UsuarioContratacao):
     def papel_group(cls):
         return Group.objects.get(name='saas_clientes_contratantes')
 
+    def is_signing_contract(self) -> bool:
+        return self.contratoassinado_set.filter(vigente=True).exists()
+
     def save(self, *args, **kwargs):
         self.loja = (
             Loja.lojas.create()

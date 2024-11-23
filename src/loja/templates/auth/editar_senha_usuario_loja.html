@@ -5,5 +5,5 @@
 {% block main_content %}
     <h1>Alterar senha</h1>
     {% include 'forms/htmx_form_post_template.html' %}
-    <a href="{% url 'editar_usuario_loja' %}">Editar perfil</a>
+    <a href="{% url 'editar_usuario_loja' loja_scope=scope.pk %}">Editar perfil</a>
 {% endblock main_content %}

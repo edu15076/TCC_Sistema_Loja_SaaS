@@ -1,9 +1,9 @@
 {% extends 'navbar/sidebar/sidebar.html' %}
 
-{# TODO: Adicionar nav-item's por permição do usuário da loja #}
+{# TODO: Adicionar nav-item's por permissão do usuário da loja #}
 
 {% block nav_items %}
     <li class="nav-item">
-        <a href="{% url 'home_loja' scope=scope %}" class="nav-link">Home</a>
+        <a href="{% url 'home_loja' loja_scope=scope.pk %}" class="nav-link">Home</a>
     </li>
 {% endblock nav_items %}

@@ -1,9 +1,9 @@
 {% extends 'navbar/sidebar/top_navbar.html' %}
 
 {% block user_dropdown %}
-    {% url 'editar_usuario_loja' as edit_user_url %}
-    {% url 'criar_usuario_loja' as create_user_url %}
-    {% url 'login_loja' as login_url %}
-    {% url 'logout_loja' as logout_url %}
+    {% url 'editar_usuario_loja' loja_scope=scope.pk as edit_user_url %}
+    {% url 'criar_usuario_loja' loja_scope=scope.pk as create_user_url %}
+    {% url 'login_loja' loja_scope=scope.pk as login_url %}
+    {% url 'logout_loja' loja_scope=scope.pk as logout_url %}
     {% include 'navbar/user_dropdown.html' %}
 {% endblock user_dropdown %}

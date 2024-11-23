@@ -10,7 +10,7 @@ def get_scope_from_request(request):
     scope = request.POST.get(
         'scope',
         request.resolver_match.kwargs.get(
-            'scope',
+            'loja_scope',
             request.GET.get('scope', Scope.scopes.default_scope().pk)
         )
     )
