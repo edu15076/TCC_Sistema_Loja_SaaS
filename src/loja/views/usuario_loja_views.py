@@ -44,7 +44,7 @@ class PasswordChangeUsuarioLojaView(
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
 
 
-class LogoutUsuarioLojaView(ScopeMixin, LogoutUsuarioGenericoView):
+class LogoutUsuarioLojaView(LogoutUsuarioGenericoView, ScopeMixin):
     @property
     def next_page(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})

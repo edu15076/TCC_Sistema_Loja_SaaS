@@ -21,6 +21,7 @@ __all__ = (
     'Vendedor',
 )
 
+from loja.models.trabalhacaixa import TrabalhaCaixa
 from util.decorators import CachedClassProperty
 
 from util.models import cast_to_model
@@ -198,9 +199,17 @@ class Caixeiro(FuncionarioPapel):
         return Group.objects.get(name='loja_caixeiros')
 
     caixeiros = FuncionarioPapelManager()
-
+    
     class Meta:
         proxy = True
+
+    def associar_caixa(self, caixa, horarios):
+        for horario in horarios:
+            TrabalhaCaixa.objects.create(
+                caixeiro=self,
+                caixa=caixa,
+                trabalho_por_dia=horario
+            )
 
 
 class VendedorQuerySet(FuncionarioQuerySet):

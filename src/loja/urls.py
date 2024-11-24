@@ -1,5 +1,7 @@
 from django.urls import path
 
+from loja.views.gestaocaixa import GestaoCaixaView
+
 from .views import *
 
 urlpatterns = [
@@ -32,5 +34,10 @@ urlpatterns = [
         'editar_senha/',
         PasswordChangeUsuarioLojaView.as_view(),
         name='editar_senha_loja',
+    ),
+    path(
+        'caixas/',
+        GestaoCaixaView.as_view(),
+        name='caixa_list',
     ),
 ]

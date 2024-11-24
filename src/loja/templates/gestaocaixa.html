@@ -1,0 +1,64 @@
+<form method="post" hx-post="{% url 'caixa_list' %}">
+    {% csrf_token %}
+    <div>
+        <label for="ordem">Ordenar por:</label>
+        <select name="ordem">
+            <option value="numero_identificacao">Número de Identificação</option>
+            <option value="horario_aberto">Horário Aberto</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="filtro">Filtro:</label>
+        <select name="filtro">
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+        </select>
+    </div>
+
+    <button type="submit">Aplicar Filtro</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Caixa</th>
+            <th>Loja</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for caixa in caixas %}
+            <tr>
+                <td>{{ caixa.numero_identificacao }}</td>
+                <td>{{ caixa.loja }}</td>
+                <td>{{ 'Aberto' if caixa.ativo else 'Fechado' }}</td>
+                <td>
+                    {% if caixa.ativo %}
+                        <form method="post" hx-post="{% url 'caixa_list' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="acao" value="fechar">
+                            <input type="hidden" name="id" value="{{ caixa.id }}">
+                            <button type="submit">Fechar Caixa</button>
+                        </form>
+                    {% else %}
+                        <form method="post" hx-post="{% url 'caixa_list' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="acao" value="abrir">
+                            <input type="hidden" name="id" value="{{ caixa.id }}">
+                            <button type="submit">Abrir Caixa</button>
+                        </form>
+                    {% endif %}
+                    <form method="post" hx-post="{% url 'caixa_list' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="movimentar">
+                        <input type="hidden" name="id" value="{{ caixa.id }}">
+                        <input type="text" name="valor" placeholder="Valor">
+                        <button type="submit">Movimentar</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
