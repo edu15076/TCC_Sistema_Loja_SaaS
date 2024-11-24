@@ -18,7 +18,9 @@ __all__ = (
 
 class ScopeMixin:
     @property
-    def scope(self) -> Scope:
+    def scope(self) -> Scope | None:
+        if not hasattr(self, 'request'):
+            return None
         return get_scope_from_request(self.request)
 
 

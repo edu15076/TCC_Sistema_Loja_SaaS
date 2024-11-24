@@ -1,10 +1,9 @@
-from django.urls import reverse_lazy
+from django.urls import reverse
 
-from util.views import CreateHTMXView
 from common.forms import (
-    UsuarioGenericoPessoaJuridicaAuthenticationForm,
-    UsuarioGenericoPessoaJuridicaCreationForm,
-    UsuarioGenericoPessoaJuridicaChangeForm,
+    UsuarioGenericoPessoaFisicaAuthenticationForm,
+    UsuarioGenericoPessoaFisicaCreationForm,
+    UsuarioGenericoPessoaFisicaChangeForm,
 )
 from common.views import (
     LoginUsuarioGenericoView,
@@ -13,7 +12,9 @@ from common.views import (
     LogoutUsuarioGenericoView,
     PasswordChangeUsuarioGenericoView,
 )
+from common.views.mixins import ScopeMixin
 from loja.models import Funcionario
+from .mixins import UserFromLojaRequiredMixin
 
 __all__ = (
     'LogoutUsuarioLojaView',
@@ -23,38 +24,76 @@ __all__ = (
     'PasswordChangeUsuarioLojaView',
 )
 
-class PasswordChangeUsuarioLojaView(PasswordChangeUsuarioGenericoView):
-    success_url = reverse_lazy('home_loja')
-    form_action = reverse_lazy('editar_senha_loja')
-    login_url = reverse_lazy('login_loja')
+
+class PasswordChangeUsuarioLojaView(
+    UserFromLojaRequiredMixin, PasswordChangeUsuarioGenericoView
+):
     template_name = 'auth/editar_senha_usuario_loja.html'
+    usuario_class = Funcionario
+
+    @property
+    def success_url(self):
+        return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def form_action(self):
+        return reverse('editar_senha_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def login_url(self):
+        return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
 
 
-class LogoutUsuarioLojaView(LogoutUsuarioGenericoView):
-    next_page = reverse_lazy('login_loja')
+class LogoutUsuarioLojaView(ScopeMixin, LogoutUsuarioGenericoView):
+    @property
+    def next_page(self):
+        return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
 
 
 class LoginUsuarioLojaView(LoginUsuarioGenericoView):
     template_name = 'auth/login_loja.html'
-    next_page = reverse_lazy('home_loja')
-    authentication_form = UsuarioGenericoPessoaJuridicaAuthenticationForm
-    form_action = reverse_lazy('login_loja')
+    authentication_form = UsuarioGenericoPessoaFisicaAuthenticationForm
+
+    @property
+    def form_action(self):
+        return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def next_page(self):
+        return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
 
 
-class CreateUsuarioLojaView(CreateUsuarioGenericoView):
-    form_class = UsuarioGenericoPessoaJuridicaCreationForm
+
+class CreateUsuarioLojaView(UserFromLojaRequiredMixin, CreateUsuarioGenericoView):
+    form_class = UsuarioGenericoPessoaFisicaCreationForm
     template_name = 'auth/criar_usuario_loja.html'
-    success_url = reverse_lazy('home_loja')
-    form_action = reverse_lazy('criar_usuario_loja')
+    usuario_class = Funcionario
+
+    @property
+    def success_url(self):
+        return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def form_action(self):
+        return reverse('criar_usuario_loja', kwargs={'loja_scope': int(self.scope)})
 
     # def form_valid(self, form):
     #     return CreateHTMXView.form_valid(self, form)
 
 
-class UpdateUsuarioLojaView(UpdateUsuarioGenericoView):
-    form_class = UsuarioGenericoPessoaJuridicaChangeForm
+class UpdateUsuarioLojaView(UserFromLojaRequiredMixin, UpdateUsuarioGenericoView):
+    form_class = UsuarioGenericoPessoaFisicaChangeForm
     template_name = 'auth/editar_usuario_loja.html'
-    success_url = reverse_lazy('home_loja')
-    login_url = reverse_lazy('login_loja')
-    form_action = reverse_lazy('editar_usuario_loja')
     usuario_class = Funcionario
+
+    @property
+    def success_url(self):
+        return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def login_url(self):
+        return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
+
+    @property
+    def form_action(self):
+        return reverse('editar_usuario_loja', kwargs={'loja_scope': int(self.scope)})

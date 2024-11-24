@@ -24,11 +24,13 @@ class HTMXFormMixin(FormMixin):
     form_action: str = None
     form_template_name: str = 'forms/htmx_form_post_template.html'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.form_action:
-            self.extra_context = self.extra_context or {}
-            self.extra_context.update({'action': self.form_action})
+    def get_form_action(self):
+        return self.form_action
+
+    def get_context_data(self, **kwargs):
+        if self.get_form_action():
+            kwargs['action'] = self.get_form_action()
+        return super().get_context_data(**kwargs)
 
     def form_invalid(self, form):
         return TemplateResponse(

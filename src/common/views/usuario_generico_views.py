@@ -13,7 +13,7 @@ from common.forms.usuario_generico_forms import (
 )
 from scope_auth.views import PasswordChangeUserPerScopeWithEmailView
 from util.views import CreateHTMXView, UpdateHTMXView, HTMXFormMixin
-from .mixins import ScopeMixin, UsuarioMixin
+from .mixins import ScopeMixin, UsuarioMixin, UserInScopeRequiredMixin
 
 __all__ = (
     'CreateUsuarioView',
@@ -27,7 +27,9 @@ __all__ = (
 )
 
 
-class PasswordChangeUsuarioGenericoView(PasswordChangeUserPerScopeWithEmailView):
+class PasswordChangeUsuarioGenericoView(
+    UserInScopeRequiredMixin, PasswordChangeUserPerScopeWithEmailView
+):
     template_name = 'editar_senha.html'
 
 
@@ -55,7 +57,7 @@ class LoginUsuarioGenericoView(ScopeMixin, HTMXFormMixin, LoginView):
 
 
 class UpdateUsuarioGenericoView(
-    LoginRequiredMixin, ScopeMixin, UsuarioMixin, UpdateHTMXView
+    UserInScopeRequiredMixin, UpdateHTMXView
 ):
     form_class = UsuarioGenericoChangeForm
 
@@ -66,7 +68,7 @@ class UpdateUsuarioGenericoView(
         return super().form_invalid(form)
 
 
-class LogoutUsuarioGenericoView(ScopeMixin, LogoutView):
+class LogoutUsuarioGenericoView(UserInScopeRequiredMixin, LogoutView):
     next_page = reverse_lazy('login')
 
 
