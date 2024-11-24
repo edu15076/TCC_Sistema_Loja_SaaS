@@ -15,7 +15,7 @@ class Periodo(models.Model):
 
     numero_de_periodos = models.IntegerField(
         _('Numero de periodos'),
-        validators=[MinValueValidator(0, _('Numero de  não pode ser negativo.'))],
+        validators=[MinValueValidator(1, _('Numero de periodos não pode ser menor que 1.'))],
     )
     unidades_de_tempo_por_periodo = models.IntegerField(
         _('Unidade de tempo por periodo'),

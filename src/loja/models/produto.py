@@ -1,10 +1,12 @@
-from datetime import date, datetime
+from datetime import date
 
 from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
+from jsonschema import ValidationError
 
+from loja.validators import validate_unique_promocao
 from util.mixins import ValidateModelMixin
 from loja.models import Loja
 
@@ -68,6 +70,16 @@ class Produto(ValidateModelMixin, models.Model):
         Retorna a promoção ativa para a data atual.
         """
         return self.promocao_por_data(date.today())
+
+    def promocao_valida(self, data: date):
+        """
+        Verifica promoção é válida para período passado.
+        """
+        try:
+            validate_unique_promocao(self, self.promocao_por_data(data))
+            return True
+        except ValidationError:
+            return False
 
 
 class ProdutoPorLoteQuerySet(models.QuerySet):

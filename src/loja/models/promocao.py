@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
-from django.forms.models import model_to_dict
 
 from loja.validators import validate_unique_promocao
 from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
@@ -32,7 +31,15 @@ class Promocao(ValidateModelMixin, models.Model):
             MinValueValidator(0, _('Porcentagem não pode ser negativo.')),
         ],
     )
-    data_inicio = models.DateField(_('Data de início'), blank=False)
+    data_inicio = models.DateField(
+        _('Data de início'),
+        blank=False,
+        validators=[
+            MinValueValidator(
+                datetime.now().date(), _('A data de início não pode ser no passado.')
+            )
+        ],
+    )
     descricao = models.CharField(_('Descrição'), max_length=246, blank=True)
     periodo = models.ForeignKey(
         Periodo, verbose_name=_('Período'), on_delete=models.RESTRICT

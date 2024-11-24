@@ -1,0 +1,14 @@
+<table>
+    <thead>
+        <tr>
+            <th>Descrição</th>
+            <th>Código de barras</th>
+            <th>Preço de venda</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for produto in produtos %}
+            {% include 'includes/linha_tabela_oferta_produto.html' %}
+        {% endfor %}
+    </tbody>
+</table>
