@@ -7,7 +7,7 @@ from common.models import (
 )
 from scope_auth.models import Scope
 from scope_auth.util import get_scope_from_request
-from util.decorators import CachedProperty
+from util.decorators import CachedProperty, CachedClassProperty
 
 __all__ = (
     'ScopeMixin',
@@ -18,24 +18,24 @@ __all__ = (
 
 class ScopeMixin:
     @property
-    def scope(self) -> Scope:
+    def scope(self) -> Scope | None:
+        if not hasattr(self, 'request'):
+            return None
         return get_scope_from_request(self.request)
 
 
 class UsuarioMixin:
-    usuario_class: type[UsuarioGenericoPessoa] | list[type[UsuarioGenericoPessoa]] = (
-        UsuarioGenericoPessoa
-    )
+    usuario_class: type[UsuarioGenericoPessoa] | list[type[UsuarioGenericoPessoa]] = []
 
-    @CachedProperty
-    def _usuario_classes(self):
+    @CachedClassProperty
+    def _usuario_classes(cls):
         return (
-            self.usuario_class
-            if isinstance(self.usuario_class, list)
-            else [self.usuario_class]
+            cls.usuario_class
+            if isinstance(cls.usuario_class, list)
+            else [cls.usuario_class]
         ) + [UsuarioGenericoPessoaFisica, UsuarioGenericoPessoaJuridica]
 
-    @property
+    @CachedProperty
     def user(self) -> UsuarioGenericoPessoa:
         return UsuarioGenericoPessoa.cast_para_primeira_subclasse(
             self._usuario_classes, self.request.user

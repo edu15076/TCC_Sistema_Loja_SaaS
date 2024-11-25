@@ -51,7 +51,7 @@ class UsuarioGenericoManager(UserPerScopeWhitEmailManager):
 
     def get_by_codigo(self, codigo: str, escopo: Scope = None):
         return super().get_by_natural_key(
-            username=Pessoa.pessoas.get(codigo=codigo), scope=escopo
+            username=PessoaUsuario.codigos.get(codigo_pessoa=codigo), scope=escopo
         )
 
 

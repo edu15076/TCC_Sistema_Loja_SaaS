@@ -71,7 +71,7 @@ class ClienteContratanteManager(UsuarioContratacaoManager):
 
 class ClienteContratante(UsuarioContratacao):
     loja = models.OneToOneField(
-        Loja, on_delete=models.CASCADE, related_name='contratante'
+        Loja, on_delete=models.RESTRICT, related_name='contratante'
     )
 
     contratantes = ClienteContratanteManager()
@@ -79,6 +79,9 @@ class ClienteContratante(UsuarioContratacao):
     @CachedClassProperty
     def papel_group(cls):
         return Group.objects.get(name='saas_clientes_contratantes')
+
+    def is_signing_contract(self) -> bool:
+        return self.contratoassinado_set.filter(vigente=True).exists()
 
     def save(self, *args, **kwargs):
         self.loja = (
@@ -92,3 +95,9 @@ class ClienteContratante(UsuarioContratacao):
         loja = self.loja
         super().delete(*args, **kwargs)
         loja.delete()
+
+    def delete_dados_loja(self, *args, **kwargs):
+        old_loja: Loja = self.loja
+        self.loja = Loja.lojas.create()
+        self.save()
+        old_loja.delete(*args, **kwargs)

@@ -1,3 +1,8 @@
+import os
+import shutil
+from contextlib import suppress
+
+from django.conf import settings
 from django.db import models
 from django.db.models import OuterRef, Subquery
 
@@ -5,6 +10,10 @@ from common.models import LojaScope
 from .funcionario import Funcionario, FuncionarioQuerySet
 
 __all__ = ('Loja',)
+
+
+def loja_path(instance, filename):
+    return f'lojas/loja_{instance.pk}/{filename}'
 
 
 class LojaQuerySet(models.QuerySet):
@@ -33,7 +42,7 @@ class Loja(models.Model):
         LojaScope, on_delete=models.CASCADE, primary_key=True, related_name='loja'
     )
     nome = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to='dynamic_files/images/logos_loja/')
+    logo = models.ImageField(upload_to=loja_path)
 
     lojas = LojaManager()
 
@@ -47,3 +56,12 @@ class Loja(models.Model):
     @funcionarios.setter
     def funcionarios(self, funcionarios):
         print(funcionarios)
+
+    def delete(self, *args, **kwargs):
+        loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
+
+        if os.path.isdir(loja_directory):
+            with suppress(Exception):
+                shutil.rmtree(loja_directory)
+
+        super().delete(*args, **kwargs)
