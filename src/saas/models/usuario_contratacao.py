@@ -71,7 +71,7 @@ class ClienteContratanteManager(UsuarioContratacaoManager):
 
 class ClienteContratante(UsuarioContratacao):
     loja = models.OneToOneField(
-        Loja, on_delete=models.CASCADE, related_name='contratante'
+        Loja, on_delete=models.RESTRICT, related_name='contratante'
     )
 
     contratantes = ClienteContratanteManager()
@@ -95,3 +95,9 @@ class ClienteContratante(UsuarioContratacao):
         loja = self.loja
         super().delete(*args, **kwargs)
         loja.delete()
+
+    def delete_dados_loja(self, *args, **kwargs):
+        old_loja: Loja = self.loja
+        self.loja = Loja.lojas.create()
+        self.save()
+        old_loja.delete(*args, **kwargs)

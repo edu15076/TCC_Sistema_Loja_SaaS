@@ -1,7 +1,7 @@
 from typing import Any, Union
 
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseNotFound
 from django.views.generic.edit import ModelFormMixin, ProcessFormView
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 from django.http import Http404
@@ -123,6 +123,10 @@ class CreateOrUpdateListHTMXView(
     View que permite visualizar uma lista de objetos, cadastrar e editar eles
     usando HTMX
     """
+    def get(self, request, *args, **kwargs):
+        if not self.should_block_request():
+            return super().get(request, *args, **kwargs)
+        return HttpResponseNotFound()
 
     def form_invalid(self, form):
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)

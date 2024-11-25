@@ -35,13 +35,18 @@ class PasswordChangeUsuarioGenericoView(
 
 class CreateUsuarioGenericoView(ScopeMixin, CreateHTMXView):
     form_class = UsuarioGenericoCreationForm
+    login_valid_user = True
+
+    def get_created_user_scope(self):
+        return self.scope
 
     def get_form_kwargs(self):
-        return super().get_form_kwargs() | {'scope': self.scope}
+        return super().get_form_kwargs() | {'scope': self.get_created_user_scope()}
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        login(self.request, self.object)
+        if self.login_valid_user:
+            login(self.request, self.object)
         return response
 
 

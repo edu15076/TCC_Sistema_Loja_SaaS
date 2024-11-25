@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.contrib.auth.models import Group
 from django.db import models
-from django.db.models import F, Model
+from django.db.models import F
 from django.db.models.functions import Coalesce
 
 from common.models import (
@@ -11,6 +11,8 @@ from common.models import (
     UsuarioGenericoPessoaFisicaQuerySet,
     LojaScope,
 )
+from util.decorators import CachedClassProperty
+from util.models import cast_to_model
 
 __all__ = (
     'Funcionario',
@@ -19,21 +21,27 @@ __all__ = (
     'GerenteDeEstoque',
     'Caixeiro',
     'Vendedor',
+    'Admin',
 )
-
-from util.decorators import CachedClassProperty
-
-from util.models import cast_to_model
 
 
 class FuncionarioQuerySet(UsuarioGenericoPessoaFisicaQuerySet):
-    def complete(self):
+    @CachedClassProperty
+    def _annotated_fields(cls):
+        return super()._annotated_fields | {'loja': F('pessoa_usuario__scope__loja')}
+
+    @CachedClassProperty
+    def _aliased_fields(cls):
         return (
-            super()
-            .complete()
+                super()._aliased_fields
+                | FuncionarioQuerySet._annotated_fields
+        )
+
+    def _complete(self):
+        return (
+            super()._complete()
             .defer('pessoa_usuario__scope__loja__logo')
             .select_related('pessoa_usuario__scope__loja')
-            .annotate(loja=F('pessoa_usuario__scope__loja'))
         )
 
     def simple(self):
@@ -83,8 +91,10 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     )
 
     _porcentagem_comissao = models.DecimalField(
-        max_digits=4, decimal_places=2, null=True
+        max_digits=4, decimal_places=2, null=True, blank=True
     )
+
+    is_admin = models.BooleanField(default=False, null=False, blank=True)
 
     funcionarios = FuncionarioManager()
 
@@ -145,7 +155,7 @@ class FuncionarioPapelQuerySet(FuncionarioQuerySet):
 
 class FuncionarioPapelManager(FuncionarioManager):
     def get_queryset(self):
-        return FuncionarioQuerySet(self.model, using=self._db).complete()
+        return FuncionarioPapelQuerySet(self.model, using=self._db).complete()
 
 
 class FuncionarioPapel(Funcionario):
@@ -252,6 +262,50 @@ class Vendedor(FuncionarioPapel):
         self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = VendedorManager()
+
+    class Meta:
+        proxy = True
+
+
+class AdminQuerySet(FuncionarioQuerySet):
+    def complete(self):
+        return (
+            super()
+            .complete()
+            .filter(is_admin=True)
+        )
+
+
+class AdminManager(FuncionarioManager):
+    def get_queryset(self):
+        return AdminQuerySet(self.model, using=self._db).complete()
+
+
+class Admin(Funcionario):
+    def save(self, *args, **kwargs):
+        if is_being_created := self.pk is None:
+            self.is_admin = True
+        super().save(*args, **kwargs)
+        if is_being_created:
+            self.groups.add(
+                *Group.objects.filter(name__startswith='loja_')
+                .values_list('id', flat=True)
+            )
+
+    @classmethod
+    def grant_admin(cls, funcionario: Funcionario):
+        funcionario.is_admin = True
+        funcionario.groups.add(
+            *Group.objects.filter(name__startswith='loja_')
+            .values_list('id', flat=True)
+        )
+        funcionario.save()
+
+    def revoque_admin(self):
+        self.is_admin = False
+        self.save()
+
+    admins = AdminManager()
 
     class Meta:
         proxy = True

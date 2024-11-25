@@ -5,6 +5,11 @@ from .views import *
 
 urlpatterns = [
     path(
+        '',
+        TemplateView.as_view(template_name='home_contratacao.html'),
+        name='home_contratacao',
+    ),
+    path(
         'criar_usuario/',
         CreateUsuarioContratacaoView.as_view(),
         name='criar_usuario_contratacao',
@@ -15,14 +20,14 @@ urlpatterns = [
         name='login_contratacao'
     ),
     path(
-        '',
-        TemplateView.as_view(template_name='home_contratacao.html'),
-        name='home_contratacao',
-    ),
-    path(
         'editar_usuario/',
         UpdateUsuarioContratacaoView.as_view(),
         name='editar_usuario_contratacao',
+    ),
+    path(
+        'editar_senha/',
+         PasswordChangeUsuarioContratacaoView.as_view(),
+         name='editar_senha_contratacao'
     ),
     path(
         'logout/',
@@ -44,13 +49,44 @@ urlpatterns = [
         GestaoContratoCRUDListView.as_view(),
         name='gestao_contrato',
     ),
-    path('editar_senha/',
-         PasswordChangeUsuarioContratacaoView.as_view(),
-         name='editar_senha_contratacao'),
-    path('visualizar_contrato_assinado/',
+    path(
+        'visualizar_contrato_assinado/',
         ContratoAssinadoView.as_view(),
-        name='visualizar_contrato_assinado'),
-    path('cancelar_contrato/',
+        name='visualizar_contrato_assinado'
+    ),
+    path(
+        'cancelar_contrato/',
         CancelarContratoView.as_view(),
-        name='cancelar_contrato')
+        name='cancelar_contrato'
+    ),
+    path(
+        'dados_loja/',
+        DadosLojaView.as_view(),
+        name='dados_loja'
+    ),
+    path(
+        'editar_dados_loja/',
+        EditarDadosLojaView.as_view(),
+        name='editar_dados_loja'
+    ),
+    path(
+        'criar_admin/',
+        CriarAdminLojaView.as_view(),
+        name='criar_admin'
+    ),
+    path(
+        'admin_list/',
+        ListAdminView.as_view(),
+        name='admin_list'
+    ),
+    path(
+        'admin_detail/<int:pk>/',
+        AdminCardView.as_view(),
+        name='admin_detail'
+    ),
+    path(
+        'minha_loja/',
+        InformacoesLojaView.as_view(),
+        name='informacoes_loja'
+    ),
 ]

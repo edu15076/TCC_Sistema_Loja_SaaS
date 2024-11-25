@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 (
                     'loja',
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE,
+                        on_delete=django.db.models.deletion.RESTRICT,
                         related_name='contratante',
                         to='loja.loja',
                     ),
