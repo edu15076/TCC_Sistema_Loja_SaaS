@@ -1,0 +1,11 @@
+{% extends 'base_loja.html' %}
+
+{% block main_content %}
+    <div class="row">
+        {% for caixa in caixas %}
+            <div class="col-md-4" id="caixa-card-{{ caixa.id }}">
+                {% include 'cards/card_caixa.html' with caixa=caixa loja_scope=loja_scope %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock main_content %}

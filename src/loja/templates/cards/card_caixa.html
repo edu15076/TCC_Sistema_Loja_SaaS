@@ -1,0 +1,39 @@
+<div class="col-md-4 mb-4" id="caixa-card-{{ caixa.id }}" hx-target="#caixa-card-{{ caixa.id }}">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Caixa {{ caixa.id }}</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">
+                <strong>Número de Identificação:</strong> {{ caixa.numero_identificacao }}
+            </p>
+            {% if caixa.horario_aberto %}
+                <p class="mb-2">
+                    <strong>Horário de Abertura:</strong> {{ caixa.horario_aberto }}
+                </p>
+            {% endif %}
+            <div class="d-flex align-items-center">
+                <strong class="me-2">Status:</strong>
+                <form method="post" class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="status-switch-{{ caixa.id }}" 
+                            {% if caixa.ativo %}checked{% endif %} 
+                            hx-post="{% url 'caixa_lista' loja_scope=loja_scope %}" 
+                            hx-vals='{"id": "{{ caixa.id }}", "ativo": "{{ caixa.ativo|yesno:"true,false" }}"}'
+                            hx-trigger="change"
+                            hx-swap="outerHTML"
+                            hx-on:htmx:afterSwap="initializeComponents()">
+                        <label class="form-check-label ms-2 mb-0" id="status-label-{{ caixa.id }}" for="status-switch-{{ caixa.id }}">
+                            {% if caixa.ativo %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

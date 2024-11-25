@@ -3,6 +3,14 @@ from django.utils.timezone import now
 
 from loja.models.fluxodecaixa import FluxoDeCaixa
 
+class CaixaQuerySet(models.QuerySet):
+    pass
+
+
+class CaixaManager(models.Manager):
+    def get_queryset(self):
+        return CaixaQuerySet(self.model, using=self._db).all()
+    
 class Caixa(models.Model):
     numero_identificacao = models.CharField(max_length=50, unique=True) 
     loja = models.ForeignKey('Loja', on_delete=models.CASCADE, related_name='caixas')
@@ -10,6 +18,8 @@ class Caixa(models.Model):
     dinheiro_em_caixa = models.FloatField(default=0.0)  
     ativo = models.BooleanField(default=False) 
 
+    caixas = CaixaManager()
+    
     def fechar_caixa(self):
         if not self.ativo:
             raise ValueError("Caixa já está fechado.")
@@ -36,3 +46,8 @@ class Caixa(models.Model):
 
     def __str__(self):
         return f"Caixa {self.numero_identificacao} - {'Ativo' if self.ativo else 'Fechado'}"
+    
+    class Meta:
+        permissions = [
+            ("manage_caixa", "Pode gerenciar caixas"),
+        ]

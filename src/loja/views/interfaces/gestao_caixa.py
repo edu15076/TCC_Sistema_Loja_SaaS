@@ -6,7 +6,7 @@ from common.views.mixins import UsuarioMixin
 
 
 class ABCGestaoCaixaCRUDListView(
-    ABC, LoginRequiredMixin, PermissionRequiredMixin, UsuarioMixin, CreateOrUpdateListHTMXView
+    ABC, LoginRequiredMixin, UsuarioMixin, CreateOrUpdateListHTMXView
 ):
     """
     Interface para gestão de caixa, com operações de abrir, fechar e movimentar dinheiro no caixa.

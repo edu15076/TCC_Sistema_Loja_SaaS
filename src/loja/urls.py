@@ -1,6 +1,6 @@
 from django.urls import path
 
-from loja.views.gestaocaixa import GestaoCaixaView
+from loja.views.gestao_caixa import GestaoCaixaView
 
 from .views import *
 
@@ -38,6 +38,6 @@ urlpatterns = [
     path(
         'caixas/',
         GestaoCaixaView.as_view(),
-        name='caixa_list',
+        name='caixa_lista',
     ),
 ]
