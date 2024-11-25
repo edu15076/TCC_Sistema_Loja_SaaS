@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
-from jsonschema import ValidationError
+from django.core.exceptions import ValidationError
 
 from loja.validators import validate_unique_promocao
 from util.mixins import ValidateModelMixin
