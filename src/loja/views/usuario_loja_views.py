@@ -1,3 +1,4 @@
+from django.contrib.auth import logout
 from django.urls import reverse
 
 from common.forms import (
@@ -53,6 +54,12 @@ class LogoutUsuarioLojaView(LogoutUsuarioGenericoView, ScopeMixin):
 class LoginUsuarioLojaView(LoginUsuarioGenericoView):
     template_name = 'auth/login_loja.html'
     authentication_form = UsuarioGenericoPessoaFisicaAuthenticationForm
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if not hasattr(request.user, 'funcionario_loja'):
+            logout(request)
+        return response
 
     @property
     def form_action(self):

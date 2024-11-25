@@ -71,11 +71,13 @@ class PessoaFisicaCreationForm(PessoaCreationForm):
 
     class Meta:
         model = PessoaFisica
-        fields = PessoaCreationForm.Meta.fields + (
-            'nome',
-            'sobrenome',
-            'data_nascimento',
-        )
+        fields = tuple(dict.fromkeys(
+            PessoaCreationForm.Meta.fields + (
+                'nome',
+                'sobrenome',
+                'data_nascimento',
+            )
+        ))
         labels = {
             'codigo': 'CPF',
         }
@@ -105,7 +107,9 @@ class PessoaJuridicaCreationForm(PessoaCreationForm):
 
     class Meta:
         model = PessoaJuridica
-        fields = PessoaCreationForm.Meta.fields + ('razao_social', 'nome_fantasia')
+        fields = tuple(dict.fromkeys(
+            PessoaCreationForm.Meta.fields + ('razao_social', 'nome_fantasia')
+        ))
         labels = {
             'codigo': 'CNPJ',
         }
@@ -124,10 +128,14 @@ class PessoaChangeForm(forms.ModelForm):
 class PessoaFisicaChangeForm(PessoaChangeForm):
     class Meta:
         model = PessoaFisica
-        fields = PessoaChangeForm.Meta.fields + ('nome', 'sobrenome', 'data_nascimento')
+        fields = tuple(dict.fromkeys(
+            PessoaChangeForm.Meta.fields + ('nome', 'sobrenome', 'data_nascimento')
+        ))
 
 
 class PessoaJuridicaChangeForm(PessoaChangeForm):
     class Meta:
         model = PessoaJuridica
-        fields = PessoaChangeForm.Meta.fields + ('razao_social', 'nome_fantasia')
+        fields = tuple(dict.fromkeys(
+            PessoaChangeForm.Meta.fields + ('razao_social', 'nome_fantasia')
+        ))

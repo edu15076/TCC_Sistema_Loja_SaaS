@@ -58,7 +58,7 @@ class UsuarioGenericoCreationForm(
         self.scope = scope
 
     def get_submit_button(self):
-        return Submit('criar', 'Criar')
+        return Submit('criar', _('Criar'))
 
     def clean_codigo(self):
         codigo = super().clean_codigo()
@@ -197,9 +197,9 @@ class UsuarioGenericoPessoaFisicaChangeForm(
 ):
     class Meta:
         model = UsuarioGenericoPessoaFisica
-        fields = (
+        fields = tuple(dict.fromkeys(
             UsuarioGenericoChangeForm.Meta.fields + PessoaFisicaChangeForm.Meta.fields
-        )
+        ))
 
 
 class UsuarioGenericoPessoaJuridicaChangeForm(
@@ -207,6 +207,6 @@ class UsuarioGenericoPessoaJuridicaChangeForm(
 ):
     class Meta:
         model = UsuarioGenericoPessoaJuridica
-        fields = (
+        fields = tuple(dict.fromkeys(
             UsuarioGenericoChangeForm.Meta.fields + PessoaJuridicaChangeForm.Meta.fields
-        )
+        ))

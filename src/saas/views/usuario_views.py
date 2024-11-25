@@ -28,6 +28,7 @@ class PasswordChangeUsuarioContratacaoView(PasswordChangeUsuarioGenericoView):
     form_action = reverse_lazy('editar_senha_contratacao')
     login_url = reverse_lazy('login_contratacao')
     template_name = 'auth/editar_senha_usuario_contratacao.html'
+    usuario_class = [GerenteDeContratos, ClienteContratante]
 
 
 class LogoutUsuarioContratacaoView(LogoutUsuarioGenericoView):

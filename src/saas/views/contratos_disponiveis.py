@@ -2,7 +2,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
 from saas.views.interfaces import ABCContratosDisponiveisCRUDView
-from saas.models import Contrato
+from saas.models import Contrato, ClienteContratante
 from saas.forms import FiltroContratosDisponiveisForm
 from saas.models import ContratoAssinado
 from saas.forms import ContratoAssinadoForm
@@ -13,18 +13,11 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
     template_name = 'lista_contratos_disponiveis.html'
     model = Contrato
     filter_form = FiltroContratosDisponiveisForm
+    usuario_class = ClienteContratante
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         queryset = self.get_page().filter(ativo=True)
         filter_form = self.filter_form()
-
-        cliente_contratante = UsuarioGenericoPessoaJuridica.usuarios.get(
-            cnpj=self.user.codigo
-        )
-
-        possui_contrato = ContratoAssinado.objects.contratos_disponiveis().filter(
-            cliente_contratante=cliente_contratante
-        ).exists()
 
         return render(
             request,
@@ -32,7 +25,10 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
             {
                 'filter_form': filter_form,
                 'contratos': queryset,
-                'possui_contrato': possui_contrato,
+                'possui_contrato': (
+                    False if not hasattr(self.user, 'is_signing_contract')
+                    else self.user.is_signing_contract()
+                ),
             },
         )
 
