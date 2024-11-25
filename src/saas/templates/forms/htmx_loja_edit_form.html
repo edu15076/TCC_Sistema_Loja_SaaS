@@ -1,0 +1,11 @@
+{% load crispy_forms_tags %}
+
+<form
+        hx-target="#dados-loja"
+        hx-swap="outerHTML"
+        hx-post="{{ action }}"
+        hx-on::after-request="$('#editar-dados-loja').modal('hide')"
+        method="post"
+        enctype="multipart/form-data">
+    {% crispy form %}
+</form>
