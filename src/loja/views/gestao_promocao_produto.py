@@ -30,6 +30,9 @@ class GestaoPromocoesProdutoCRUDView(UpdateHTMXView, DetailView):
     duplicar_promocao_form_class = DuplicarPromocaoForm
     template_name = 'promocoes_por_produto.html'
 
+    # * remover depois
+    scope = 2
+
     def get_template_produto(self, request: HttpRequest) -> str:
         return 'includes/linha_tabela_oferta_produto.html'
 
@@ -83,10 +86,10 @@ class GestaoPromocoesProdutoCRUDView(UpdateHTMXView, DetailView):
             produto = self.get_object()
 
             if 'promocoes' in request.POST:
-                form = self.promocoes_form_class(data=request.POST, instance=produto)
+                form = self.promocoes_form_class(data=request.POST, scope=self.scope, instance=produto)
             elif 'data_inicio' in request.POST:
                 form = self.duplicar_promocao_form_class(
-                    data=request.POST, loja=produto.loja
+                    data=request.POST, scope=self.scope
                 )
             elif 'preco_de_venda' in request.POST:
                 form = self.preco_form_class(request.POST, instance=produto)

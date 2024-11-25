@@ -34,12 +34,12 @@ urlpatterns = [
         name='editar_senha_loja',
     ),
     path(
-        'loja/<int:scope>/oferta_produtos/',
+        'oferta_produtos/',
         GestaoOfertaProdutoListView.as_view(),
         name='gestao_oferta_produtos',
     ),
     path(
-        'loja/<int:scope>/promocoes_produto/<int:pk>/',
+        'promocoes_produto/<int:pk>/',
         GestaoPromocoesProdutoCRUDView.as_view(),
         name='gestao_promocoes_produto',
     ),
