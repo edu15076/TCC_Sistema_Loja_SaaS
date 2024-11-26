@@ -143,6 +143,11 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     def remover_papel(self, group: Group):
         self.groups.remove(group)
 
+    def not_in_groups(self):
+        return Group.objects.filter(name__startswith='loja_').exclude(
+            pk__in=self.groups.values_list('pk', flat=True)
+        )
+
 
 class FuncionarioPapelQuerySet(FuncionarioQuerySet):
     def complete(self):

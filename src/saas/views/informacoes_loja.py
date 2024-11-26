@@ -7,9 +7,9 @@ from common.views import CreateUsuarioGenericoView
 from common.views.mixins import UserInScopeRequiredMixin
 from loja.models import Loja, Admin, Funcionario
 from util.views import UpdateHTMXView, HTMXTemplateView, CreateHTMXView, \
-    CreateOrUpdateListHTMXView, HTMXHelperMixin
+    CreateOrUpdateListHTMXView, HTMXHelperMixin, HTMXModelFormMixin
 from ..forms import LojaForm
-from ..forms.informacoes_loja_forms import AdminCreationForm
+from ..forms.informacoes_loja_forms import AdminCreationForm, FuncionarioGroupForm
 from ..models import ClienteContratante
 
 __all__ = (
@@ -78,7 +78,7 @@ class CriarAdminLojaView(
 
 
 class AdminCardView(
-    UserInScopeRequiredMixin, PermissionRequiredMixin, HTMXHelperMixin, DetailView
+    UserInScopeRequiredMixin, PermissionRequiredMixin, HTMXModelFormMixin, DetailView
 ):
     template_name = 'cards/card_admin_loja.html'
     restrict_direct_access = True
@@ -100,7 +100,7 @@ class ListAdminView(
     template_name = 'includes/admin_list.html'
     model = Admin
     paginate_by = 20
-    restrict_direct_access = True
+    restrict_direct_access = False
     usuario_class = ClienteContratante
     ordering = ['nome']
     context_object_name = 'admins'
@@ -111,8 +111,35 @@ class ListAdminView(
             return HttpResponseNotFound()
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
-        return super().get_queryset().simple()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        for funcionario in context['admins']:
+            funcionario.papeis_pertence = [
+                {
+                    'name': group.name,
+                    'form': FuncionarioGroupForm(initial={
+                        'group': group.pk,
+                        'funcionario': funcionario.pk,
+                        'action': False,
+                    })
+                } for group in funcionario.groups.all()
+            ]
+            funcionario.papeis_nao_pertence = [
+                {
+                    'name': group.name,
+                    'form': FuncionarioGroupForm(initial={
+                        'group': group.pk,
+                        'funcionario': funcionario.pk,
+                        'action': True,
+                    })
+                } for group in funcionario.not_in_groups()
+            ]
+
+        return context
+
+    # def get_queryset(self):
+    #     return super().get_queryset().simple()
 
 
 class InformacoesLojaView(

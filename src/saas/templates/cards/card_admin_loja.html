@@ -1,3 +1,5 @@
+{% load crispy_forms_tags %}
+
 <div class="dados-funcionario card">
     <div class="card-body">
         <h5 class="card-title">Funcionário: {{ funcionario.cpf }}</h5>
@@ -7,5 +9,27 @@
             <strong>Telefone:</strong> {{ funcionario.telefone }}<br>
             <strong>Data de nascimento:</strong> {{ funcionario.data_nascimento }}<br>
         </p>
+        <div class="funcionario-papeis d-flex flex-wrap">
+            {% for group in funcionario.papeis_pertence %}
+                <div class="badge rounded-pill bg-black">
+                    {{ group.name }}
+                    <form class="d-inline" action="/" method="post">
+                        {{ group.form }}
+                        <button type="submit" class="btn-close btn-close-white" aria-label="Remove"></button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="funcionario-add-papeis d-flex flex-wrap">
+            {% for group in funcionario.papeis_nao_pertence %}
+                <span class="badge rounded-pill bg-secondary">
+                    {{ group.name }}
+                    <form class="d-inline" action="/" method="post">
+                        {{ group.form }}
+                        <button type="submit" class="btn btn-dark" aria-label="Add">+</button>
+                    </form>
+                </span>
+            {% endfor %}
+        </div>
     </div>
 </div>
