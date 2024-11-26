@@ -1,7 +1,7 @@
 <div id="list-admin">
-    {% for admin in admins %}
+    {% for funcionario in funcionarios %}
         <div class="mb-3">
-            {% include 'cards/card_admin_loja.html' with funcionario=admin %}
+            {% include 'cards/card_admin_loja.html' %}
         </div>
     {% endfor %}
 </div>

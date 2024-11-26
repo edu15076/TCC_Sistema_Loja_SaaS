@@ -49,14 +49,14 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
     form_action: str = None
     form_template_name: str = 'forms/htmx_form_post_template.html'
     redirect_on_success = True
-    hx_target_form_invalid = 'this'
-    hx_target_form_valid = 'this'
+    hx_target_form_invalid = None
+    hx_swap_form_invalid = None
 
     def get_hx_target_form_invalid(self):
         return self.hx_target_form_invalid
 
-    def get_hx_target_form_valid(self):
-        return self.hx_target_form_valid
+    def get_hx_swap_form_invalid(self):
+        return self.hx_swap_form_invalid
 
     def get_form_action(self):
         return self.form_action
@@ -70,8 +70,10 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
         response = TemplateResponse(
             self.request, self.form_template_name, self.get_context_data(form=form)
         )
-        response['HX-Retarget'] = self.get_hx_target_form_invalid()
-        response['HX-Reswap'] = 'outerHTML'
+        if hx_retarget := self.get_hx_target_form_invalid():
+            response['HX-Retarget'] = hx_retarget
+        if hx_swap := self.get_hx_swap_form_invalid():
+            response['HX-Reswap'] = hx_swap
         return response
 
     def form_valid(self, form):
@@ -83,8 +85,6 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
         self.request.method = 'GET'
         match = resolve(self.get_success_url())
         response = match.func(self.request, *match.args, **match.kwargs)
-        if not self.request.headers.get('HX-Request'):
-            response['HX-Retarget'] = self.get_hx_target_form_valid()
         return response
 
 

@@ -14,7 +14,7 @@
                 <div class="badge rounded-pill bg-black">
                     {{ group.name }}
                     <form class="d-inline" action="/" method="post">
-                        {{ group.form }}
+                        {% crispy group.form %}
                         <button type="submit" class="btn-close btn-close-white" aria-label="Remove"></button>
                     </form>
                 </div>
@@ -25,8 +25,8 @@
                 <span class="badge rounded-pill bg-secondary">
                     {{ group.name }}
                     <form class="d-inline" action="/" method="post">
-                        {{ group.form }}
-                        <button type="submit" class="btn btn-dark" aria-label="Add">+</button>
+                        {% crispy group.form %}
+                        <button type="submit" class="btn-close btn-close-white" style="transform: rotate(45deg);" aria-label="Add"></button>
                     </form>
                 </span>
             {% endfor %}
