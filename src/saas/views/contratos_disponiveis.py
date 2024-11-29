@@ -47,4 +47,4 @@ class ContratosDisponiveisCRUDView(ABCContratosDisponiveisCRUDView):
             form.save()
             return redirect('contratos_disponiveis')
         else:
-            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            return JsonResponse({'success': False, 'message': form.errors}, status=400)

@@ -76,4 +76,4 @@ class GestaoContratoCRUDListView(ABCGestaoContratoCRUDListView):
                 )
 
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
