@@ -85,6 +85,26 @@ urlpatterns = [
         name='admin_detail'
     ),
     path(
+        'add_papel/<int:group>/<int:funcionario>/',
+        AddFuncionarioGroupView.as_view(),
+        name='add_papel'
+    ),
+    path(
+        'remove_papel/<int:group>/<int:funcionario>/',
+        RemoveFuncionarioGroupView.as_view(),
+        name='remove_papel'
+    ),
+    path(
+        'add_papel/',
+        AddFuncionarioGroupView.as_view(),
+        name='add_papel'
+    ),
+    path(
+        'remove_papel/',
+        RemoveFuncionarioGroupView.as_view(),
+        name='remove_papel'
+    ),
+    path(
         'minha_loja/',
         InformacoesLojaView.as_view(),
         name='informacoes_loja'

@@ -1,3 +1,4 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.http import (
     HttpResponseRedirect,
     HttpResponseNotFound,
@@ -31,6 +32,11 @@ class HttpResponseHTMXRedirect(HttpResponseRedirect):
 class HTMXHelperMixin(ContextMixin):
     restrict_direct_access = False
 
+    def get(self, request, *args, **kwargs):
+        if self.should_block_request():
+            return HttpResponseNotFound()
+        return super().get(request, *args, **kwargs)
+
     def is_htmx_request(self):
         return bool(self.request.headers.get('HX-Request'))
 
@@ -39,10 +45,7 @@ class HTMXHelperMixin(ContextMixin):
 
 
 class HTMXTemplateView(HTMXHelperMixin, TemplateView):
-    def get(self, request, *args, **kwargs):
-        if self.should_block_request():
-            return HttpResponseNotFound()
-        return super().get(request, *args, **kwargs)
+    pass
 
 
 class HTMXFormMixin(HTMXHelperMixin, FormMixin):
@@ -76,6 +79,13 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
             response['HX-Reswap'] = hx_swap
         return response
 
+    def get_success_url(self):
+        try:
+            url = super().get_success_url()
+        except ImproperlyConfigured:
+            url = None
+        return url
+
     def form_valid(self, form):
         if self.get_success_url() is None:
             return JsonResponse({'status': True}, status=200)
@@ -95,15 +105,8 @@ class HTMXModelFormMixin(HTMXFormMixin, ModelFormMixin):
 
 
 class CreateHTMXView(HTMXModelFormMixin, CreateView):
-    def get(self, request, *args, **kwargs):
-        if not self.should_block_request():
-            return super().get(request, *args, **kwargs)
-        return HttpResponseNotFound()
-
+    pass
 
 
 class UpdateHTMXView(HTMXModelFormMixin, UpdateView):
-    def get(self, request, *args, **kwargs):
-        if not self.should_block_request():
-            return super().get(request, *args, **kwargs)
-        return HttpResponseNotFound()
+    pass

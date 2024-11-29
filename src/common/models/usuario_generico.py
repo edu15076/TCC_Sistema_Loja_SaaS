@@ -121,7 +121,7 @@ class UsuarioGenericoSimpleQuerySet(UsuarioGenericoQuerySet):
         return super().complete()._complete().annotate(**self._annotated_fields)
 
     def simple(self):
-        return self.values('telefone', 'email', 'pessoa_ptr', 'scope')
+        return self.values('telefone', 'email', 'pessoa_ptr', 'scope', 'pk')
 
 
 class UsuarioGenericoSimpleManager(UsuarioGenericoManager):

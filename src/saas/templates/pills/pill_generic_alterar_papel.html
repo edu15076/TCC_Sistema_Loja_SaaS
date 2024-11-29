@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+<div class="badge rounded-pill {{ pill_color }} h-auto p-2 d-inline-flex gap-1 align-items-baseline justify-content-between pill-alterar-papel-funcionario">
+    <span class="align-middle">{{ group.name }}</span>
+    <form
+            hx-target="{{ list_to_update }}"
+            hx-swap="beforeend"
+            hx-post="{{ action }}"
+            hx-on::after-request="this.closest('.pill-alterar-papel-funcionario').remove()"
+            class="h-100 m-auto d-inline"
+            method="post">
+        {% crispy form %}
+        <button type="submit" class="btn-close btn-close-white p-0 align-middle"
+                {% if btn_type == "close" %}
+                    aria-label="Remove"
+                {% else %}
+                    style="transform: rotate(45deg);" aria-label="Add"
+                {% endif %}
+        ></button>
+    </form>
+</div>

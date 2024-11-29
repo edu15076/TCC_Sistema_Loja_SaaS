@@ -1,13 +1,19 @@
+from contextlib import suppress
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.http import HttpResponseNotFound
+from django.contrib.auth.models import Group
+from django.http import HttpResponseNotFound, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic.edit import FormView
 
 from common.views import CreateUsuarioGenericoView
 from common.views.mixins import UserInScopeRequiredMixin
 from loja.models import Loja, Admin, Funcionario, GerenteDeRH
 from util.views import UpdateHTMXView, HTMXTemplateView, CreateHTMXView, \
-    CreateOrUpdateListHTMXView, HTMXHelperMixin, HTMXModelFormMixin
+    CreateOrUpdateListHTMXView, HTMXHelperMixin, HTMXModelFormMixin, HTMXFormMixin
 from ..forms import LojaForm
 from ..forms.informacoes_loja_forms import AdminCreationForm, FuncionarioGroupForm
 from ..models import ClienteContratante
@@ -18,8 +24,11 @@ __all__ = (
     'InformacoesLojaView',
     'CriarAdminLojaView',
     'ListAdminView',
+    'AddFuncionarioGroupView',
+    'RemoveFuncionarioGroupView',
     'AdminCardView',
 )
+
 
 class EditarDadosLojaView(
     UserInScopeRequiredMixin, PermissionRequiredMixin, UpdateHTMXView
@@ -37,6 +46,9 @@ class EditarDadosLojaView(
     permission_required = 'saas.gerir_cadastro_da_loja'
     hx_target_form_invalid = 'this'
     hx_swap_form_invalid = 'outerHTML'
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {'auto_id': 'id_edit_loja_%s'}
 
     def get_object(self, queryset=None):
         return self.user.loja
@@ -74,6 +86,9 @@ class CriarAdminLojaView(
     hx_target_form_invalid = 'this'
     hx_swap_form_invalid = 'outerHTML'
 
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {'auto_id': 'id_create_admin_%s'}
+
     def get_success_url(self):
         return reverse('admin_detail', kwargs={'pk': self.object.pk})
 
@@ -85,30 +100,28 @@ class BaseFuncionarioPapeisMixin(
     UserInScopeRequiredMixin, PermissionRequiredMixin
 ):
     usuario_class = [ClienteContratante, GerenteDeRH]
-    permission_required = 'saas.gerir_conta_de_admin_da_loja' # TODO: alterar para permissão da loja
+    permission_required = 'saas.gerir_conta_de_admin_da_loja'  # TODO: alterar para permissão da loja
 
     def get_papeis_pertence(self, funcionario: Funcionario):
         return [
-            {
-                'name': group.name,
+            group | {
                 'form': FuncionarioGroupForm(initial={
-                    'group': group.pk,
+                    'group': group['pk'],
                     'funcionario': funcionario.pk,
                     'action': False,
-                })
-            } for group in funcionario.groups.all()
+                }, loja=self.user.loja, auto_id=False)
+            } for group in funcionario.groups.values('name', 'pk')
         ]
 
     def get_papeis_nao_pertence(self, funcionario: Funcionario):
         return [
-            {
-                'name': group.name,
+            group | {
                 'form': FuncionarioGroupForm(initial={
-                    'group': group.pk,
+                    'group': group['pk'],
                     'funcionario': funcionario.pk,
                     'action': True,
-                })
-            } for group in funcionario.not_in_groups()
+                }, loja=self.user.loja, auto_id=False)
+            } for group in funcionario.not_in_groups().values('name', 'pk')
         ]
 
 
@@ -120,11 +133,6 @@ class AdminCardView(
     model = Admin
     usuario_class = ClienteContratante
     context_object_name = 'funcionario'
-
-    def get(self, request, *args, **kwargs):
-        if self.should_block_request():
-            return HttpResponseNotFound()
-        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -150,11 +158,6 @@ class ListAdminView(
     context_object_name = 'funcionarios'
     permission_required = 'saas.gerir_conta_de_admin_da_loja'
 
-    def get(self, request, *args, **kwargs):
-        if self.should_block_request():
-            return HttpResponseNotFound()
-        return super().get(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -167,6 +170,72 @@ class ListAdminView(
     def get_queryset(self):
         print(len(super().get_queryset()))
         return super().get_queryset().prefetch_related('groups')
+
+
+# TODO: Filtrar exibição por loja
+
+
+class ChangeFuncionarioGroupView(
+    UserInScopeRequiredMixin, HTMXFormMixin, FormView
+):
+    form_class = FuncionarioGroupForm
+    login_url = reverse_lazy('login_contratacao')
+    action = True
+    redirect_on_success = False
+    success_url = None
+    usuario_class = ClienteContratante
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        with suppress(Group.DoesNotExist):
+            context_data['group'] = Group.objects.get(pk=self.kwargs.get('group'))
+        context_data['funcionario_pk'] = str(self.kwargs.get('funcionario'))
+        return context_data
+
+    def get_initial(self):
+        return {
+            'group': self.kwargs.get('group'),
+            'funcionario': self.kwargs.get('funcionario'),
+            'action': self.action,
+        }
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {'loja': self.user.loja}
+
+    def get_success_url_kwargs(self) -> dict:
+        return {
+            'group': self.form.cleaned_data['group'].pk,
+            'funcionario': self.form.cleaned_data['funcionario'].pk,
+        }
+
+    def get_form(self, form_class=None):
+        if not hasattr(self, 'form'):
+            setattr(self, 'form', super().get_form(form_class))
+        return self.form
+
+    def form_invalid(self, form):
+        # TODO: posteriormente alterar isso para mostrar um erro
+        return JsonResponse({'status': True}, status=422)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+class AddFuncionarioGroupView(ChangeFuncionarioGroupView):
+    template_name = 'pills/pill_adicionar_papel.html'
+    action = True
+
+    def get_success_url(self):
+        return reverse('remove_papel', kwargs=self.get_success_url_kwargs())
+
+
+class RemoveFuncionarioGroupView(ChangeFuncionarioGroupView):
+    template_name = 'pills/pill_remover_papel.html'
+    action = False
+
+    def get_success_url(self):
+        return reverse('add_papel', kwargs=self.get_success_url_kwargs())
 
 
 class InformacoesLojaView(

@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}
 
-<div class="dados-funcionario card">
+<div id="dados-funcionario-{{ funcionario.pk }}" class="dados-funcionario card">
     <div class="card-body">
         <h5 class="card-title">Funcionário: {{ funcionario.cpf }}</h5>
         <p>
@@ -9,27 +9,18 @@
             <strong>Telefone:</strong> {{ funcionario.telefone }}<br>
             <strong>Data de nascimento:</strong> {{ funcionario.data_nascimento }}<br>
         </p>
-        <div class="funcionario-papeis d-flex flex-wrap">
+
+        {% with funcionario_pk=funcionario.pk|stringformat:"i" %}
+        <div class="funcionario-papeis d-flex gap-2 flex-wrap justify-content-start mb-2">
             {% for group in funcionario.papeis_pertence %}
-                <div class="badge rounded-pill bg-black">
-                    {{ group.name }}
-                    <form class="d-inline" action="/" method="post">
-                        {% crispy group.form %}
-                        <button type="submit" class="btn-close btn-close-white" aria-label="Remove"></button>
-                    </form>
-                </div>
+                {% include 'pills/pill_remover_papel.html' with form=group.form %}
             {% endfor %}
         </div>
-        <div class="funcionario-add-papeis d-flex flex-wrap">
+        <div class="funcionario-add-papeis d-flex gap-2 flex-wrap justify-content-start">
             {% for group in funcionario.papeis_nao_pertence %}
-                <span class="badge rounded-pill bg-secondary">
-                    {{ group.name }}
-                    <form class="d-inline" action="/" method="post">
-                        {% crispy group.form %}
-                        <button type="submit" class="btn-close btn-close-white" style="transform: rotate(45deg);" aria-label="Add"></button>
-                    </form>
-                </span>
+                {% include 'pills/pill_adicionar_papel.html' with form=group.form %}
             {% endfor %}
         </div>
+        {% endwith %}
     </div>
 </div>

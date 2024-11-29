@@ -1,0 +1,2 @@
+{% url 'add_papel' as action %}
+{% include 'pills/pill_generic_alterar_papel.html' with pill_color='bg-secondary' btn_type='add' list_to_update='#dados-funcionario-'|add:funcionario_pk|add:' .funcionario-papeis' %}

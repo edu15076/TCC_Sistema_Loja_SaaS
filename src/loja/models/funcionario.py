@@ -54,6 +54,7 @@ class FuncionarioQuerySet(UsuarioGenericoPessoaFisicaQuerySet):
             'data_nascimento',
             'cpf',
             'loja',
+            'pk',
         )
 
 
