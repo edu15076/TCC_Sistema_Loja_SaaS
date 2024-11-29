@@ -3,22 +3,22 @@ from django.urls import reverse
 
 from common.models.scopes import LojaScope
 from loja.models import Produto, Loja, ProdutoPorLote
+from loja.tests.mixins import UsuarioScopeLojaTestMixin
 
 
-class TestGestaoOfertaProdutoListView(TestCase):
-    # TODO Testar acesso indevido
+class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        super()._populate()
+
     def setUp(self):
         super().setUp()
 
         self.client = Client()
         self._populate()
 
-    def _get_url(self, scope):
-        return reverse('gestao_oferta_produtos', kwargs={'scope': scope})
-
     def _populate(self):
-        self.lojas = [Loja.lojas.create(nome='Loja1'), Loja.lojas.create(nome='Loja2')]
-
         self.produtos = []
         self.produtos.append(
             Produto.produtos.create(
@@ -59,7 +59,10 @@ class TestGestaoOfertaProdutoListView(TestCase):
         )
 
     def test_get(self):
-        response = self.client.get(self._get_url(1))
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
+
+        response = self.client.get(self._get_url(scope.pk))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'oferta_produtos.html')
@@ -67,17 +70,20 @@ class TestGestaoOfertaProdutoListView(TestCase):
         self.assertIn('filter_form', response.context)
         self.assertIn('produtos', response.context)
         self.assertIn('scope', response.context)
-        # todo self.assertEqual(response.context['scope'], self.lojas[0].scope)
+        self.assertEqual(response.context['scope'], scope)
 
-        # self.assertEqual(
-        #     response.context['produtos_count'],
-        #     Produto.produtos.filter(loja=self.lojas[0]).count()
-        # )
+        self.assertEqual(
+            response.context['produtos_count'],
+            Produto.produtos.filter(loja=self.lojas[0]).count(),
+            'quantidade errada',
+        )
 
     def test_get_filter_em_venda(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         filter_data = {'em_venda': True, 'ordem': 'id'}
 
-        response = self.client.get(self._get_url(1), data=filter_data)
+        response = self.client.get(self._get_url(scope.pk), data=filter_data)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'oferta_produtos.html')
@@ -91,14 +97,17 @@ class TestGestaoOfertaProdutoListView(TestCase):
 
         filter_data = {'em_venda': False, 'ordem': 'id'}
 
-        response = self.client.get(self._get_url(1), data=filter_data)
+        response = self.client.get(self._get_url(scope.pk), data=filter_data)
 
         for produto in response.context['produtos']:
             self.assertFalse(produto.em_venda)
 
     def test_get_order_produtos_preco_de_venda(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         filter_data = {'em_venda': '', 'ordem': '-preco_de_venda'}
-        response = self.client.get(self._get_url(1), data=filter_data)
+
+        response = self.client.get(self._get_url(scope.pk), data=filter_data)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'oferta_produtos.html')
@@ -109,15 +118,16 @@ class TestGestaoOfertaProdutoListView(TestCase):
         self.assertIn('scope', response.context)
 
         produtos_response = response.context['produtos']
-        # todo produtos = Produto.produtos.filter(loja=self.lojas[0]).order_by('-preco_de_venda')
-        produtos = Produto.produtos.all().order_by('-preco_de_venda')
+        produtos = Produto.produtos.filter(loja=self.lojas[0]).order_by('-preco_de_venda')
 
         self.assertCountEqual(produtos_response, produtos)
         self.assertListEqual(list(produtos_response), list(produtos))
 
         filter_data = {'em_venda': '', 'ordem': 'preco_de_venda'}
-        response = self.client.get(self._get_url(1), data=filter_data)
+        response = self.client.get(self._get_url(scope.pk), data=filter_data)
 
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('produtos', response.context)
         produtos_response = response.context['produtos']
         produtos = produtos.order_by('preco_de_venda')
 
@@ -125,24 +135,28 @@ class TestGestaoOfertaProdutoListView(TestCase):
         self.assertListEqual(list(produtos_response), list(produtos))
 
     def test_post_pesquisar_produtos(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         query_data = {'query': '2'}
-        response = self.client.post(self._get_url(1), data=query_data)
+        response = self.client.post(self._get_url(scope.pk), data=query_data)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('produtos', response.context)
 
         produtos_response = response.context['produtos']
-        produtos = Produto.produtos.all().filter(descricao__icontains='2')
+        produtos = Produto.produtos.filter(loja=self.lojas[0], descricao__icontains='2')
 
         self.assertCountEqual(produtos_response, produtos)
         self.assertListEqual(list(produtos_response), list(produtos))
 
     def test_post_editar_preco_de_venda_produtos(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {
             'pk': self.produtos[0].pk,
             'preco_de_venda': 150,
         }
-        response = self.client.post(self._get_url(1), data=data)
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('produto', response.context)
@@ -156,7 +170,7 @@ class TestGestaoOfertaProdutoListView(TestCase):
         data = {
             'preco_de_venda': 150,
         }
-        response = self.client.post(self._get_url(1), data=data)
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 400)
 
@@ -164,15 +178,15 @@ class TestGestaoOfertaProdutoListView(TestCase):
             'pk': self.produtos[0].pk,
             'preco_de_venda': -150,
         }
-        response = self.client.post(self._get_url(1), data=data)
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 400)
 
     def test_post_editar_em_venda_produtos(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {'pk': self.produtos[0].pk, 'em_venda': False}
-        response = self.client.post(
-            self._get_url(1) + '?visualizacao=tabela', data=data
-        )
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('produto', response.context)
@@ -184,7 +198,7 @@ class TestGestaoOfertaProdutoListView(TestCase):
         self.assertEqual(produto, produto_response)
 
         data = {'pk': self.produtos[0].pk, 'em_venda': True}
-        response = self.client.post(self._get_url(1), data=data)
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
 

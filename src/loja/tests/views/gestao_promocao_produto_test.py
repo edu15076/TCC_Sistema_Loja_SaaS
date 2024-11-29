@@ -5,81 +5,67 @@ from django.urls import reverse
 from common.models.periodo import Periodo
 from common.models.scopes import LojaScope
 from loja.models import Produto, Loja, Promocao
+from loja.tests.mixins import UsuarioScopeLojaTestMixin
 
 
-class TestGestaoPromocoesProdutoCRUDView(TestCase):
-    def setUp(self):
-        super().setUp()
+class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        super()._populate()
 
+    def setUp(self) -> None:
         self.client = Client()
         self._populate()
-
-    def _get_url(self, scope, produto):
-        return reverse(
-            'gestao_promocoes_produto', kwargs={'scope': scope, 'pk': produto.pk}
-        )
+        return super().setUp()
 
     def _populate(self):
-        self.lojas = [Loja.lojas.create(nome='Loja1'), Loja.lojas.create(nome='Loja2')]
-
-        self.produtos = []
-        self.produtos.append(
+        self.produtos = [
             Produto.produtos.create(
                 descricao='Produto 1',
                 preco_de_venda=100,
                 em_venda=True,
                 codigo_de_barras='1234567890123',
                 loja=self.lojas[0],
-            )
-        )
-        self.produtos.append(
+            ),
             Produto.produtos.create(
                 descricao='Produto 2',
                 preco_de_venda=200,
-                em_venda=False,
+                em_venda=True,
                 codigo_de_barras='5678567890123',
                 loja=self.lojas[1],
             )
-        )
+        ]
 
-        self.periodos = []
-        self.periodos.append(
+        self.periodos = [
             Periodo.periodos.create(
                 numero_de_periodos=60,
                 unidades_de_tempo_por_periodo=Periodo.UnidadeDeTempo.DIA,
             )
-        )
+        ]
 
-        self.promocoes = []
-        self.promocoes.append(
+        self.promocoes = [
             Promocao.promocoes.create(
                 descricao='Promoção 1',
                 porcentagem_desconto=10,
                 data_inicio=date.today(),
                 periodo=self.periodos[0],
                 loja=self.lojas[0],
-            )
-        )
-        self.promocoes.append(
+            ),
             Promocao.promocoes.create(
                 descricao='Promoção 2',
                 porcentagem_desconto=10,
                 data_inicio=date.today() + timedelta(days=400),
                 periodo=self.periodos[0],
                 loja=self.lojas[0],
-            )
-        )
-        self.promocoes.append(
+            ),
             Promocao.promocoes.create(
                 descricao='Promoção 3',
                 porcentagem_desconto=10,
                 data_inicio=date.today() + timedelta(days=70),
                 periodo=self.periodos[0],
                 loja=self.lojas[0],
-            )
-        )
-
-        self.promocoes.append(
+            ),
             Promocao.promocoes.create(
                 descricao='Promoção 4',
                 porcentagem_desconto=10,
@@ -87,21 +73,29 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
                 periodo=self.periodos[0],
                 loja=self.lojas[0],
             )
+        ]
+
+        self.produtos[0].promocoes.add(self.promocoes[0], self.promocoes[2])
+
+    def _get_url(self, scope_pk, produto):
+        return reverse(
+            'gestao_promocoes_produto',
+            kwargs={'loja_scope': scope_pk, 'pk': produto.pk},
         )
 
-        self.produtos[0].promocoes.add(self.promocoes[0])
-        self.produtos[0].promocoes.add(self.promocoes[2])
-
     def test_get_produto(self):
-        response = self.client.get(self._get_url(1, self.produtos[0]))
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
+
+        response = self.client.get(self._get_url(scope.pk, self.produtos[0]))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'promocoes_por_produto.html')
-        self.assertIn('promocoes_form', response.context)
+        self.assertIn('form', response.context)
         self.assertIn('preco_form', response.context)
         self.assertIn('em_venda_form', response.context)
         self.assertIn('scope', response.context)
-        # self.assertEqual(response.context['scope'], self.lojas[0].scope)
+        self.assertEqual(response.context['scope'], self.lojas[0].scope)
 
         produto = self.produtos[0]
         produto_response = response.context['produto']
@@ -111,8 +105,10 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         )
 
     def test_post_editar_em_venda_produto(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {'em_venda': False}
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         self.assertEqual(response.status_code, 200)
 
@@ -123,7 +119,7 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         self.assertEqual(produto, produto_response)
 
         data = {'em_venda': True}
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         produto = Produto.produtos.get(pk=self.produtos[0].pk)
         produto_response = response.context['produto']
@@ -132,8 +128,10 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         self.assertEqual(produto, produto_response)
 
     def test_post_editar_preco_de_venda_produto(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {'preco_de_venda': 150}
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         produto = Produto.produtos.get(pk=self.produtos[0].pk)
         produto_response = response.context['produto']
@@ -142,8 +140,10 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         self.assertEqual(produto, produto_response)
 
     def test_post_adcionar_promocoes_validas_produto(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {'promocoes': [self.promocoes[1].pk]}
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         self.assertEqual(response.status_code, 200, response.content)
 
@@ -158,9 +158,11 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         self.assertIn(self.promocoes[1], produto.promocoes.all())
 
     def test_post_remover_promocoes_invalidas_produto(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {'promocoes': [self.promocoes[0].pk, self.promocoes[3].pk]}
 
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         self.assertEqual(response.status_code, 200, response.content)
 
@@ -172,13 +174,15 @@ class TestGestaoPromocoesProdutoCRUDView(TestCase):
         self.assertIn('erros', response.context)
 
     def test_post_duplicar_promocao(self):
+        self._login(self.gerente_financeiro[0])
+        scope = self.gerente_financeiro[0].loja.scope
         data = {
-            'data_inicio': date.today() + timedelta(days=300),
+            'data_inicio': date.today() + timedelta(days=200),
             'promocao': self.promocoes[0].pk,
             'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
         }
 
-        response = self.client.post(self._get_url(1, self.produtos[0]), data=data)
+        response = self.client.post(self._get_url(scope.pk, self.produtos[0]), data=data)
 
         self.assertEqual(response.status_code, 200, response.content)
 
