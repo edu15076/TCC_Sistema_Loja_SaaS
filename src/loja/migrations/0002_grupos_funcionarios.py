@@ -9,7 +9,9 @@ from common.grupos_create_delete import criar_grupos_usuarios, deletar_grupos_us
 grupos_funcionarios = {
     'loja_gerentes_de_rh': [],
     'loja_gerentes_de_estoque': [],
-    'loja_gerentes_financeiros': [],
+    'loja_gerentes_financeiros': [
+        'gerir_oferta_de_produto',
+    ],
     'loja_caixeiros': [],
     'loja_vendedores': [],
 }

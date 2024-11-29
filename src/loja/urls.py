@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from .views import *
 
@@ -42,5 +42,10 @@ urlpatterns = [
         'promocoes_produto/<int:pk>/',
         GestaoPromocoesProdutoCRUDView.as_view(),
         name='gestao_promocoes_produto',
+    ),
+    re_path(
+        r'^promocoes(/(?P<pk>\d+))?/$',
+        GestaoPromocoesCRUDListView.as_view(),
+        name='gestao_promocoes',
     ),
 ]

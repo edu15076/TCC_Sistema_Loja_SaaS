@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                     models.IntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(
-                                0, 'Numero de  não pode ser negativo.'
+                                1, 'Numero de periodos não pode ser menor que 1.'
                             )
                         ],
                         verbose_name='Numero de periodos',

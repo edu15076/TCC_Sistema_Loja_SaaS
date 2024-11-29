@@ -1,3 +1,6 @@
+from typing import Any
+
+from django.db.models.query import QuerySet
 from common.views.mixins import UserInScopeRequiredMixin
 from scope_auth.models import Scope
 
@@ -18,3 +21,14 @@ class UserFromLojaRequiredMixin(UserInScopeRequiredMixin):
                 and hasattr(user := self.user, 'loja')
                 and user.loja.contratante.is_signing_contract()
         )
+    
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(loja__scope=self.scope)
+    
+    def get_object(self, queryset: QuerySet[Any] | None = None):
+        object = super().get_object(queryset)
+
+        if object is not None and object.loja.scope != self.scope:
+            return None
+
+        return object
