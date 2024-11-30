@@ -27,13 +27,16 @@ class UserFromLojaRequiredMixin(UserInScopeRequiredMixin):
 
 
 class FilterForSameLojaMixin(ScopeMixin, UsuarioMixin):
+    def get_loja(self):
+        return self.user.loja
+
     def get_queryset(self) -> QuerySet[Any]:
-        return super().get_queryset().filter(loja__scope=self.scope)
+        return super().get_queryset().filter(loja=self.get_loja())
 
     def get_object(self, queryset: QuerySet[Any] | None = None):
         object = super().get_object(queryset)
 
-        if object is not None and object.loja.scope != self.scope:
+        if object is not None and object.loja != self.get_loja():
             return None
 
         return object

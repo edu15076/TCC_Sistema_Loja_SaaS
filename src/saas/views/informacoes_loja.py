@@ -155,7 +155,7 @@ class ReativarUsuario(
 
 
 class BaseFuncionarioPapeisMixin(
-    UserInScopeRequiredMixin, PermissionRequiredMixin
+    UserInScopeRequiredMixin, FilterForSameLojaMixin, PermissionRequiredMixin
 ):
     usuario_class = [ClienteContratante, GerenteDeRH]
     permission_required = 'saas.gerir_conta_de_admin_da_loja'
