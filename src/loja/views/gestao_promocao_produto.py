@@ -1,28 +1,21 @@
 from typing import Any
 
-from django.db.models.query import QuerySet
-from django.http.response import HttpResponseRedirect
+from django.db.models import F, ExpressionWrapper, DecimalField
 from django.views.generic.detail import DetailView
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.urls import reverse, reverse_lazy
+from django.shortcuts import redirect, render
 
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.htmx import UpdateHTMXView
-from common.views.mixins import UsuarioMixin
 from loja.models import Produto, Promocao
 from loja.views import UserFromLojaRequiredMixin
-from common.models import Periodo
-from loja.forms import (
-    PrecoDeVendaProdutoForm,
-    ProdutoEmVendaForm,
-    PromocoesPorProdutoForm,
-    DuplicarPromocaoForm,
-)
+from loja.forms import *
 
 
-class GestaoPromocoesProdutoCRUDView(UserFromLojaRequiredMixin, UpdateHTMXView, DetailView):
+class GestaoPromocoesProdutoCRUDView(
+    UserFromLojaRequiredMixin, UpdateHTMXView, DetailView
+):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'promocoes_por_produto.html'
     model = Produto
@@ -40,13 +33,15 @@ class GestaoPromocoesProdutoCRUDView(UserFromLojaRequiredMixin, UpdateHTMXView, 
         request = self.request
         cards = request.GET.get('visualizacao') == 'cards'
 
-        if 'promocoes' in request.POST or 'data_inicio' in request.POST:
+        if 'promocoes' in request.POST:
             templates.append('includes/lista_promocoes_produto.html')
-        elif 'em_venda' in request.POST or 'preco_de_venda' in request.POST:
+        elif 'data_inicio' in request.POST:
             if cards:
-                templates.append('cards/card_oferta_produto.html')
+                templates.append('cards/card_promocao_produto.html')
             else:
-                templates.append('linhas/linha_oferta_produto.html')
+                templates.append('linhas/linha_promocao_produto.html')
+        elif 'em_venda' in request.POST or 'preco_de_venda' in request.POST:
+            templates.append('includes/article_produto_oferta.html')
 
         return templates
 
@@ -94,6 +89,97 @@ class GestaoPromocoesProdutoCRUDView(UserFromLojaRequiredMixin, UpdateHTMXView, 
                 form = self.preco_form_class(request.POST, instance=produto)
             elif 'em_venda' in request.POST:
                 form = self.em_venda_form_class(request.POST, instance=produto)
+
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+
+class GestaoProdutosPromocaoCRUDView(
+    UserFromLojaRequiredMixin, UpdateHTMXView, DetailView
+):
+    login_url = reverse_lazy('login_contratacao')
+    template_name = 'produtos_por_promocao.html'
+    model = Promocao
+    produtos_form_class = ProdutosPorPromocaoForm
+    duplicar_promocao_form_class = DuplicarPromocaoForm
+    usuario_class = GerenteFinanceiro
+    permission_required = 'loja.gerir_oferta_de_produto'
+    raise_exception = True
+
+    def get_template_names(self, request=None) -> list[str]:
+        templates = [self.template_name]
+
+        request = self.request
+
+        if 'produtos' in request.POST:
+            templates.append('includes/lista_produtos_promocao.html')
+        elif 'data_inicio' in request.POST:
+            templates.append('includes/article_promocao.html')
+
+        return templates
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = {}
+
+        promocao = self.get_object()
+        context['promocao'] = promocao
+        context['produtos'] = promocao.produtos.all().annotate(
+            desconto=ExpressionWrapper(
+                F('preco_de_venda') * (promocao.porcentagem_desconto / 100),
+                output_field=DecimalField(),
+            )
+        )
+        context['form'] = self.get_form(self.produtos_form_class)
+        context['duplicar_form'] = self.get_form(self.duplicar_promocao_form_class)
+
+        return context
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs['scope'] = self.scope
+
+        return kwargs
+
+    def form_valid(self, form):
+        object = form.save()
+        context = {}
+        context['erros'] = form.errors
+
+        if type(form) == self.produtos_form_class:
+            self.object = object
+            context['promocao'] = object
+            context['produtos'] = object.produtos.all().annotate(
+                desconto=ExpressionWrapper(
+                    F('preco_de_venda') * (object.porcentagem_desconto / 100),
+                    output_field=DecimalField(),
+                )
+            )
+
+            return render(self.request, self.get_template_names()[1], context)
+        elif type(form) == self.duplicar_promocao_form_class:
+            return redirect(
+                reverse(
+                    'gestao_produtos_promocao',
+                    kwargs={'loja_scope': self.scope.pk, 'pk': object.pk},
+                )
+            )
+
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        try:
+            promocao = self.get_object()
+
+            if 'data_inicio' in request.POST:
+                form = self.duplicar_promocao_form_class(
+                    data=request.POST, scope=self.scope, instance=promocao
+                )
+            elif 'produtos' in request.POST:
+                form = self.produtos_form_class(
+                    data=request.POST, scope=self.scope, instance=promocao
+                )
 
             if form.is_valid():
                 return self.form_valid(form)

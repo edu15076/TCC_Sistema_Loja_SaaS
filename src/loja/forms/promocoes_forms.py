@@ -21,7 +21,6 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
     promocoes = CustomModelMultipleChoiceField(
         queryset=Promocao.promocoes.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=False,
         label=_('Promoções'),
     )
 
@@ -39,7 +38,7 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
 
         self.fields['promocoes'].queryset = Promocao.promocoes.filter(
             loja__scope=scope,
-            data_inicio__gte=date.today(),
+            data_inicio__gt=date.today(),
         )
 
     def save(self, commit: bool = True) -> Any:
@@ -59,7 +58,58 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
             self.save_m2m()
 
         return instance
+    
 
+class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
+    produtos = CustomModelMultipleChoiceField(
+        queryset=Produto.produtos.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label=_('Produtos')
+    )
+
+    class Meta:
+        model = Promocao
+        fields = ['produtos']
+
+    def get_submit_button(self) -> Submit:
+        return Submit('submit', 'Salvar')
+    
+    def __init__(self, scope=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = self.create_helper()
+        self.helper.form_method = 'post'
+
+        self.fields['produtos'].queryset = Produto.produtos.filter(
+            loja__scope=scope
+        )
+
+    def full_clean(self) -> None:
+        super().full_clean()
+
+        if self.instance.data_inicio < date.today():
+            self.add_error('data_inicio', _('A data de início não pode ser no passado.'))
+
+            raise forms.ValidationError(_('A data de início não pode ser no passado.'))
+
+    def save(self, commit: bool = True):
+        instance = super().save(commit=False)
+
+        instance.produtos.clear()
+
+        for produto in self.cleaned_data['produtos']:
+            try:
+                validate_unique_promocao(produto, instance)
+                instance.produtos.add(produto)
+            except Exception as e:
+                self.add_error('produtos', e)
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance    
+    
 
 class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
     data_inicio = forms.DateField(
@@ -96,33 +146,38 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
             instance = kwargs['instance']
             self.fields['produtos'].initial = [instance.produtos]
 
-    def clen_promocao(self):
+    def clean_promocao(self):
         promocao = self.cleaned_data.get('promocao')
 
         if promocao is None:
             return None
 
-        return Promocao.promocoes.get(pk=promocao, loja__scope=self.scope)
+        self.cleaned_data['promocao'] = Promocao.promocoes.get(pk=promocao)
+        return self.cleaned_data['promocao']
 
     def save(self, commit: bool = ...) -> Any:
-        instance = self.cleaned_data['promocao']
+        instance = self.instance
+
+        if instance.pk is None:
+            instance = self.cleaned_data.get('promocao')
+
         if instance is None:
             instance = super().save(commit=False)
-            instance.pk = None
 
+        # print(instance.data_inicio, self.cleaned_data['data_inicio'])
+        replicate = instance.clonar_promocao(self.cleaned_data['data_inicio'], commit=False)
+        # print(replicate.data_inicio, self.cleaned_data['data_inicio'])
         produtos = []
 
         for produto in self.cleaned_data['produtos']:
             try:
-                validate_unique_promocao(produto, instance)
+                validate_unique_promocao(produto, replicate)
                 produtos.append(produto)
             except Exception as e:
                 self.add_error('produtos', e)
 
-        replicate = instance
-
         if commit:
-            replicate = instance.clonar_promocao(self.cleaned_data['data_inicio'])
+            replicate.save()
             replicate.produtos.set(produtos)
 
         return replicate

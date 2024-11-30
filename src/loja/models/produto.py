@@ -1,4 +1,6 @@
 from datetime import date
+from decimal import Decimal
+from typing import Any
 
 from django.db import models
 from django.db.models import F
@@ -23,7 +25,6 @@ class ProdutoQuerySet(models.QuerySet):
 class ProdutoManager(models.Manager):
     def get_queryset(self):
         return ProdutoQuerySet(self.model, using=self._db).all()
-
 
 class Produto(ValidateModelMixin, models.Model):
     descricao = models.CharField(_('Descrição'), max_length=246)
@@ -80,6 +81,20 @@ class Produto(ValidateModelMixin, models.Model):
             return True
         except ValidationError:
             return False
+    
+    def calcular_desconto(
+        self, promocao = None, data: date = date.today()
+    ):
+        """
+        Calcula o preço de venda do produto para a data passada.
+        """
+        if promocao is not None:
+            promocao = self.promocao_por_data(data)
+
+        if promocao is not None:
+            return Decimal(self.preco_de_venda * promocao.porcentagem_desconto / 100)
+
+        return Decimal(0)
 
 
 class ProdutoPorLoteQuerySet(models.QuerySet):

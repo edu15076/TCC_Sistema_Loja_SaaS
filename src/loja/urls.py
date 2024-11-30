@@ -43,6 +43,11 @@ urlpatterns = [
         GestaoPromocoesProdutoCRUDView.as_view(),
         name='gestao_promocoes_produto',
     ),
+    path(
+        'produtos_promocao/<int:pk>/',
+        GestaoProdutosPromocaoCRUDView.as_view(),
+        name='gestao_produtos_promocao',
+    ),
     re_path(
         r'^promocoes(/(?P<pk>\d+))?/$',
         GestaoPromocoesCRUDListView.as_view(),

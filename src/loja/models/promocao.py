@@ -65,7 +65,7 @@ class Promocao(ValidateModelMixin, models.Model):
         for produto in self.produtos.all():
             validate_unique_promocao(produto, self)
 
-    def clonar_promocao(self, data_inicio: datetime) -> 'Promocao':
+    def clonar_promocao(self, data_inicio: datetime, commit=True) -> 'Promocao':
         """
         Clona a promoção atual com a data de início passada.
         """
@@ -76,5 +76,8 @@ class Promocao(ValidateModelMixin, models.Model):
             periodo=self.periodo,
             loja=self.loja,
         )
-        promocao.save()
+
+        if commit:
+            promocao.save()
+            
         return promocao
