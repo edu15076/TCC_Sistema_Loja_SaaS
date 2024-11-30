@@ -1,26 +1,5 @@
-{% load crispy_forms_tags %}
-
-<div id="dados-funcionario-{{ funcionario.pk }}" class="dados-funcionario card">
-    <div class="card-body">
-        <h5 class="card-title">Funcionário: {{ funcionario.cpf }}</h5>
-        <p>
-            <strong>Nome:</strong> {{ funcionario.nome }} {{ funcionario.sobrenome }}<br>
-            <strong>Email:</strong> {{ funcionario.email }}<br>
-            <strong>Telefone:</strong> {{ funcionario.telefone }}<br>
-            <strong>Data de nascimento:</strong> {{ funcionario.data_nascimento }}<br>
-        </p>
-
-        {% with funcionario_pk=funcionario.pk|stringformat:"i" %}
-        <div class="funcionario-papeis d-flex gap-2 flex-wrap justify-content-start mb-2">
-            {% for group in funcionario.papeis_pertence %}
-                {% include 'pills/pill_remover_papel.html' with form=group.form %}
-            {% endfor %}
-        </div>
-        <div class="funcionario-add-papeis d-flex gap-2 flex-wrap justify-content-start">
-            {% for group in funcionario.papeis_nao_pertence %}
-                {% include 'pills/pill_adicionar_papel.html' with form=group.form %}
-            {% endfor %}
-        </div>
-        {% endwith %}
-    </div>
-</div>
+{% if funcionario.is_active %}
+    {% include 'cards/card_activated_admin_loja.html' %}
+{% else %}
+    {% include 'cards/card_deactvaded_funcionario_loja.html' %}
+{% endif %}

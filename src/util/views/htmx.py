@@ -92,9 +92,10 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
         if self.redirect_on_success:
             return HttpResponseHTMXRedirect(self.get_success_url())
 
-        self.request.method = 'GET'
         match = resolve(self.get_success_url())
-        response = match.func(self.request, *match.args, **match.kwargs)
+        match.kwargs['request'] = self.request
+        match.kwargs['request'].method = 'GET'
+        response = match.func(*match.args, **match.kwargs)
         return response
 
 

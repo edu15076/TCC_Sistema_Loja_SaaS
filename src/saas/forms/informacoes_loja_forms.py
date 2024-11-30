@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, Field
 
 from loja.forms import BaseFuncionarioCreationForm
 from loja.forms.mixins import LojaValidatorFormMixin
@@ -13,6 +13,8 @@ __all__ = (
     'LojaForm',
     'AdminCreationForm',
     'FuncionarioGroupForm',
+    'IsAdminForm',
+    'IsActiveFuncionarioForm',
 )
 
 
@@ -47,10 +49,7 @@ class AdminCreationForm(ModalCrispyFormMixin, BaseFuncionarioCreationForm):
 
 class FuncionarioGroupForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
     error_messages = {
-        'funcionario_dne': _('O funcionário passado não existe'),
         'funcionario_admin': _('You cannot add or remove admins from groups'),
-        'cannot_alter_this_funcionario': _('Você não ter permissão para alterar esse funcionario'),
-        'group_dne': _('O grupo passado não existe'),
     }
     fields_loja_check = ['funcionario']
 
@@ -62,28 +61,80 @@ class FuncionarioGroupForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
     funcionario = ModelIntegerField(
         required=True, widget=forms.HiddenInput, model_cls=Funcionario
     )
-    action = forms.BooleanField(required=False, widget=forms.HiddenInput)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, action: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper(add_submit_button=False)
+        self.action = action
 
     def clean_funcionario(self):
         funcionario = self.cleaned_data.get('funcionario')
-        # if funcionario.is_admin:
-        #     raise forms.ValidationError(
-        #         self.error_messages['funcionario_admin'],
-        #         code='funcionario_admin'
-        #     )
-        # TODO: Verificar se o usuário é admin
+        if funcionario.is_admin:
+            raise forms.ValidationError(
+                self.error_messages['funcionario_admin'],
+                code='funcionario_admin'
+            )
         return funcionario
 
     def save(self) -> bool:
         funcionario: Funcionario = self.cleaned_data['funcionario']
         group: Group = self.cleaned_data['group']
-        action: bool = self.cleaned_data['action']
-        if action:
-            funcionario.groups.add(group)
+        if self.action:
+            funcionario.adicionar_papel(group)
         else:
-            funcionario.groups.remove(group)
-        return action
+            funcionario.remover_papel(group)
+        return self.action
+
+
+class IsAdminForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
+    fields_loja_check = ['funcionario']
+
+    funcionario = ModelIntegerField(
+        required=True, widget=forms.HiddenInput, model_cls=Funcionario
+    )
+    is_admin = forms.BooleanField(
+        required=False,
+        label=_('Admin'),
+        widget=forms.CheckboxInput(attrs={
+            'class': 'is-admin-checkbox-input'
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self.create_helper(add_submit_button=False)
+        self.helper.layout = Layout(
+            'funcionario',
+            Field('is_admin', wrapper_class='form-switch'),
+        )
+
+    def save(self) -> bool:
+        funcionario: Funcionario = self.cleaned_data['funcionario']
+        is_admin: bool = self.cleaned_data['is_admin']
+        funcionario.is_admin = is_admin
+        if is_admin:
+            Admin.grant_admin(funcionario)
+        else:
+            Admin.revoque_admin(funcionario)
+        return is_admin
+
+
+class IsActiveFuncionarioForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
+    fields_loja_check = ['funcionario']
+
+    funcionario = ModelIntegerField(
+        required=True, widget=forms.HiddenInput, model_cls=Funcionario
+    )
+
+    def __init__(self, *args, is_active_next: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self.create_helper(add_submit_button=False)
+        self.is_active_next = is_active_next
+
+    def save(self) -> bool:
+        funcionario: Funcionario = self.cleaned_data['funcionario']
+        if self.is_active_next:
+            funcionario.reactivate()
+        else:
+            funcionario.deactivate()
+        return self.is_active_next

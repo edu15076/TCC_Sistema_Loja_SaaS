@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+
+<div id="dados-funcionario-{{ funcionario.pk }}" class="dados-funcionario card">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center justify-content-between">
+        <h5 class="card-title m-0">Funcionário: {{ funcionario.cpf }}</h5>
+        {% url 'reactivate_funcionario' as reactivate_funcionario_action %}
+        {% include 'forms/htmx_reactivate_funcionario.html' with action=reactivate_funcionario_action form=funcionario.is_active_change_form %}
+    </div>
+</div>

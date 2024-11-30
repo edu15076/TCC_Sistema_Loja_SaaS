@@ -26,8 +26,8 @@ urlpatterns = [
     ),
     path(
         'editar_senha/',
-         PasswordChangeUsuarioContratacaoView.as_view(),
-         name='editar_senha_contratacao'
+        PasswordChangeUsuarioContratacaoView.as_view(),
+        name='editar_senha_contratacao'
     ),
     path(
         'logout/',
@@ -85,6 +85,16 @@ urlpatterns = [
         name='admin_detail'
     ),
     path(
+        'deactivate_funcionario/',
+        DesativarFuncionarioView.as_view(),
+        name='deactivate_funcionario'
+    ),
+    path(
+        'reactivate_funcionario/',
+        ReativarUsuario.as_view(),
+        name='reactivate_funcionario'
+    ),
+    path(
         'add_papel/<int:group>/<int:funcionario>/',
         AddFuncionarioGroupView.as_view(),
         name='add_papel'
@@ -103,6 +113,11 @@ urlpatterns = [
         'remove_papel/',
         RemoveFuncionarioGroupView.as_view(),
         name='remove_papel'
+    ),
+    path(
+        'change_is_admin/',
+        ChangeIsAdmin.as_view(),
+        name='change_is_admin'
     ),
     path(
         'minha_loja/',

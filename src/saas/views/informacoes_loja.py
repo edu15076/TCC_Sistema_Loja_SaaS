@@ -12,13 +12,16 @@ from django.views.generic.edit import FormView
 from common.views import CreateUsuarioGenericoView
 from common.views.mixins import UserInScopeRequiredMixin
 from loja.models import Loja, Admin, Funcionario, GerenteDeRH
+from loja.views import FilterForSameLojaMixin
 from util.views import UpdateHTMXView, HTMXTemplateView, CreateHTMXView, \
     CreateOrUpdateListHTMXView, HTMXHelperMixin, HTMXModelFormMixin, HTMXFormMixin
 from ..forms import LojaForm
-from ..forms.informacoes_loja_forms import AdminCreationForm, FuncionarioGroupForm
+from ..forms.informacoes_loja_forms import AdminCreationForm, FuncionarioGroupForm, \
+    IsAdminForm, IsActiveFuncionarioForm
 from ..models import ClienteContratante
 
 __all__ = (
+    'ChangeIsAdmin',
     'DadosLojaView',
     'EditarDadosLojaView',
     'InformacoesLojaView',
@@ -27,6 +30,8 @@ __all__ = (
     'AddFuncionarioGroupView',
     'RemoveFuncionarioGroupView',
     'AdminCardView',
+    'ReativarUsuario',
+    'DesativarFuncionarioView',
 )
 
 
@@ -96,33 +101,146 @@ class CriarAdminLojaView(
         return self.user.loja.scope
 
 
+class ChangeFuncionarioIsValidView(
+    UserInScopeRequiredMixin, HTMXFormMixin, FormView
+):
+    form_class = IsActiveFuncionarioForm
+    login_url = reverse_lazy('login_contratacao')
+    redirect_on_success = False
+    success_url = None
+    is_active_next = False
+    usuario_class = ClienteContratante
+
+    def get(self, *args, **kwargs):
+        return HttpResponseNotFound()
+
+    def get_success_url(self):
+        return reverse('admin_detail', kwargs=self.get_success_url_kwargs())
+
+    def get_success_url_kwargs(self) -> dict:
+        return {
+            'pk': self.form.cleaned_data['funcionario'].pk,
+        }
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {
+            'loja': self.user.loja,
+            'is_active_next': self.is_active_next,
+        }
+
+    def get_form(self, form_class=None):
+        if not hasattr(self, 'form'):
+            setattr(self, 'form', super().get_form(form_class))
+        return self.form
+
+    def form_invalid(self, form):
+        # TODO: posteriormente alterar isso para mostrar um erro
+        return JsonResponse({'status': True}, status=422)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+class DesativarFuncionarioView(
+    ChangeFuncionarioIsValidView
+):
+    is_active_next = False
+
+
+class ReativarUsuario(
+    ChangeFuncionarioIsValidView
+):
+    is_active_next = True
+
+
 class BaseFuncionarioPapeisMixin(
     UserInScopeRequiredMixin, PermissionRequiredMixin
 ):
     usuario_class = [ClienteContratante, GerenteDeRH]
-    permission_required = 'saas.gerir_conta_de_admin_da_loja'  # TODO: alterar para permissão da loja
+    permission_required = 'saas.gerir_conta_de_admin_da_loja'
+
+    # TODO: alterar para permissão da loja
+
+    def _get_papeis(self, funcionario: Funcionario, action: bool, groups):
+        return [
+            group | {
+                'form': FuncionarioGroupForm(
+                    initial={
+                        'group': group['pk'],
+                        'funcionario': funcionario.pk,
+                        'action': action,
+                    },
+                    loja=self.user.loja,
+                    auto_id=f'change-funcionario-papel-'
+                            f'{funcionario.pk}-group-{group['pk']}-%s'
+                )
+            } for group in groups.values('name', 'pk')
+        ]
 
     def get_papeis_pertence(self, funcionario: Funcionario):
-        return [
-            group | {
-                'form': FuncionarioGroupForm(initial={
-                    'group': group['pk'],
-                    'funcionario': funcionario.pk,
-                    'action': False,
-                }, loja=self.user.loja, auto_id=False)
-            } for group in funcionario.groups.values('name', 'pk')
-        ]
+        return self._get_papeis(funcionario, False, funcionario.groups.all())
 
     def get_papeis_nao_pertence(self, funcionario: Funcionario):
-        return [
-            group | {
-                'form': FuncionarioGroupForm(initial={
-                    'group': group['pk'],
-                    'funcionario': funcionario.pk,
-                    'action': True,
-                }, loja=self.user.loja, auto_id=False)
-            } for group in funcionario.not_in_groups().values('name', 'pk')
-        ]
+        return self._get_papeis(funcionario, True, funcionario.not_in_groups())
+
+    def get_context_data_funcionario(self, funcionario: Funcionario):
+        funcionario.papeis_pertence = self.get_papeis_pertence(funcionario)
+        funcionario.papeis_nao_pertence = self.get_papeis_nao_pertence(funcionario)
+        funcionario.is_admin_change_form = IsAdminForm(
+            initial={
+                'funcionario': funcionario.pk,
+                'is_admin': funcionario.is_admin,
+            },
+            loja=self.user.loja,
+            auto_id=f'change-is-admin-funcionario-{funcionario.pk}-%s'
+        )
+        funcionario.is_active_change_form = IsActiveFuncionarioForm(
+            initial={
+                'funcionario': funcionario.pk,
+                'is_active': not funcionario.is_active,
+            },
+            loja=self.user.loja,
+            auto_id=f'change-is-active-funcionario-{funcionario.pk}-%s'
+        )
+        return funcionario
+
+
+class ChangeIsAdmin(
+    UserInScopeRequiredMixin, FilterForSameLojaMixin, HTMXFormMixin, FormView
+):
+    form_class = IsAdminForm
+    login_url = reverse_lazy('login_contratacao')
+    redirect_on_success = False
+    success_url = None
+    usuario_class = ClienteContratante
+
+    def get(self, *args, **kwargs):
+        return HttpResponseNotFound()
+
+    def get_success_url(self):
+        return reverse('admin_detail', kwargs=self.get_success_url_kwargs())
+
+    def get_success_url_kwargs(self) -> dict:
+        return {
+            'pk': self.form.cleaned_data['funcionario'].pk,
+        }
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {'loja': self.user.loja}
+
+    def get_form(self, form_class=None):
+        if not hasattr(self, 'form'):
+            setattr(self, 'form', super().get_form(form_class))
+        return self.form
+
+    def form_invalid(self, form):
+        # TODO: posteriormente alterar isso para mostrar um erro
+        return JsonResponse({'status': True}, status=422)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 
 class AdminCardView(
@@ -130,15 +248,13 @@ class AdminCardView(
 ):
     template_name = 'cards/card_admin_loja.html'
     restrict_direct_access = True
-    model = Admin
+    model = Funcionario
     usuario_class = ClienteContratante
     context_object_name = 'funcionario'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        funcionario = context['funcionario']
-        funcionario.papeis_pertence = self.get_papeis_pertence(funcionario)
-        funcionario.papeis_nao_pertence = self.get_papeis_nao_pertence(funcionario)
+        self.get_context_data_funcionario(context['funcionario'])
         return context
 
     def get_queryset(self):
@@ -150,11 +266,11 @@ class ListAdminView(
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'includes/admin_list.html'
-    model = Admin
-    paginate_by = 20
+    model = Funcionario
+    # TODO: fix pagination paginate_by = 20
     restrict_direct_access = False
     usuario_class = ClienteContratante
-    ordering = ['nome']
+    ordering = ['-is_active', '-is_admin', 'nome']
     context_object_name = 'funcionarios'
     permission_required = 'saas.gerir_conta_de_admin_da_loja'
 
@@ -162,17 +278,12 @@ class ListAdminView(
         context = super().get_context_data(**kwargs)
 
         for funcionario in context['funcionarios']:
-            funcionario.papeis_pertence = self.get_papeis_pertence(funcionario)
-            funcionario.papeis_nao_pertence = self.get_papeis_nao_pertence(funcionario)
+            self.get_context_data_funcionario(funcionario)
 
         return context
 
     def get_queryset(self):
-        print(len(super().get_queryset()))
         return super().get_queryset().prefetch_related('groups')
-
-
-# TODO: Filtrar exibição por loja
 
 
 class ChangeFuncionarioGroupView(
@@ -196,11 +307,13 @@ class ChangeFuncionarioGroupView(
         return {
             'group': self.kwargs.get('group'),
             'funcionario': self.kwargs.get('funcionario'),
-            'action': self.action,
         }
 
     def get_form_kwargs(self):
-        return super().get_form_kwargs() | {'loja': self.user.loja}
+        return super().get_form_kwargs() | {
+            'loja': self.user.loja,
+            'action': self.action,
+        }
 
     def get_success_url_kwargs(self) -> dict:
         return {
