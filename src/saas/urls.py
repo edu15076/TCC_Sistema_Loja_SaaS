@@ -60,63 +60,63 @@ urlpatterns = [
         name='cancelar_contrato'
     ),
     path(
-        'dados_loja/',
+        'minha_loja/dados_loja/',
         DadosLojaView.as_view(),
         name='dados_loja'
     ),
     path(
-        'editar_dados_loja/',
+        'minha_loja/editar_dados_loja/',
         EditarDadosLojaView.as_view(),
         name='editar_dados_loja'
     ),
     path(
-        'criar_admin/',
-        CriarAdminLojaView.as_view(),
+        'minha_loja/admins/criar_admin/',
+        CriarAdminView.as_view(),
         name='criar_admin'
     ),
     path(
-        'admin_list/',
-        ListAdminView.as_view(),
+        'minha_loja/admins/',
+        ListAdminsView.as_view(),
         name='admin_list'
     ),
     path(
-        'admin_detail/<int:pk>/',
-        AdminCardView.as_view(),
+        'minha_loja/admins/admin_detail/<int:pk>/',
+        CardAdminView.as_view(),
         name='admin_detail'
     ),
     path(
-        'deactivate_funcionario/',
-        DesativarFuncionarioView.as_view(),
-        name='deactivate_funcionario'
+        'minha_loja/admins/desativar_funcionario/',
+        DesativarAdminView.as_view(),
+        name='desativar_funcionario'
     ),
     path(
-        'reactivate_funcionario/',
-        ReativarUsuario.as_view(),
-        name='reactivate_funcionario'
+        'minha_loja/admins/reativar_funcionario/',
+        ReativarAdminView.as_view(),
+        name='reativar_funcionario'
     ),
     path(
-        'add_papel/<int:group>/<int:funcionario>/',
-        AddFuncionarioGroupView.as_view(),
-        name='add_papel'
+        'minha_loja/admins/adicionar_papel/<int:group>/<int:funcionario>/',
+        AdicionarPapelFuncionarioView.as_view(),
+        name='adicionar_papel'
     ),
     path(
-        'remove_papel/<int:group>/<int:funcionario>/',
-        RemoveFuncionarioGroupView.as_view(),
-        name='remove_papel'
+        'minha_loja/admins/remover_papel/<int:group>/<int:funcionario>/',
+        RemoverPapelFuncionarioView.as_view(),
+        name='remover_papel'
     ),
     path(
-        'add_papel/',
-        AddFuncionarioGroupView.as_view(),
-        name='add_papel'
+        'minha_loja/admins/adicionar_papel/',
+        AdicionarPapelFuncionarioView.as_view(),
+        name='adicionar_papel'
     ),
     path(
-        'remove_papel/',
-        RemoveFuncionarioGroupView.as_view(),
-        name='remove_papel'
+        'minha_loja/admins/remover_papel/',
+        RemoverPapelFuncionarioView.as_view(),
+        name='remover_papel'
     ),
     path(
-        'change_is_admin/',
-        ChangeIsAdmin.as_view(),
+        'minha_loja/admins/change_is_admin/',
+        TrocarIsAdminFuncionarioView.as_view(),
         name='change_is_admin'
     ),
     path(

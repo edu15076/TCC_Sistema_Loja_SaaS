@@ -70,7 +70,6 @@ class LoginUsuarioLojaView(LoginUsuarioGenericoView):
         return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
 
 
-
 class CreateUsuarioLojaView(UserFromLojaRequiredMixin, CreateUsuarioGenericoView):
     form_class = UsuarioGenericoPessoaFisicaCreationForm
     template_name = 'auth/criar_usuario_loja.html'

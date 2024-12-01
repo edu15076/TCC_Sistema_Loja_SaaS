@@ -26,7 +26,7 @@ class UserFromLojaRequiredMixin(UserInScopeRequiredMixin):
         )
 
 
-class FilterForSameLojaMixin(ScopeMixin, UsuarioMixin):
+class FilterForSameLojaMixin(UsuarioMixin, ScopeMixin):
     def get_loja(self):
         return self.user.loja
 

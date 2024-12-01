@@ -50,6 +50,7 @@ class HTMXTemplateView(HTMXHelperMixin, TemplateView):
 
 class HTMXFormMixin(HTMXHelperMixin, FormMixin):
     form_action: str = None
+    form_action_name: str = 'action'
     form_template_name: str = 'forms/htmx_form_post_template.html'
     redirect_on_success = True
     hx_target_form_invalid = None
@@ -66,7 +67,7 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
 
     def get_context_data(self, **kwargs):
         if self.get_form_action():
-            kwargs['action'] = self.get_form_action()
+            kwargs[self.form_action_name] = self.get_form_action()
         return super().get_context_data(**kwargs)
 
     def form_invalid(self, form):

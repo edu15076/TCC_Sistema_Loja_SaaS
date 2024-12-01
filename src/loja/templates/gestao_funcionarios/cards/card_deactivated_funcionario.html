@@ -1,0 +1,10 @@
+{% extends 'gestao_funcionarios/cards/extends/card_generic_funcionario.html' %}
+
+{% block funcionario_body %}
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+        <h5 class="card-title m-0">Funcionário: {{ funcionario.cpf }}</h5>
+        {% if funcionario.is_active_change_form %}
+            {% include 'gestao_funcionarios/forms/htmx_reativar_funcionario.html' with action=reativar_funcionario_action form=funcionario.is_active_change_form %}
+        {% endif %}
+    </div>
+{% endblock funcionario_body %}
