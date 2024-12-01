@@ -1,38 +1,47 @@
-<div class="col-md-4 mb-4" id="caixa-card-{{ caixa.id }}" hx-target="#caixa-card-{{ caixa.id }}">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Caixa {{ caixa.id }}</h5>
-        </div>
+<div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
         <div class="card-body">
-            <p class="mb-2">
-                <strong>Número de Identificação:</strong> {{ caixa.numero_identificacao }}
+            <h5 class="card-title text-center">Caixa {{ caixa.numero_identificacao }}</h5>
+            <p class="card-text">
+                <strong>Status:</strong> {% if caixa.horario_aberto %}Aberto{% else %}Fechado{% endif %}<br>
+                <strong>Dinheiro em Caixa:</strong> R$ {{ caixa.dinheiro_em_caixa }}
             </p>
-            {% if caixa.horario_aberto %}
-                <p class="mb-2">
-                    <strong>Horário de Abertura:</strong> {{ caixa.horario_aberto }}
-                </p>
-            {% endif %}
-            <div class="d-flex align-items-center">
-                <strong class="me-2">Status:</strong>
-                <form method="post" class="d-flex align-items-center">
+            {% if is_estado_caixa %}  
+                <form method="post" action="{% url 'estado_caixa' loja_scope=loja_scope %}" class="d-grid gap-2">
                     {% csrf_token %}
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="status-switch-{{ caixa.id }}" 
-                            {% if caixa.ativo %}checked{% endif %} 
-                            hx-post="{% url 'caixa_lista' loja_scope=loja_scope %}" 
-                            hx-vals='{"id": "{{ caixa.id }}", "ativo": "{{ caixa.ativo|yesno:"true,false" }}"}'
-                            hx-trigger="change"
-                            hx-swap="outerHTML"
-                            hx-on:htmx:afterSwap="initializeComponents()">
-                        <label class="form-check-label ms-2 mb-0" id="status-label-{{ caixa.id }}" for="status-switch-{{ caixa.id }}">
-                            {% if caixa.ativo %}
-                                <span class="badge bg-success">Ativo</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inativo</span>
-                            {% endif %}
-                        </label>
-                    </div>
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+                    {% if caixa.horario_aberto %}
+                        <button name="acao" value="fechar" class="btn btn-warning btn-block">Fechar Caixa</button>
+                    {% else %}
+                        <button name="acao" value="abrir" class="btn btn-primary btn-block">Abrir Caixa</button>
+                    {% endif %}
                 </form>
+            {% else %}  
+                <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+                    <button name="acao" value="remover" class="btn btn-danger btn-block">Remover Caixa</button>
+                </form>
+                
+                <div class="row justify-content-center mt-2">
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#associarCaixeiroModal-{{ caixa.id }}">
+                        Associar Caixeiro
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="associarCaixeiroModal-{{ caixa.id }}" tabindex="-1" aria-labelledby="associarCaixeiroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="associarCaixeiroModalLabel">Associar Caixeiro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Este recurso ainda não está implementado. Clique em "Associar Caixeiro" para continuar.</p>
             </div>
         </div>
     </div>

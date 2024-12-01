@@ -1,11 +1,79 @@
 {% extends 'base_loja.html' %}
 
-{% block main_content %}
-    <div class="row">
-        {% for caixa in caixas %}
-            <div class="col-md-4" id="caixa-card-{{ caixa.id }}">
-                {% include 'cards/card_caixa.html' with caixa=caixa loja_scope=loja_scope %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Caixas</title <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% block main_content %}
+    <div class="container my-4">
+        <h1 class="text-justify">Gestão de Caixas</h1>
+
+        <form method="get" class="d-flex justify-content-align-items-center gap-3 my-4">
+            <label for="filtro" class="form-label mb-0">Filtrar:</label>
+            <select name="filtro" class="form-select w-auto">
+                <option value="todos" {% if filtro == "todos" %}selected{% endif %}>Todos</option>
+                <option value="abertos" {% if filtro == "abertos" %}selected{% endif %}>Abertos</option>
+                <option value="fechados" {% if filtro == "fechados" %}selected{% endif %}>Fechados</option>
+            </select>
+
+            <label for="ordem" class="form-label mb-0">Ordenar por:</label>
+            <select name="ordem" class="form-select w-auto">
+                <option value="id" {% if ordem == "id" %}selected{% endif %}>ID</option>
+                <option value="dinheiro_em_caixa" {% if ordem == "dinheiro_em_caixa" %}selected{% endif %}>Maior Quantidade de Dinheiro</option>
+                <option value="nome" {% if ordem == "nome" %}selected{% endif %}>Nome do Caixa</option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+
+        <div class="d-flex justify-content-left align-items-center gap-3 my-4">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#novoCaixaModal">
+                Cadastrar Novo Caixa
+            </button>
+        </div>
+
+        {% if not caixas %}
+            <div class="alert alert-danger text-center" role="alert">
+                Não há caixas cadastrados no momento.
             </div>
-        {% endfor %}
+        {% else %}
+            <div class="row g-4">
+                {% for caixa in caixas %}
+                    {% include 'cards/card_caixa.html' with is_estado_caixa=False caixa=caixa loja_scope=loja_scope %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="modal fade" id="novoCaixaModal" tabindex="-1" aria-labelledby="novoCaixaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novoCaixaModalLabel">Cadastrar Novo Caixa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="numero_identificacao" class="form-label">Número de Identificação:</label>
+                                <input type="number" name="numero_identificacao" class="form-control" required min="1" max="99999999" 
+                                    title="O número de identificação deve ter exatamente 8 dígitos e estar entre 00000001 e 99999999." 
+                                    oninput="this.value = this.value.padStart(8, '0');" 
+                                    pattern="^\d{8}$" placeholder="00000001">
+                            </div>
+                            <button type="submit" name="acao" value="adicionar" class="btn btn-success w-100">Adicionar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-{% endblock main_content %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% endblock main_content %}
+</body>
+</html>
