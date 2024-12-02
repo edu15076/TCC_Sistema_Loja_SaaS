@@ -7,7 +7,6 @@ from django.db import models
 from django.db.models import OuterRef, Subquery
 
 from common.models import LojaScope
-from scope_auth.models import Scope
 from .funcionario import Funcionario, FuncionarioQuerySet
 
 __all__ = ('Loja',)
@@ -39,7 +38,7 @@ class Loja(models.Model):
         LojaScope, on_delete=models.CASCADE, primary_key=True, related_name='loja'
     )
     nome = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to=loja_path)
+    logo = models.ImageField(upload_to=loja_path, null=True, blank=True)
 
     lojas = LojaManager()
 
@@ -59,11 +58,11 @@ class Loja(models.Model):
             self.scope = LojaScope.scopes.create()
         return super().save(*args, **kwargs)
 
-    # def delete(self, *args, **kwargs):
-    #     loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
-    #
-    #     if os.path.isdir(loja_directory):
-    #         with suppress(Exception):
-    #             shutil.rmtree(loja_directory)
-    #
-    #     return super().delete(*args, **kwargs)
+    def delete(self, *args, **kwargs):
+        loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
+
+        if os.path.isdir(loja_directory):
+            with suppress(Exception):
+                shutil.rmtree(loja_directory)
+
+        return self.scope.delete()

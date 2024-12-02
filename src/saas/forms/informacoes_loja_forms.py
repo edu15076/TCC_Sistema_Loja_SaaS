@@ -45,7 +45,7 @@ class DeletarLojaForm(CrispyFormMixin, forms.Form):
         self.helper = self.create_helper()
         self.loja = loja
         self.fields['nome'].help_text = (
-                _('Digite o nome da sua loja \"%(nome)s\" para confirmar a deleção')
+                _('Digite o nome da sua loja \"<span class="loja_nome">%(nome)s</span>\" para confirmar a deleção')
                 % {'nome': loja.nome}
         )
 
