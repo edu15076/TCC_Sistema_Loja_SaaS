@@ -9,7 +9,7 @@ from .crispy_forms import CrispyFormMixin
 
 class QueryFormMixin(CrispyFormMixin):
     query = forms.CharField(
-        required=True,
+        required=False,
         max_length=128,
         widget=forms.TextInput(attrs={'placeholder': _('Digite sua pesquisa...')}),
     )
@@ -24,4 +24,8 @@ class QueryFormMixin(CrispyFormMixin):
 
     def get_parameters(self) -> dict[str, Any]:
         query = self.cleaned_data['query']
+
+        if query is None:
+            return {}
+
         return {f'{field}__icontains': query for field in self.Meta.fields}

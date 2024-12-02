@@ -1,10 +1,11 @@
 from datetime import date, timedelta
+from decimal import Decimal
 from typing import Any
 
 from crispy_forms.layout import Submit
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from django.db.models import F
+from django.db.models import F, ExpressionWrapper, DecimalField
 
 from common.models import Periodo
 from loja.models.loja import Loja
@@ -41,6 +42,27 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
             data_inicio__gt=date.today(),
         )
 
+        if self.instance.pk is not None:
+            self.fields['promocoes'].initial = self.instance.promocoes.all()
+
+            self.fields['promocoes'].queryset = Promocao.promocoes.filter(
+                loja__scope=scope,
+                data_inicio__gt=date.today(),
+            ).annotate(
+                desconto=ExpressionWrapper(
+                    self.instance.preco_de_venda * F('porcentagem_desconto') / 100,
+                    output_field=DecimalField(
+                        _('Desconto'), max_digits=10, decimal_places=2
+                    ),
+                ),
+                preco_com_desconto=ExpressionWrapper(
+                    self.instance.preco_de_venda - F('desconto'),
+                    output_field=DecimalField(
+                        _('Desconto'), max_digits=10, decimal_places=2
+                    ),
+                ),
+            )
+
     def save(self, commit: bool = True) -> Any:
         instance = super().save(commit=False)
 
@@ -58,13 +80,14 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
             self.save_m2m()
 
         return instance
-    
+
 
 class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
     produtos = CustomModelMultipleChoiceField(
         queryset=Produto.produtos.all(),
         widget=forms.CheckboxSelectMultiple,
-        label=_('Produtos')
+        required=False,
+        label=_('Produtos'),
     )
 
     class Meta:
@@ -73,7 +96,7 @@ class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
 
     def get_submit_button(self) -> Submit:
         return Submit('submit', 'Salvar')
-    
+
     def __init__(self, scope=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -82,13 +105,23 @@ class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
 
         self.fields['produtos'].queryset = Produto.produtos.filter(
             loja__scope=scope
+        ).annotate(
+            desconto=ExpressionWrapper(
+                F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
+                output_field=DecimalField(
+                    _('Desconto'), max_digits=10, decimal_places=2
+                ),
+            ),
+            preco_com_desconto=F('preco_de_venda') - F('desconto'),
         )
 
     def full_clean(self) -> None:
         super().full_clean()
 
         if self.instance.data_inicio < date.today():
-            self.add_error('data_inicio', _('A data de início não pode ser no passado.'))
+            self.add_error(
+                'data_inicio', _('A data de início não pode ser no passado.')
+            )
 
             raise forms.ValidationError(_('A data de início não pode ser no passado.'))
 
@@ -108,8 +141,8 @@ class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
             instance.save()
             self.save_m2m()
 
-        return instance    
-    
+        return instance
+
 
 class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
     data_inicio = forms.DateField(
@@ -137,14 +170,26 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         self.helper.form_method = 'post'
         self.helper.form_id = 'duplicar_promocao_form'
 
-        if scope is not None:
-            produtos_queryset = Produto.produtos.filter(loja__scope=scope)
-            self.fields['produtos'].queryset = produtos_queryset
-            self.scope = scope
-
+        instance = None
         if kwargs.get('instance'):
             instance = kwargs['instance']
             self.fields['produtos'].initial = [instance.produtos]
+
+        if scope is not None:
+            produtos_queryset = Produto.produtos.filter(loja__scope=scope)
+            if instance is not None:
+                produtos_queryset = produtos_queryset.annotate(
+                    desconto=ExpressionWrapper(
+                        F('preco_de_venda') * (instance.porcentagem_desconto / 100),
+                        output_field=DecimalField(
+                            _('Desconto'), max_digits=10, decimal_places=2
+                        ),
+                    ),
+                    preco_com_desconto=F('preco_de_venda') - F('desconto'),
+                )
+
+            self.fields['produtos'].queryset = produtos_queryset
+            self.scope = scope
 
     def clean_promocao(self):
         promocao = self.cleaned_data.get('promocao')
@@ -164,9 +209,9 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         if instance is None:
             instance = super().save(commit=False)
 
-        # print(instance.data_inicio, self.cleaned_data['data_inicio'])
-        replicate = instance.clonar_promocao(self.cleaned_data['data_inicio'], commit=False)
-        # print(replicate.data_inicio, self.cleaned_data['data_inicio'])
+        replicate = instance.clonar_promocao(
+            self.cleaned_data['data_inicio'], commit=False
+        )
         produtos = []
 
         for produto in self.cleaned_data['produtos']:
@@ -202,6 +247,12 @@ class PromocaoForm(CrispyFormMixin, forms.ModelForm):
         required=False,
     )
 
+    data_inicio = forms.DateField(
+        label=_('Data de inicio'),
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        initial=date.today(),
+    )
+
     class Meta:
         model = Promocao
         fields = [
@@ -227,11 +278,22 @@ class PromocaoForm(CrispyFormMixin, forms.ModelForm):
                 loja__scope=scope
             )
 
+        if self.instance.pk is not None:
+            self.fields['produtos'].queryset.annotate(
+                desconto=ExpressionWrapper(
+                    F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
+                    output_field=DecimalField(
+                        _('Desconto'), max_digits=10, decimal_places=2
+                    ),
+                ),
+                preco_com_desconto=F('preco_de_venda') - F('desconto'),
+            )
+
     def clean_unidades_de_tempo_por_periodo(self):
         valor = self.cleaned_data.get('unidades_de_tempo_por_periodo')
 
         try:
-            return int(valor) 
+            return int(valor)
         except ValueError:
             raise forms.ValidationError(_('Selecione uma unidade de tempo válida.'))
 
@@ -297,7 +359,7 @@ class FiltroPromocaoForm(CrispyFormMixin, forms.Form):
         self.helper.form_method = 'get'
         self.Meta.filter_arguments = {'produtos': 'produtos__in', 'status': ''}
 
-        if scope is not None and scope != {}:
+        if scope is not None:
             self.fields['produtos'].queryset = Produto.produtos.filter(
                 loja__scope=scope
             )
@@ -308,6 +370,9 @@ class FiltroPromocaoForm(CrispyFormMixin, forms.Form):
 
     def full_clean(self):
         super().full_clean()
+
+        if not hasattr(self, 'cleaned_data'):
+            return
 
         status = self.cleaned_data['status']
         match status:

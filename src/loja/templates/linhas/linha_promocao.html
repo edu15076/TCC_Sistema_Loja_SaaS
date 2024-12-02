@@ -1,0 +1,50 @@
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% if message %}
+    {% include "alerts/alerta_context_erro.html" %}
+{% endif %}
+
+
+<tr class="linha-promocao" id="linha-promocao-produto-{{ promocao.id }}">
+    
+    <td>{{ message }}<a href="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" class="text-decoration-none text-primary">{{ promocao.descricao }}</a></td>
+    <td>{{ promocao.porcentagem_desconto }}%</td>
+    <td>{{ promocao.data_inicio|date:"d/m/Y" }}</td>
+    <td>{{ promocao.periodo.tempo_total.days }} dias</td>
+    <td> 
+        <button 
+
+            type="button" 
+            class="btn btn-sm btn-primary" 
+            data-bs-toggle="modal"
+            data-promocao-id="{{ promocao.id }}"
+            data-promocao-post="{% url 'gestao_promocoes' scope.pk promocao.pk %}/"
+            data-bs-target="#duplicarPromocaoModal">
+            Duplicar
+        </button>
+    </td>
+        {% comment %} <!-- Modal -->
+        <div class="modal fade" id="duplicarPromocaoModal-{{ promocao_produto.id }}" tabindex="-1" role="dialog" aria-labelledby="duplicarPromocaoModalLabel-{{ promocao_produto.id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="duplicarPromocaoModalLabel-{{ promocao_produto.id }}">Duplicar Promoção</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Tem certeza de que deseja duplicar esta promoção?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="duplicarPromocao({{ promocao_produto.id }})">Duplicar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </td> {% endcomment %}
+    {% comment %} <td>R$ {{ promocao.preco_com_desconto }}</td> {% endcomment %}
+</tr>
+            

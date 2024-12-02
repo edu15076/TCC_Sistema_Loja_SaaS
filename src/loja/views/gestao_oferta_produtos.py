@@ -19,7 +19,9 @@ from loja.forms import (
 )
 
 
-class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView):
+class GestaoOfertaProdutoListView(
+    UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
+):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'oferta_produtos.html'
     preco_form_class = PrecoDeVendaProdutoForm
@@ -61,14 +63,16 @@ class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListH
         context['filter_form'] = self.filter_form()
         context['query_form'] = self.query_form()
         context['produtos'] = self.get_page()
-        context['produtos_count'] = self.object_list.count()
+        context['produtos_count'] = Produto.produtos.filter(
+            loja__scope=self.scope
+        ).count()
 
         return context
-    
+
     def get_template_names(self) -> list[str]:
         if self.request is None:
             return [self.template_name]
-        
+
         request = self.request
         cards = request.GET.get('visualizacao') == 'cards'
 
@@ -79,7 +83,7 @@ class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListH
                 return ['linhas/linha_oferta_produto.html']
         elif 'query' in request.POST:
             return ['includes/exibe_ofertas_produtos.html']
-        
+
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         return render(request, self.template_name, self.get_context_data())
 
@@ -89,11 +93,16 @@ class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListH
 
         if query_form.is_valid():
             query_parameters = query_form.get_parameters()
-
             queryset = queryset.filter(**query_parameters)
 
         return render(
-            request, self.get_template_names()[0], {'produtos': queryset}
+            request,
+            self.get_template_names()[0],
+            {
+                'produtos': queryset,
+                'em_venda_form': self.em_venda_form_class(),
+                'preco_form': self.preco_form_class(),
+            },
         )
 
     def form_valid(self, form):
@@ -101,7 +110,12 @@ class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListH
         return render(
             self.request,
             self.get_template_names()[0],
-            {'produto': produto, 'success': True},
+            {
+                'produto': produto,
+                'em_venda_form': self.em_venda_form_class(),
+                'preco_form': self.preco_form_class(),
+                'success': True,
+            },
         )
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
@@ -109,10 +123,10 @@ class GestaoOfertaProdutoListView(UserFromLojaRequiredMixin, CreateOrUpdateListH
             if 'query' in request.POST:
                 return self.pesquisar_produtos(request)
             if 'preco_de_venda' in request.POST:
-                self.object_pk = request.POST.get('pk')
+                self.object_pk = request.POST.get('id')
                 form = self.preco_form_class(request.POST, instance=self.get_object())
             elif 'em_venda' in request.POST:
-                self.object_pk = request.POST.get('pk')
+                self.object_pk = request.POST.get('id')
                 form = self.em_venda_form_class(
                     request.POST, instance=self.get_object()
                 )

@@ -1,14 +1,29 @@
-<table>
-    <thead>
-        <tr>
-            <th>Descrição</th>
-            <th>Código de barras</th>
-            <th>Preço de venda</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for produto in produtos %}
-            {% include 'linhas/linha_oferta_produto.html' %}
-        {% endfor %}
-    </tbody>
-</table>
+<div class="mt-5">
+    {% if produtos|length > 0 %}
+
+    <div class="table-responsive">
+        <table class="table table-hover  align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Código de barras</th>
+                    <th scope="col">Preço de venda</th>
+                    <th scope="col">Em venda</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos %}
+                    {% include 'linhas/linha_oferta_produto.html' %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info" role="alert">
+        Nenhum produto encontrada
+    </div>
+
+    {% endif %}
+</div>

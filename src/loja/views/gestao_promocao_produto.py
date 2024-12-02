@@ -53,6 +53,16 @@ class GestaoPromocoesProdutoCRUDView(
         context['form'] = self.promocoes_form_class(scope=self.scope, instance=produto)
         context['preco_form'] = self.preco_form_class(instance=produto)
         context['em_venda_form'] = self.em_venda_form_class(instance=produto)
+        context['promocoes'] = produto.promocoes.all().annotate(
+            desconto=ExpressionWrapper(
+                produto.preco_de_venda * F('porcentagem_desconto') / 100,
+                output_field=DecimalField(),
+            ),
+            preco_com_desconto=ExpressionWrapper(
+                produto.preco_de_venda - F('desconto'),
+                output_field=DecimalField(),
+            ),
+        )
 
         return context
 
@@ -131,16 +141,20 @@ class GestaoProdutosPromocaoCRUDView(
             desconto=ExpressionWrapper(
                 F('preco_de_venda') * (promocao.porcentagem_desconto / 100),
                 output_field=DecimalField(),
-            )
+            ),
+            preco_com_desconto=F('preco_de_venda') - F('desconto'),
         )
         context['form'] = self.get_form(self.produtos_form_class)
         context['duplicar_form'] = self.get_form(self.duplicar_promocao_form_class)
+        context['data_final'] = promocao.data_inicio + promocao.periodo.tempo_total
+        context['today'] = date.today()
 
         return context
 
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs['scope'] = self.scope
+        kwargs['instance'] = self.get_object()
 
         return kwargs
 
@@ -156,7 +170,8 @@ class GestaoProdutosPromocaoCRUDView(
                 desconto=ExpressionWrapper(
                     F('preco_de_venda') * (object.porcentagem_desconto / 100),
                     output_field=DecimalField(),
-                )
+                ),
+                preco_com_desconto=F('preco_de_venda') - F('desconto'),
             )
 
             return render(self.request, self.get_template_names()[1], context)
@@ -171,6 +186,7 @@ class GestaoProdutosPromocaoCRUDView(
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
         try:
             promocao = self.get_object()
+            form = None
 
             if 'data_inicio' in request.POST:
                 form = self.duplicar_promocao_form_class(

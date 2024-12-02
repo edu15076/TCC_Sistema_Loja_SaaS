@@ -118,7 +118,9 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertIn('scope', response.context)
 
         produtos_response = response.context['produtos']
-        produtos = Produto.produtos.filter(loja=self.lojas[0]).order_by('-preco_de_venda')
+        produtos = Produto.produtos.filter(loja=self.lojas[0]).order_by(
+            '-preco_de_venda'
+        )
 
         self.assertCountEqual(produtos_response, produtos)
         self.assertListEqual(list(produtos_response), list(produtos))
@@ -153,7 +155,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
         data = {
-            'pk': self.produtos[0].pk,
+            'id': self.produtos[0].pk,
             'preco_de_venda': 150,
         }
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -175,7 +177,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(response.status_code, 400)
 
         data = {
-            'pk': self.produtos[0].pk,
+            'id': self.produtos[0].pk,
             'preco_de_venda': -150,
         }
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -185,7 +187,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
     def test_post_editar_em_venda_produtos(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
-        data = {'pk': self.produtos[0].pk, 'em_venda': False}
+        data = {'id': self.produtos[0].pk, 'em_venda': False}
         response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
@@ -197,7 +199,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertFalse(produto.em_venda)
         self.assertEqual(produto, produto_response)
 
-        data = {'pk': self.produtos[0].pk, 'em_venda': True}
+        data = {'id': self.produtos[0].pk, 'em_venda': True}
         response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)

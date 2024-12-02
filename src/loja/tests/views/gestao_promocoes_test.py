@@ -150,7 +150,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertIn('duplicar_form', response.context)
 
         self.assertListEqual(
-            list(Promocao.promocoes.filter(loja=self.lojas[0], produtos=self.produtos[1])),
+            list(
+                Promocao.promocoes.filter(loja=self.lojas[0], produtos=self.produtos[1])
+            ),
             list(response.context['promocoes']),
         )
 
@@ -166,13 +168,17 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertIn('filter_form', response.context)
         self.assertIn('duplicar_form', response.context)
 
-        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by('-data_inicio')
+        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
+            '-data_inicio'
+        )
         self.assertListEqual(list(response.context['promocoes']), list(promocoes))
 
         data = {'status': 0, 'ordem': 'data_inicio'}
         response = self.client.get(self._get_url(scope.pk), data)
 
-        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by('data_inicio')
+        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
+            'data_inicio'
+        )
         self.assertListEqual(list(response.context['promocoes']), list(promocoes))
 
     def test_get_order_porcentagem_desconto_promocoes(self):
@@ -187,13 +193,17 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertIn('filter_form', response.context)
         self.assertIn('duplicar_form', response.context)
 
-        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by('-porcentagem_desconto')
+        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
+            '-porcentagem_desconto'
+        )
         self.assertListEqual(list(response.context['promocoes']), list(promocoes))
 
         data = {'status': 0, 'ordem': 'porcentagem_desconto'}
         response = self.client.get(self._get_url(scope.pk), data)
 
-        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by('porcentagem_desconto')
+        promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
+            'porcentagem_desconto'
+        )
         self.assertListEqual(list(response.context['promocoes']), list(promocoes))
 
     def test_post_duplicar_promocoes(self):
@@ -201,33 +211,37 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         scope = self.gerente_financeiro[0].loja.scope
 
         data = {
+            'promocao': self.promocoes[0].pk,
             'data_inicio': date.today() + timedelta(days=100),
-            'produtos': [p.pk for p in self.promocoes[0].produtos.all()]
+            'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
         }
 
-        response = self.client.post(f'{self._get_url(scope.pk)}{self.promocoes[0].pk}/', data=data)
+        response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'linhas/linha_promocao.html')
         self.assertIn('promocao', response.context)
-        
+
         self.assertEqual(data['data_inicio'], response.context['promocao'].data_inicio)
         self.assertListEqual(
             list(self.promocoes[0].produtos.all()),
-            list(response.context['promocao'].produtos.all())
+            list(response.context['promocao'].produtos.all()),
         )
 
         data = {
+            'promocao': self.promocoes[0].pk,
             'data_inicio': date.today() + timedelta(days=10),
-            'produtos': [p.pk for p in self.promocoes[0].produtos.all()]
+            'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
         }
 
-        response = self.client.post(f'{self._get_url(scope.pk)}{self.promocoes[0].pk}/', data=data)
+        response = self.client.post(
+            f'{self._get_url(scope.pk)}{self.promocoes[0].pk}/', data=data
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(
             list(self.promocoes[0].produtos.all()),
-            list(response.context['promocao'].produtos.all())
+            list(response.context['promocao'].produtos.all()),
         )
 
     def test_post_criar_promocao(self):
@@ -240,7 +254,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'data_inicio': date.today() + timedelta(days=50),
             'produtos': [self.produtos[0].pk],
             'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.DIA,
-            'numero_de_periodos': 10
+            'numero_de_periodos': 10,
         }
 
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -248,12 +262,12 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'linhas/linha_promocao.html')
         self.assertIn('promocao', response.context)
-        
+
         promocao = Promocao.promocoes.get(descricao='Promoção 5')
         self.assertEqual(promocao, response.context['promocao'])
         self.assertListEqual(
             list(response.context['promocao'].produtos.all()),
-            list(promocao.produtos.all())
+            list(promocao.produtos.all()),
         )
 
         data = {
@@ -262,7 +276,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'data_inicio': date.today(),
             'produtos': [self.produtos[0].pk],
             'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.DIA,
-            'numero_de_periodos': 10
+            'numero_de_periodos': 10,
         }
 
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -270,6 +284,5 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(
             list(response.context['promocao'].produtos.all()),
-            list(promocao.produtos.all())
+            list(promocao.produtos.all()),
         )
-    

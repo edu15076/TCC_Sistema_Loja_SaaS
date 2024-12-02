@@ -28,6 +28,9 @@ class ProdutoEmVendaForm(CrispyFormMixin, forms.ModelForm):
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
+        # if self.instance is not None:
+        #     self.fields['em_venda'].initial = self.instance.em_venda
+
 
 class PrecoDeVendaProdutoForm(CrispyFormMixin, forms.ModelForm):
     class Meta:
@@ -71,11 +74,7 @@ class OfertaProdutosFilterForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'get'
-        self.helper.form_action = ''
         self.helper.form_id = 'filter_form'
-        self.helper.form_class = 'form-inline'
-        self.helper.label_class = 'sr-only'
-        self.helper.field_class = 'form-control'
 
     class Meta:
         order_arguments = ['ordem']

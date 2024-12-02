@@ -8,11 +8,8 @@ from loja.models.funcionario import GerenteFinanceiro
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Promocao
 from loja.views import UserFromLojaRequiredMixin
-from loja.forms import (
-    DuplicarPromocaoForm,
-    PromocaoForm,
-    FiltroPromocaoForm
-)
+from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
+
 
 class GestaoPromocoesCRUDListView(
     UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
@@ -29,29 +26,38 @@ class GestaoPromocoesCRUDListView(
     usuario_class = GerenteFinanceiro
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
-    
+
     def get_form(self, form_class: type | None = ...):
         return self.form_class(scope=self.scope)
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
-        super().get_context_data(**kwargs)
-        
-        context = {}
+        context = super().get_context_data(**kwargs)
+
+        # context = {}
         context['promocoes'] = self.object_list
         context['duplicar_form'] = self.duplicar_promocao_form_class(scope=self.scope)
         context['form'] = self.get_form()
-        context['filter_form'] = self.filter_form(self.scope)
-        context['promocoes_count'] = Promocao.promocoes.filter(loja__scope=self.scope).count()
+        context['filter_form'] = self.filter_form(scope=self.scope)
+        context['promocoes_count'] = Promocao.promocoes.filter(
+            loja__scope=self.scope
+        ).count()
 
         return context
-        
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['scope'] = self.scope
+        kwargs['instance'] = self.get_object()
+
+        return kwargs
+
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         return render(request, self.template_name, self.get_context_data())
-    
-    def get_template_names(self) -> list[str]:        
+
+    def get_template_names(self) -> list[str]:
         templates = [self.template_name]
-        
+
         request = self.request
         cards = request.GET.get('visualizacao') == 'cards'
 
@@ -69,18 +75,16 @@ class GestaoPromocoesCRUDListView(
         return render(
             self.request,
             self.get_template_names()[1],
-            {'promocao': promocao, 'message': erros}
+            {'promocao': promocao, 'erros': erros},
         )
-    
+
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         try:
-            promocao = self.get_object()
-
-            if promocao is None:
+            if 'promocao' not in request.POST:
                 form = self.form_class(data=request.POST, scope=self.scope)
             else:
                 form = self.duplicar_promocao_form_class(
-                    data=request.POST, scope=self.scope, instance=promocao
+                    data=request.POST, scope=self.scope
                 )
 
             if form.is_valid():

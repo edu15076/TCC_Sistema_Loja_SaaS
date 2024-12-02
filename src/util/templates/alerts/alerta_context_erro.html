@@ -1,0 +1,17 @@
+{% if erros %}
+    <div class="modal modal fade show" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true" style="display: block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header  bg-danger text-white column justify-content-between">
+                    <h5 class="modal-title " id="errorModalLabel">Erro</h5>
+                    <button type="button" class="btn" data-dismiss="modal" onclick="$('#errorModal').remove()">
+                        {% heroicon_solid "x-circle" size=25 %}
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ erros }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

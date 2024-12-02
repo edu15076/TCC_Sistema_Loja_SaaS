@@ -1,5 +1,45 @@
-<tr>
-    <td>{{ produto.descricao }}</td>
+{% comment %} {% extends "includes/exibe_ofertas_produtos.html" %} {% endcomment %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+<tr id="linha-produto-{{ produto.id }}">
+    <td><a href="{% url 'gestao_promocoes_produto' scope.pk produto.pk %}" class="text-decoration-none text-primary">{{ produto.descricao }}</a></td>
     <td>{{ produto.codigo_de_barras }}</td>
-    <td>{{ produto.preco_de_venda }}</td>
+    <td>
+        <span id="preco-{{ produto.pk }}">{{ produto.preco_de_venda|floatformat:2 }}
+            <span class="mx-2 btn btn-sm btn-primary" onclick="$('#preco-form-{{ produto.pk }}').toggleClass('d-none'); $('#preco-{{produto.pk}}').toggleClass('d-none'); $('#preco-form-{{ produto.pk }} #id_preco_de_venda').val({{ produto.preco_de_venda }}); return false;">
+                {% heroicon_solid "pencil" size=12 %}
+            </span>
+        </span>
+        <form id="preco-form-{{ produto.pk }}" class="d-none row row-cols-lg-auto g-3 align-items-end" 
+            method="post" 
+            hx-post="{% url 'gestao_oferta_produtos' scope.pk %}" 
+            hx-target="#linha-produto-{{ produto.id }}" 
+            hx-swap="outerHTML"
+            hx-vals='{"id": "{{ produto.id }}" }'>
+            {% crispy preco_form %}
+            <span class="mx-2 mb-3 btn btn btn-danger" onclick="$('#preco-form-{{ produto.pk }}').addClass('d-none'); $('#preco-{{produto.pk}}').removeClass('d-none'); return false;">
+                {% heroicon_solid "x-circle" size=20 %}
+            </span>
+        </form>
+    </td>
+    <td>
+        <form method="post" class="form-check form-switch">
+            {% csrf_token %}
+            <input class="form-check-input" type="checkbox" id="em_venda-switch-{{ produto.id }}" 
+                {% if produto.em_venda %}checked{% endif %} 
+                hx-post="{% url 'gestao_oferta_produtos' scope.pk %}" 
+                hx-vals='{"id": "{{ produto.id }}", "em_venda": "{{ produto.em_venda|yesno:"false,true" }}" }'
+                hx-trigger="change"
+                hx-swap="none"
+                hx-on:htmx:after-on-load="$('#em_venda-label-{{ produto.id }}').html(this.checked ? 'Sim' : 'Não')">
+            <label class="form-check-label" id="em_venda-label-{{ produto.id }}" for="em_venda-switch-{{ produto.id }}">
+                {% if produto.em_venda %}
+                    Sim
+                {% else %}
+                    Não
+                {% endif %}
+            </label>
+        </form>
+    </td>
 </tr>

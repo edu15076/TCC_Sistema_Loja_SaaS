@@ -20,6 +20,7 @@ class ProdutoQueryForm(QueryFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
+        self.helper.attrs = {'oninput': 'this.form.submit()'}
 
     class Meta:
         fields = ['descricao']
