@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse
 from django.views.generic import TemplateView
 
-from . import UserFromLojaRequiredMixin
+from .mixins import UserFromLojaRequiredMixin
 from .abstract import (
     ABCListFuncionariosView,
     ABCCardFuncionarioView,
@@ -45,6 +45,7 @@ class FuncionarioContextDataControlledMixin(FuncionarioContextDataMixin):
 
 class ListFuncionariosView(
     LojaProtectionMixin,
+    PermissionRequiredMixin,
     FuncionarioContextDataControlledMixin,
     ABCListFuncionariosView
 ):
@@ -53,6 +54,7 @@ class ListFuncionariosView(
     ordering = ['-is_active', 'is_admin', 'nome']
 
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
@@ -60,23 +62,26 @@ class ListFuncionariosView(
 
 class CardFuncionarioView(
     LojaProtectionMixin,
+    PermissionRequiredMixin,
     FuncionarioContextDataControlledMixin,
     ABCCardFuncionarioView
 ):
     template_name = 'gestao_funcionarios/cards/card_funcionario.html'
 
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
 
 
 class CriarFuncionarioView(
-    LojaProtectionMixin, ABCCriarFuncionarioView
+    LojaProtectionMixin, PermissionRequiredMixin, ABCCriarFuncionarioView
 ):
     template_name = 'gestao_funcionarios/modals/modal_criar_funcionario.html'
 
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_form_action(self):
         return reverse('criar_funcionario', kwargs={'loja_scope': int(self.scope)})
@@ -92,11 +97,12 @@ class CriarFuncionarioView(
 
 
 class TrocarFuncionarioIsValidView(
-    UserFromLojaRequiredMixin, ABCTrocarFuncionarioIsValidView
+    UserFromLojaRequiredMixin, PermissionRequiredMixin, ABCTrocarFuncionarioIsValidView
 ):
     form_class = NonAdminFuncionarioIsActiveForm
 
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
@@ -124,9 +130,10 @@ class ReativarFuncionarioView(
 
 
 class TrocarPapelFuncionarioView(
-    UserFromLojaRequiredMixin, ABCTrocarPapelFuncionarioView
+    UserFromLojaRequiredMixin, PermissionRequiredMixin, ABCTrocarPapelFuncionarioView
 ):
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
@@ -159,10 +166,12 @@ class RemoverPapelFuncionarioView(
 
 
 class GestaoFuncionariosView(
-    UserFromLojaRequiredMixin, TemplateView
+    UserFromLojaRequiredMixin, PermissionRequiredMixin, TemplateView
 ):
     template_name = 'gestao_funcionarios/gestao_funcionarios.html'
+
     usuario_class = GerenteDeRH
+    permission_required = 'loja.gerir_funcionarios'
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})

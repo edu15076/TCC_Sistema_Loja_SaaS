@@ -2,9 +2,9 @@
 
 {% block funcionario_extra_data %}
     {% if funcionario == user %}
-        <small class="text-body-secondary">Esse funcionário é você</small>
+        <small class="d-block text-body-secondary">Esse funcionário é você</small>
     {% endif %}
     {% if funcionario.is_admin %}
-        <small class="text-body-secondary">Esse funcionário é um administrador</small>
+        <small class="d-block text-body-secondary">Esse funcionário é um administrador</small>
     {% endif %}
 {% endblock funcionario_extra_data %}

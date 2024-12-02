@@ -9,11 +9,6 @@ urlpatterns = [
         name='home_loja'
     ),
     path(
-        'criar_usuario/',
-        CreateUsuarioLojaView.as_view(),
-        name='criar_usuario_loja',
-    ),
-    path(
         'login/',
         LoginUsuarioLojaView.as_view(),
         name='login_loja'

@@ -108,7 +108,7 @@ class ListAdminsView(
     login_url = reverse_lazy('login_contratacao')
     ordering = ['-is_active', '-is_admin', 'nome']
     usuario_class = ClienteContratante
-    permission_required = 'saas.gerir_conta_de_admin_da_loja'
+    permission_required = 'saas.gerir_admins_da_loja'
 
 
 class CardAdminView(
@@ -121,7 +121,7 @@ class CardAdminView(
     login_url = reverse_lazy('login_contratacao')
 
     usuario_class = ClienteContratante
-    permission_required = 'saas.gerir_conta_de_admin_da_loja'
+    permission_required = 'saas.gerir_admins_da_loja'
 
 
 class CriarAdminView(
@@ -136,17 +136,19 @@ class CriarAdminView(
     login_url = reverse_lazy('login_contratacao')
 
     usuario_class = ClienteContratante
-    permission_required = 'saas.gerir_conta_de_admin_da_loja'
+    permission_required = 'saas.gerir_admins_da_loja'
 
     def get_success_url(self):
         return reverse('admin_detail', kwargs={'pk': self.object.pk})
 
 
 class TrocarAdminIsValidView(
-    UserInScopeRequiredMixin, ABCTrocarFuncionarioIsValidView
+    UserInScopeRequiredMixin, PermissionRequiredMixin, ABCTrocarFuncionarioIsValidView
 ):
     login_url = reverse_lazy('login_contratacao')
+
     usuario_class = ClienteContratante
+    permission_required = 'saas.gerir_admins_da_loja'
 
     def get_success_url(self):
         return reverse('admin_detail', kwargs=self.get_success_url_kwargs())
@@ -161,10 +163,12 @@ class ReativarAdminView(TrocarAdminIsValidView, ABCReativarFuncionarioView):
 
 
 class TrocarPapelFuncionarioView(
-    UserInScopeRequiredMixin, ABCTrocarPapelFuncionarioView
+    UserInScopeRequiredMixin, PermissionRequiredMixin, ABCTrocarPapelFuncionarioView
 ):
     login_url = reverse_lazy('login_contratacao')
+
     usuario_class = ClienteContratante
+    permission_required = 'saas.gerir_admins_da_loja'
 
 
 class AdicionarPapelFuncionarioView(
@@ -186,13 +190,19 @@ class RemoverPapelFuncionarioView(
 
 
 class TrocarIsAdminFuncionarioView(
-    UserInScopeRequiredMixin, FilterForSameLojaMixin, HTMXFormMixin, FormView
+    UserInScopeRequiredMixin,
+    FilterForSameLojaMixin,
+    PermissionRequiredMixin,
+    HTMXFormMixin,
+    FormView
 ):
     form_class = FuncionarioIsAdminForm
     login_url = reverse_lazy('login_contratacao')
     redirect_on_success = False
     success_url = None
+
     usuario_class = ClienteContratante
+    permission_required = 'saas.gerir_admins_da_loja'
 
     def get(self, *args, **kwargs):
         return HttpResponseNotFound()
@@ -229,7 +239,7 @@ class InformacoesLojaView(
     usuario_class = ClienteContratante
     login_url = reverse_lazy('login_contratacao')
     permission_required = [
-        'saas.gerir_cadastro_da_loja', 'saas.gerir_conta_de_admin_da_loja'
+        'saas.gerir_cadastro_da_loja', 'saas.gerir_admins_da_loja'
     ]
 
     @property

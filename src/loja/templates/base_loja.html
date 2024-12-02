@@ -6,12 +6,16 @@
 {% endblock styles %}
 
 {% block header %}
-    {% include 'navbar/sidebar/top_navbar_loja.html' %}
+    {% if user.is_authenticated %}
+        {% include 'navbar/sidebar/top_navbar_loja.html' %}
+    {% endif %}
 {% endblock header %}
 
 {% block main %}
     <div class="d-flex container-fluid ps-0 overflow-hidden">
-        {% include 'navbar/sidebar/sidebar_loja.html' %}
+        {% if user.is_authenticated %}
+            {% include 'navbar/sidebar/sidebar_loja.html' %}
+        {% endif %}
 
         <div class="flex-fill overflow-auto">
             <article class="container p-4">

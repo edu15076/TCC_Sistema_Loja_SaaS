@@ -1,8 +1,10 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from crispy_forms.layout import Submit, Layout, Field
+from nbformat.validator import validators
 
-from loja.forms import BaseFuncionarioCreationForm, ActiveFuncionarioValidator
+from loja.forms import BaseFuncionarioCreationForm
+from loja.forms.validators import ActiveFuncionarioValidator
 from loja.forms.mixins import LojaValidatorFormMixin
 from loja.models import Admin, Funcionario
 from loja.models import Loja
@@ -44,15 +46,17 @@ class FuncionarioIsAdminForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form
     fields_loja_check = ['funcionario']
 
     funcionario = ModelIntegerField(
-        required=True, widget=forms.HiddenInput, model_cls=Funcionario
+        required=True,
+        widget=forms.HiddenInput,
+        model_cls=Funcionario,
+        validators=[ActiveFuncionarioValidator()]
     )
     is_admin = forms.BooleanField(
         required=False,
         label=_('Admin'),
         widget=forms.CheckboxInput(attrs={
             'class': 'is-admin-checkbox-input'
-        }),
-        validators=[ActiveFuncionarioValidator()]
+        })
     )
 
     def __init__(self, *args, **kwargs):
