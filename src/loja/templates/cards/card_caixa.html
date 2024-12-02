@@ -4,7 +4,13 @@
             <h5 class="card-title text-center">Caixa {{ caixa.numero_identificacao }}</h5>
             <p class="card-text">
                 <strong>Status:</strong> {% if caixa.horario_aberto %}Aberto{% else %}Fechado{% endif %}<br>
-                <strong>Dinheiro em Caixa:</strong> R$ {{ caixa.dinheiro_em_caixa }}
+                <strong>Dinheiro em Caixa:</strong> R$ {{ caixa.dinheiro_em_caixa }}<br>
+                <strong>Horário de Abertura:</strong> 
+                {% if caixa.horario_aberto %}
+                    {{ caixa.horario_aberto|date:"d/m/Y H:i:s" }}
+                {% else %}
+                    Caixa está fechado
+                {% endif %}
             </p>
             {% if is_estado_caixa %}  
                 <form method="post" action="{% url 'estado_caixa' loja_scope=loja_scope %}" class="d-grid gap-2">
@@ -37,11 +43,41 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="associarCaixeiroModalLabel">Associar Caixeiro</h5>
+                <h5 class="modal-title" id="associarCaixeiroModalLabel">Associar Caixeiro ao Caixa {{ caixa.numero_identificacao }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Este recurso ainda não está implementado. Clique em "Associar Caixeiro" para continuar.</p>
+                <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="associar_caixeiro">
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+
+                    <label for="caixeiro_id" class="form-label">Selecionar Caixeiro:</label>
+                    <select name="caixeiro_id" class="form-select w-auto" required>
+                        {% for caixeiro in caixeiros %}
+                            <option value="{{ caixeiro.id }}">{{ caixeiro.nome }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="horario_inicio" class="form-label">Horário de Trabalho (Início):</label>
+                    <input type="time" name="horario_inicio" class="form-control" required>
+
+                    <label for="horario_fim" class="form-label">Horário de Trabalho (Fim):</label>
+                    <input type="time" name="horario_fim" class="form-control" required>
+
+                    <label for="dias_trabalho" class="form-label">Selecionar Dias da Semana:</label>
+                    <select name="dias_trabalho" class="form-select w-auto" multiple required>
+                        <option value="domingo">Domingo</option>
+                        <option value="segunda">Segunda</option>
+                        <option value="terca">Terça</option>
+                        <option value="quarta">Quarta</option>
+                        <option value="quinta">Quinta</option>
+                        <option value="sexta">Sexta</option>
+                        <option value="sabado">Sábado</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-success mt-2">Associar Caixeiro</button>
+                </form>
             </div>
         </div>
     </div>
