@@ -18,6 +18,7 @@ from loja.forms import (
     ProdutoQueryForm,
 )
 
+# TODO - Refatorar para usar get_form_kwargs
 
 class GestaoOfertaProdutoListView(
     UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView

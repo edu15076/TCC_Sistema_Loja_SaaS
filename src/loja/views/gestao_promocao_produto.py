@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.db.models import F, ExpressionWrapper, DecimalField
+from django.forms.forms import BaseForm
 from django.views.generic.detail import DetailView
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse, reverse_lazy
@@ -9,12 +10,12 @@ from django.shortcuts import redirect, render
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.htmx import UpdateHTMXView
 from loja.models import Produto, Promocao
-from loja.views import UserFromLojaRequiredMixin
+from loja.views import UserFromLojaRequiredMixin, FilterForSameLojaMixin
 from loja.forms import *
 
 
 class GestaoPromocoesProdutoCRUDView(
-    UserFromLojaRequiredMixin, UpdateHTMXView, DetailView
+    UserFromLojaRequiredMixin, FilterForSameLojaMixin, UpdateHTMXView, DetailView
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'promocoes_por_produto.html'
@@ -44,15 +45,31 @@ class GestaoPromocoesProdutoCRUDView(
             templates.append('includes/article_produto_oferta.html')
 
         return templates
+    
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs['scope'] = self.scope
+        kwargs['instance'] = self.get_object()
+        # kwargs['loja'] = self.get_loja()
+
+        return kwargs
+    
+    def get_form(self, form_class: type | None = ...) -> BaseForm:
+        kwargs = self.get_form_kwargs()
+
+        if form_class != self.promocoes_form_class:
+            kwargs.pop('scope')
+
+        return form_class(**kwargs)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = {}
         produto = self.get_object()
 
         context['produto'] = produto
-        context['form'] = self.promocoes_form_class(scope=self.scope, instance=produto)
-        context['preco_form'] = self.preco_form_class(instance=produto)
-        context['em_venda_form'] = self.em_venda_form_class(instance=produto)
+        context['form'] = self.get_form(self.promocoes_form_class)
+        context['preco_form'] = self.get_form(self.preco_form_class)
+        context['em_venda_form'] = self.get_form(self.em_venda_form_class)
         context['promocoes'] = produto.promocoes.all().annotate(
             desconto=ExpressionWrapper(
                 produto.preco_de_venda * F('porcentagem_desconto') / 100,
@@ -109,7 +126,7 @@ class GestaoPromocoesProdutoCRUDView(
 
 
 class GestaoProdutosPromocaoCRUDView(
-    UserFromLojaRequiredMixin, UpdateHTMXView, DetailView
+    UserFromLojaRequiredMixin, FilterForSameLojaMixin, UpdateHTMXView, DetailView
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'produtos_por_promocao.html'
@@ -155,6 +172,7 @@ class GestaoProdutosPromocaoCRUDView(
         kwargs = super().get_form_kwargs()
         kwargs['scope'] = self.scope
         kwargs['instance'] = self.get_object()
+        # kwargs['loja'] = self.get_loja()
 
         return kwargs
 

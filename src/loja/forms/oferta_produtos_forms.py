@@ -1,19 +1,12 @@
-from datetime import date
-from typing import Any
-
 from crispy_forms.layout import Submit
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from common.models import Periodo
-from util.forms import (
-    CrispyFormMixin,
-    CustomModelMultipleChoiceField,
-    CustomModelChoiceField,
-)
-from loja.models import Produto, Promocao
-from loja.validators import validate_unique_promocao
+from util.forms import CrispyFormMixin
+from .mixins import LojaValidatorFormMixin
+from loja.models import Produto
 
+# TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
 class ProdutoEmVendaForm(CrispyFormMixin, forms.ModelForm):
     class Meta:
@@ -27,9 +20,6 @@ class ProdutoEmVendaForm(CrispyFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
-
-        # if self.instance is not None:
-        #     self.fields['em_venda'].initial = self.instance.em_venda
 
 
 class PrecoDeVendaProdutoForm(CrispyFormMixin, forms.ModelForm):

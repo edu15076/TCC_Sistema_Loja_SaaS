@@ -1,5 +1,4 @@
-from datetime import date, timedelta
-from decimal import Decimal
+from datetime import date
 from typing import Any
 
 from crispy_forms.layout import Submit
@@ -11,12 +10,13 @@ from common.models import Periodo
 from loja.models.loja import Loja
 from util.forms import (
     CrispyFormMixin,
-    CustomModelMultipleChoiceField,
-    CustomModelChoiceField,
+    CustomModelMultipleChoiceField
 )
+from .mixins import LojaValidatorFormMixin
 from loja.models import Produto, Promocao
 from loja.validators import validate_unique_promocao
 
+# TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
 class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
     promocoes = CustomModelMultipleChoiceField(
@@ -156,6 +156,8 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         required=False,
     )
     promocao = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+
+    fields_loja_check = ['promocao']
 
     class Meta:
         model = Promocao

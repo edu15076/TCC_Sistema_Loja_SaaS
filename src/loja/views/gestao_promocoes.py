@@ -7,12 +7,13 @@ from django.shortcuts import render
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Promocao
-from loja.views import UserFromLojaRequiredMixin
+from loja.views import UserFromLojaRequiredMixin, FilterForSameLojaMixin
 from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
 
+# TODO - Passar loja no get_form_kwargs
 
 class GestaoPromocoesCRUDListView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
+    UserFromLojaRequiredMixin, FilterForSameLojaMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'promocoes.html'
@@ -34,7 +35,6 @@ class GestaoPromocoesCRUDListView(
         self.object_list = self.get_queryset()
         context = super().get_context_data(**kwargs)
 
-        # context = {}
         context['promocoes'] = self.object_list
         context['duplicar_form'] = self.duplicar_promocao_form_class(scope=self.scope)
         context['form'] = self.get_form()
@@ -49,6 +49,7 @@ class GestaoPromocoesCRUDListView(
         kwargs = super().get_form_kwargs()
         kwargs['scope'] = self.scope
         kwargs['instance'] = self.get_object()
+        # kwargs['loja'] = self.get_loja()
 
         return kwargs
 
