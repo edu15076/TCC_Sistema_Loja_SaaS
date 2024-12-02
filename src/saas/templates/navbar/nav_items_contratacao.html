@@ -17,7 +17,7 @@
             <a href="{% url 'visualizar_contrato_assinado' %}" class="nav-link">Minha Assinatura</a>
         </li>
     {% endif %}
-    {% if perms.saas.gerir_conta_de_admin_da_loja and perms.saas.gerir_cadastro_da_loja %}
+    {% if perms.saas.gerir_admins_da_loja and perms.saas.gerir_cadastro_da_loja %}
         <li class="nav-item">
             <a href="{% url 'informacoes_loja' %}" class="nav-link">Minha Loja</a>
         </li>

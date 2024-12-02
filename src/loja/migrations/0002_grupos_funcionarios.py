@@ -7,11 +7,22 @@ from common.grupos_create_delete import criar_grupos_usuarios, deletar_grupos_us
 
 # TODO: Associar permissões aos grupos criados
 grupos_funcionarios = {
-    'loja_gerentes_de_rh': [],
-    'loja_gerentes_de_estoque': [],
-    'loja_gerentes_financeiros': [],
-    'loja_caixeiros': [],
-    'loja_vendedores': [],
+    'loja_gerentes_de_rh': [
+        'is_gerente_de_rh',
+        'gerir_funcionarios',
+    ],
+    'loja_gerentes_de_estoque': [
+        'is_gerente_de_estoque',
+    ],
+    'loja_gerentes_financeiros': [
+        'is_gerente_financeiro',
+    ],
+    'loja_caixeiros': [
+        'is_caixeiro',
+    ],
+    'loja_vendedores': [
+        'is_vendedor',
+    ],
 }
 
 

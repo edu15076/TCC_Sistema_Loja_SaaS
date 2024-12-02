@@ -55,6 +55,7 @@ class FuncionarioQuerySet(UsuarioGenericoPessoaFisicaQuerySet):
             'data_nascimento',
             'cpf',
             'loja',
+            'pk',
         )
 
 
@@ -136,13 +137,42 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         self.scope = loja
 
     def adicionar_papel(self, group: Group):
-        self.groups.add(group)
+        self.adicionar_papeis(group)
 
     def adicionar_papeis(self, *groups: Group):
         self.groups.add(*groups)
 
     def remover_papel(self, group: Group):
-        self.groups.remove(group)
+        self.remover_papeis(group)
+
+    def remover_papeis(self, *groups: Group):
+        self.groups.remove(*groups)
+
+    def not_in_groups(self):
+        return Group.objects.filter(name__startswith='loja_').exclude(
+            pk__in=self.groups.values_list('pk', flat=True)
+        )
+
+    def adicionar_todos_papeis(self):
+        self.adicionar_papeis(
+            *Group.objects.filter(name__startswith='loja_')
+            .values_list('id', flat=True)
+        )
+
+    def remover_todos_papeis(self):
+        self.remover_papeis(
+            *Group.objects.filter(name__startswith='loja_')
+            .values_list('id', flat=True)
+        )
+
+    def deactivate(self, commit=True):
+        if not self.is_active:
+            raise ValueError('User is already inactive.')
+        self.is_active = False
+        self.is_admin = False
+        self.remover_todos_papeis()
+        if commit:
+            self.save()
 
 
 class FuncionarioPapelQuerySet(FuncionarioQuerySet):
@@ -304,10 +334,7 @@ class Admin(Funcionario):
     @classmethod
     def grant_admin(cls, funcionario: Funcionario):
         funcionario.is_admin = True
-        funcionario.groups.add(
-            *Group.objects.filter(name__startswith='loja_')
-            .values_list('id', flat=True)
-        )
+        funcionario.adicionar_todos_papeis()
         funcionario.save()
 
     def revoque_admin(self):

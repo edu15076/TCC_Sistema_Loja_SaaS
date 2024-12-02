@@ -1,0 +1,10 @@
+{% extends 'gestao_funcionarios/includes/extends/basic_data_funcionario.html' %}
+
+{% block funcionario_extra_data %}
+    {% if funcionario == user %}
+        <small class="d-block text-body-secondary">Esse funcionário é você</small>
+    {% endif %}
+    {% if funcionario.is_admin %}
+        <small class="d-block text-body-secondary">Esse funcionário é um administrador</small>
+    {% endif %}
+{% endblock funcionario_extra_data %}

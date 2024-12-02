@@ -1,0 +1,6 @@
+{% extends 'gestao_funcionarios/cards/extends/card_generic_activated_funcionario.html' %}
+
+{% block extra_alter_funcionario_fields %}
+    {% url 'change_is_admin' as action_is_admin %}
+    {% include 'informacoes_loja/gestao_admins/forms/htmx_change_is_admin.html' with form=funcionario.is_admin_change_form action=action_is_admin %}
+{% endblock extra_alter_funcionario_fields %}

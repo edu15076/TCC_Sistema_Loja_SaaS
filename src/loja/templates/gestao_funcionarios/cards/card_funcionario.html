@@ -1,0 +1,9 @@
+{% if funcionario.is_active %}
+    {% url 'adicionar_papel' loja_scope=scope.pk as adicionar_papel_action %}
+    {% url 'remover_papel' loja_scope=scope.pk as remover_papel_action %}
+    {% url 'desativar_funcionario' loja_scope=scope.pk as desativar_funcionario_action %}
+    {% include 'gestao_funcionarios/cards/card_activated_funcionario.html' %}
+{% else %}
+    {% url 'reativar_funcionario' loja_scope=scope.pk as reativar_funcionario_action %}
+    {% include 'gestao_funcionarios/cards/card_deactivated_funcionario.html' %}
+{% endif %}
