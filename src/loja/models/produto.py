@@ -32,7 +32,7 @@ class Produto(ValidateModelMixin, models.Model):
         _('Preço de venda'),
         max_digits=11,
         decimal_places=2,
-        validators=[MinValueValidator(0, _('Preço não pode ser negativo.'))],
+        validators=[MinValueValidator(1, _('Preço não pode ser nulo ou negativo.'))],
     )
     codigo_de_barras = models.CharField(
         _('Código de barras'), max_length=128, blank=True
