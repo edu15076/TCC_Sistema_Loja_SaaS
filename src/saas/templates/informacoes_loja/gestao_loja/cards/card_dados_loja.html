@@ -2,21 +2,27 @@
     <h5 class="card-header">Loja</h5>
     <div class="card-body">
         <h5 class="card-title">{{ loja.nome }}</h5>
-        <div class="d-flex gap-2">
-            <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
-                    data-bs-target="#editar-dados-loja">
-                Editar dados da loja
+        <div class="d-flex gap-2 justify-content-between">
+            <div class="d-flex gap-2">
+                <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
+                        data-bs-target="#editar-dados-loja">
+                    Editar dados da loja
+                </button>
+                {% if user.clientecontratante %}
+                    <a class="btn btn-primary
+                       {% if not user.clientecontratante.is_signing_contract %}
+                           disabled
+                       {% endif %}"
+                       role="button"
+                       href="{% url 'login_loja' loja_scope=loja.scope.scope %}">
+                        Entrar no sistema da loja
+                    </a>
+                {% endif %}
+            </div>
+            <button class="btn btn-danger" type="button" data-bs-toggle="modal"
+                    data-bs-target="#deletar-loja">
+                Deletar Loja
             </button>
-            {% if user.clientecontratante %}
-                <a
-                        class="btn btn-primary
-                            {% if not user.clientecontratante.is_signing_contract %}
-                                disabled
-                            {% endif %}"
-                        role="button"
-                        href="{% url 'login_loja' loja_scope=loja.scope.scope %}"
-                >Entrar no sistema da loja</a>
-            {% endif %}
         </div>
     </div>
 </div>

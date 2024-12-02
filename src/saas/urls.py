@@ -70,6 +70,11 @@ urlpatterns = [
         name='editar_dados_loja'
     ),
     path(
+        'minha_loja/deletar_loja/',
+        DeletarLojaView.as_view(),
+        name='deletar_loja'
+    ),
+    path(
         'minha_loja/admins/criar_admin/',
         CriarAdminView.as_view(),
         name='criar_admin'

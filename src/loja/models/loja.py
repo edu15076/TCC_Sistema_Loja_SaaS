@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import OuterRef, Subquery
 
 from common.models import LojaScope
+from scope_auth.models import Scope
 from .funcionario import Funcionario, FuncionarioQuerySet
 
 __all__ = ('Loja',)
@@ -28,10 +29,6 @@ class LojaQuerySet(models.QuerySet):
 class LojaManager(models.Manager):
     def get_queryset(self):
         return LojaQuerySet(self.model, using=self._db).defer('logo')
-
-    def create(self, **kwargs):
-        loja_scope = LojaScope.scopes.create()
-        return super().create(scope=loja_scope, **kwargs)
 
     def funcionarios_por_loja(self):
         return self.get_queryset().funcionarios_por_loja()
@@ -57,11 +54,16 @@ class Loja(models.Model):
     def funcionarios(self, funcionarios):
         print(funcionarios)
 
-    def delete(self, *args, **kwargs):
-        loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
+    def save(self, *args, **kwargs):
+        if self.pk is None and (not hasattr(self, 'scope') or self.scope is None):
+            self.scope = LojaScope.scopes.create()
+        return super().save(*args, **kwargs)
 
-        if os.path.isdir(loja_directory):
-            with suppress(Exception):
-                shutil.rmtree(loja_directory)
-
-        super().delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
+    #
+    #     if os.path.isdir(loja_directory):
+    #         with suppress(Exception):
+    #             shutil.rmtree(loja_directory)
+    #
+    #     return super().delete(*args, **kwargs)
