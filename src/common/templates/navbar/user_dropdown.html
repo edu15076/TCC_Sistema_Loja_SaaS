@@ -2,7 +2,13 @@
     {% if user.is_authenticated %}
         <li class="nav-item dropdown">
             <a class="nav-link" href="#" id="userActionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <div>{{ user.get_short_name }}</div>
+                <div>
+                    {% if user_display_name %}
+                        {{ user_display_name }}
+                    {% else %}
+                        {{ user.get_short_name }}
+                    {% endif %}
+                </div>
                 <div>{{ user.codigo }}</div>
             </a>
             <ul class="dropdown-menu position-absolute dropdown-menu-end" aria-labelledby="userActionsDropdown">

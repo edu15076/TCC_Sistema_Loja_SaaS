@@ -425,7 +425,7 @@ class UserPerScopeManager(BaseUserPerScopeManager):
             user = self.get_by_natural_key(
                 **{self.model.USERNAME_PER_SCOPE_FIELD: username}
             )
-            user.reactivate()
+            user.reactivate(commit=False)
             return user
 
     def create_builder(self):
@@ -482,10 +482,12 @@ class AbstractUserPerScope(AbstractBaseUserPerScope, PermissionsMixin):
 
     users = UserPerScopeManager()
 
-    def reactivate(self):
+    def reactivate(self, commit=True):
         if self.is_active:
             raise ValueError('User is already active.')
         self.is_active = True
+        if commit:
+            self.save()
 
     class Meta:
         verbose_name = _('user')

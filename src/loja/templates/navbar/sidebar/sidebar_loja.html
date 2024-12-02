@@ -3,7 +3,20 @@
 {# TODO: Adicionar nav-item's por permissão do usuário da loja #}
 
 {% block nav_items %}
-    <li class="nav-item">
-        <a href="{% url 'home_loja' loja_scope=scope.pk %}" class="nav-link">Home</a>
-    </li>
+    {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a href="{% url 'home_loja' loja_scope=scope.pk %}" class="nav-link">Home</a>
+        </li>
+        {% if perms.loja.is_gerente_de_rh %}
+            <strong>Gerente de RH</strong>
+        {% endif %}
+        {% block links_gerente_de_rh %}
+            {% if perms.loja.gerir_funcionarios %}
+                <li class="nav-item ms-2">
+                    <a href="{% url 'gerir_funcionarios' loja_scope=scope.pk %}" class="nav-link">Gerir Funcionários</a>
+                </li>
+            {% endif %}
+        {% endblock links_gerente_de_rh %}
+        {# TODO: Colocar outros funcionários mantendo o padrão das permissões #}
+    {% endif %}
 {% endblock nav_items %}

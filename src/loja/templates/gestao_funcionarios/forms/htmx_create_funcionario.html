@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+
+<form hx-target="#list-funcionarios"
+      hx-swap="afterbegin"
+      hx-post="{{ action }}"
+      hx-on::after-request="$('#criar-funcionario-loja').modal('hide')"
+      method="post">
+    {% crispy form %}
+</form>

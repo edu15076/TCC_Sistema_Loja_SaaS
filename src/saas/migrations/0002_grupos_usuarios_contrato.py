@@ -16,7 +16,7 @@ grupos_usuarios_contrato = {
         'consultar_contratos_disponiveis',
         'gerir_assinatura_do_contrato',
         'gerir_cadastro_da_loja',
-        'gerir_conta_de_admin_da_loja',
+        'gerir_admins_da_loja',
     ],
 }
 

@@ -2,10 +2,10 @@
 
 {% block main_content %}
     <h1>Minha Loja</h1>
-    {% include 'cards/card_dados_loja.html' %}
+    {% include 'informacoes_loja/gestao_loja/cards/card_dados_loja.html' %}
     <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'editar_dados_loja' %}"></div>
     <h2>Admins</h2>
-    {% include 'includes/criar_admin.html' %}
+    {% include 'informacoes_loja/gestao_admins/cards/card_criar_admin.html' %}
     <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'criar_admin' %}"></div>
     <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'admin_list' %}" class="mt-3 d-flex justify-content-center">
         <div class="spinner-grow" role="status">
