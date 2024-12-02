@@ -1,0 +1,17 @@
+<div>
+    <h5 class="card-title">
+        {% block funcionario_title %}
+            Funcionário: {{ funcionario.cpf }}
+        {% endblock funcionario_title %}
+    </h5>
+    <p>
+        {% block funcionario_data %}
+            <strong>Nome:</strong> {{ funcionario.nome }} {{ funcionario.sobrenome }}<br>
+            <strong>Email:</strong> {{ funcionario.email }}<br>
+            <strong>Telefone:</strong> {{ funcionario.telefone }}<br>
+            <strong>Data de nascimento:</strong> {{ funcionario.data_nascimento }}<br>
+        {% endblock funcionario_data %}
+        {% block funcionario_extra_data %}
+        {% endblock funcionario_extra_data %}
+    </p>
+</div>

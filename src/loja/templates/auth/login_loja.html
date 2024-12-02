@@ -5,4 +5,5 @@
 {% block main_content %}
     <h1>Entrar na loja</h1>
     {% include 'forms/htmx_form_post_template.html' %}
+    <a href="{% url 'login_contratacao' %}">Voltar para a contratação</a>
 {% endblock main_content %}

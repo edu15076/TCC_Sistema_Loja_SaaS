@@ -1,0 +1,9 @@
+{% if funcionario.is_active %}
+    {% url 'adicionar_papel' as adicionar_papel_action %}
+    {% url 'remover_papel' as remover_papel_action %}
+    {% url 'desativar_funcionario' as desativar_funcionario_action %}
+    {% include 'informacoes_loja/gestao_admins/cards/card_activated_admin.html' %}
+{% else %}
+    {% url 'reativar_funcionario' as reativar_funcionario_action %}
+    {% include 'gestao_funcionarios/cards/card_deactivated_funcionario.html' %}
+{% endif %}

@@ -20,7 +20,6 @@ from .mixins import UserFromLojaRequiredMixin
 __all__ = (
     'LogoutUsuarioLojaView',
     'LoginUsuarioLojaView',
-    'CreateUsuarioLojaView',
     'UpdateUsuarioLojaView',
     'PasswordChangeUsuarioLojaView',
 )
@@ -68,24 +67,6 @@ class LoginUsuarioLojaView(LoginUsuarioGenericoView):
     @property
     def next_page(self):
         return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
-
-
-
-class CreateUsuarioLojaView(UserFromLojaRequiredMixin, CreateUsuarioGenericoView):
-    form_class = UsuarioGenericoPessoaFisicaCreationForm
-    template_name = 'auth/criar_usuario_loja.html'
-    usuario_class = Funcionario
-
-    @property
-    def success_url(self):
-        return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
-
-    @property
-    def form_action(self):
-        return reverse('criar_usuario_loja', kwargs={'loja_scope': int(self.scope)})
-
-    # def form_valid(self, form):
-    #     return CreateHTMXView.form_valid(self, form)
 
 
 class UpdateUsuarioLojaView(UserFromLojaRequiredMixin, UpdateUsuarioGenericoView):

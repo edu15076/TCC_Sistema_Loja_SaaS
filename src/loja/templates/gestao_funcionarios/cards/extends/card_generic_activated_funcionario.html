@@ -1,0 +1,17 @@
+{% extends 'gestao_funcionarios/cards/extends/card_generic_funcionario.html' %}
+
+{% block funcionario_body %}
+    <div class="d-flex flex-wrap column-gap-2 align-top justify-content-between">
+        {% block funcionario_data %}
+            {% include 'gestao_funcionarios/includes/extends/basic_data_funcionario.html' %}
+        {% endblock funcionario_data %}
+        {% if funcionario.is_active_change_form %}
+            {% include 'gestao_funcionarios/forms/htmx_desativar_funcionario.html' with action=desativar_funcionario_action form=funcionario.is_active_change_form %}
+        {% endif %}
+    </div>
+
+    {% block extra_alter_funcionario_fields %}
+    {% endblock extra_alter_funcionario_fields %}
+    
+    {% include 'gestao_funcionarios/includes/papeis_funcionario.html' with funcionario_pk=funcionario.pk|stringformat:"i" %}
+{% endblock funcionario_body %}

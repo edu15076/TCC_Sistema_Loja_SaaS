@@ -1,0 +1,10 @@
+<div class="funcionario-papeis d-flex gap-2 flex-wrap justify-content-start mb-2">
+    {% for group in funcionario.papeis_pertence %}
+        {% include 'gestao_funcionarios/pills/pill_remover_papel.html' with form=group.form %}
+    {% endfor %}
+</div>
+<div class="funcionario-add-papeis d-flex gap-2 flex-wrap justify-content-start">
+    {% for group in funcionario.papeis_nao_pertence %}
+        {% include 'gestao_funcionarios/pills/pill_adicionar_papel.html' with form=group.form %}
+    {% endfor %}
+</div>

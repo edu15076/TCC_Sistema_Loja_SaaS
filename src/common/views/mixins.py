@@ -43,7 +43,7 @@ class UsuarioMixin:
 
 
 class UserInScopeRequiredMixin(
-    LoginRequiredMixin, ScopeMixin, UsuarioMixin, UserPassesTestMixin
+    UsuarioMixin, ScopeMixin, LoginRequiredMixin, UserPassesTestMixin
 ):
     """Classe que valida se o usuário está logado e está acessando o escopo correto"""
     def is_user_in_scope(self) -> bool:

@@ -9,11 +9,6 @@ urlpatterns = [
         name='home_loja'
     ),
     path(
-        'criar_usuario/',
-        CreateUsuarioLojaView.as_view(),
-        name='criar_usuario_loja',
-    ),
-    path(
         'login/',
         LoginUsuarioLojaView.as_view(),
         name='login_loja'
@@ -32,5 +27,55 @@ urlpatterns = [
         'editar_senha/',
         PasswordChangeUsuarioLojaView.as_view(),
         name='editar_senha_loja',
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/',
+        ListFuncionariosView.as_view(),
+        name='list_funcionarios'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/funcionario_detail/<int:pk>/',
+        CardFuncionarioView.as_view(),
+        name='funcionario_detail'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/criar_funcionario/',
+        CriarFuncionarioView.as_view(),
+        name='criar_funcionario'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/desativar_funcionario/',
+        DesativarFuncionarioView.as_view(),
+        name='desativar_funcionario'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/reativar_funcionario/',
+        ReativarFuncionarioView.as_view(),
+        name='reativar_funcionario'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/adicionar_papel/<int:group>/<int:funcionario>/',
+        AdicionarPapelFuncionarioView.as_view(),
+        name='adicionar_papel'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/remover_papel/<int:group>/<int:funcionario>/',
+        RemoverPapelFuncionarioView.as_view(),
+        name='remover_papel'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/adicionar_papel/',
+        AdicionarPapelFuncionarioView.as_view(),
+        name='adicionar_papel'
+    ),
+    path(
+        'gerir_funcionarios/funcionarios/remover_papel/',
+        RemoverPapelFuncionarioView.as_view(),
+        name='remover_papel'
+    ),
+    path(
+        'gerir_funcionarios/',
+        GestaoFuncionariosView.as_view(),
+        name='gerir_funcionarios'
     ),
 ]

@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+<form
+        hx-target="closest .dados-funcionario"
+        hx-swap="outerHTML"
+        hx-trigger="change from:find .is-admin-checkbox-input"
+        hx-post="{{ action }}"
+        method="post">
+    {% crispy form %}
+</form>
