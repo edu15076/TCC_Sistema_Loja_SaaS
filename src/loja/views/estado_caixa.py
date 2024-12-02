@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.utils import timezone
 from loja.models.caixa import Caixa
 from loja.models.fluxodecaixa import FluxoDeCaixa
+from loja.models.funcionario import Caixeiro
 from loja.views.interfaces.estado_caixa import ABCEstadoCaixaCRUDListView
 
 class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
@@ -12,7 +13,17 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
 
     def get_queryset(self):
         loja_scope = self.kwargs.get('loja_scope')
-        queryset = Caixa.objects.filter(loja=loja_scope, ativo=True)
+        
+        try:
+            caixeiro = Caixeiro.caixeiros.get(usuario=self.request.user)
+        except Caixeiro.DoesNotExist:
+            return Caixa.objects.none() 
+        
+        queryset = Caixa.objects.filter(
+            loja=loja_scope,
+            ativo=True,
+            trabalhos__caixeiro=caixeiro
+        ).distinct()
 
         filtro_ativo = self.request.GET.get('filtro', None)
         if filtro_ativo == 'abertos':
@@ -42,7 +53,7 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
         acao = request.POST.get('acao')
 
         if caixa_id and acao:
-            caixa = Caixa.objects.get(id=caixa_id)
+            caixa = get_object_or_404(Caixa, id=caixa_id)
 
             if acao == 'abrir':
                 caixa.horario_aberto = timezone.now()
