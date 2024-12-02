@@ -55,7 +55,7 @@
                     <label for="caixeiro_id" class="form-label">Selecionar Caixeiro:</label>
                     <select name="caixeiro_id" class="form-select w-auto" required>
                         {% for caixeiro in caixeiros %}
-                            <option value="{{ caixeiro.id }}">{{ caixeiro.nome }}</option>
+                            <option value="{{ caixeiro.codigo }}" {% if caixeiro.codigo == caixeiro_padrao.codigo %}selected{% endif %}>{{ caixeiro.nome }}</option>
                         {% endfor %}
                     </select>
 
@@ -75,7 +75,7 @@
                         <option value="sexta">Sexta</option>
                         <option value="sabado">Sábado</option>
                     </select>
-
+                        
                     <button type="submit" class="btn btn-success mt-2">Associar Caixeiro</button>
                 </form>
             </div>
