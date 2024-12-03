@@ -45,7 +45,7 @@ class Promocao(ValidateModelMixin, models.Model):
         Periodo, verbose_name=_('Período'), on_delete=models.RESTRICT
     )
     loja = models.ForeignKey(
-        Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False
+        Loja, verbose_name=_('Loja'), on_delete=models.CASCADE, editable=False
     )
     produtos = models.ManyToManyField(
         Produto,

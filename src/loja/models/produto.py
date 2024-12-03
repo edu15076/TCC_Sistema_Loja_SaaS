@@ -40,7 +40,7 @@ class Produto(ValidateModelMixin, models.Model):
     # TODO rever nomenclatura
     em_venda = models.BooleanField(_('À venda'), default=False)
     loja = models.ForeignKey(
-        Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False
+        Loja, verbose_name=_('Loja'), on_delete=models.CASCADE, editable=False
     )
 
     produtos = ProdutoManager()

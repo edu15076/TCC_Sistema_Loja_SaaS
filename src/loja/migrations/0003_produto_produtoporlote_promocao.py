@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                         max_digits=11,
                         validators=[
                             django.core.validators.MinValueValidator(
-                                0, 'Preço não pode ser negativo.'
+                                1, 'Preço não pode ser nulo ou negativo.'
                             )
                         ],
                         verbose_name='Preço de venda',
@@ -54,14 +54,14 @@ class Migration(migrations.Migration):
                 (
                     'em_venda',
                     models.BooleanField(
-                        default=False, verbose_name='Disponível para venda'
+                        default=False, verbose_name='À venda'
                     ),
                 ),
                 (
                     'loja',
                     models.ForeignKey(
                         editable=False,
-                        on_delete=django.db.models.deletion.RESTRICT,
+                        on_delete=django.db.models.deletion.CASCADE,
                         to='loja.loja',
                         verbose_name='Loja',
                     ),
@@ -142,7 +142,7 @@ class Migration(migrations.Migration):
                     models.DateField(
                         validators=[
                             django.core.validators.MinValueValidator(
-                                datetime.date(2024, 11, 26),
+                                datetime.date(2024, 12, 3),
                                 'A data de início não pode ser no passado.',
                             )
                         ],
@@ -159,7 +159,7 @@ class Migration(migrations.Migration):
                     'loja',
                     models.ForeignKey(
                         editable=False,
-                        on_delete=django.db.models.deletion.RESTRICT,
+                        on_delete=django.db.models.deletion.CASCADE,
                         to='loja.loja',
                         verbose_name='Loja',
                     ),
