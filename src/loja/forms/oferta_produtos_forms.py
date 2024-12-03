@@ -43,7 +43,7 @@ class OfertaProdutosFilterForm(CrispyFormMixin, forms.Form):
         ('preco_de_venda', 'Maior preço de venda'),
     ]
 
-    STATUS_CHOICES = [('', 'Todos'), (True, 'Em venda'), (False, 'Fora de venda')]
+    STATUS_CHOICES = [('', 'Todos'), (True, 'À venda'), (False, 'Fora de venda')]
 
     ordem = forms.ChoiceField(
         label=_('Ordenar por'),

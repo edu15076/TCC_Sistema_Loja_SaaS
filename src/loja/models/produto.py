@@ -37,7 +37,8 @@ class Produto(ValidateModelMixin, models.Model):
     codigo_de_barras = models.CharField(
         _('Código de barras'), max_length=128, blank=True
     )
-    em_venda = models.BooleanField(_('Disponível para venda'), default=False)
+    # TODO rever nomenclatura
+    em_venda = models.BooleanField(_('À venda'), default=False)
     loja = models.ForeignKey(
         Loja, verbose_name=_('Loja'), on_delete=models.RESTRICT, editable=False
     )

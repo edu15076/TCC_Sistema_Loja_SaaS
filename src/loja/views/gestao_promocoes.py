@@ -78,6 +78,8 @@ class GestaoPromocoesCRUDListView(
             self.get_template_names()[1],
             {'promocao': promocao, 'erros': erros},
         )
+    
+    # TODO def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         try:
