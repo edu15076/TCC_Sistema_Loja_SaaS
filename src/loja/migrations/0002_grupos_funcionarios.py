@@ -16,6 +16,7 @@ grupos_funcionarios = {
     ],
     'loja_gerentes_financeiros': [
         'is_gerente_financeiro',
+        'gerir_oferta_de_produto',
     ],
     'loja_caixeiros': [
         'is_caixeiro',

@@ -1,0 +1,1 @@
+from .login_loja_test_mixin import *

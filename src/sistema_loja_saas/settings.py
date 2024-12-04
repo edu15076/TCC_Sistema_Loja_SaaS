@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'crispy_bootstrap5',
+    "heroicons",
     'util',
     'scope_auth',
     'common',
@@ -86,6 +87,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'common.context_processors.current_scope',
                 'common.context_processors.auth_pessoa',
+            ],
+            "builtins": [
+                "heroicons.templatetags.heroicons",
             ],
         },
     },
