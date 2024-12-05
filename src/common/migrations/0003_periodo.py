@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                     models.IntegerField(
                         validators=[
                             django.core.validators.MinValueValidator(
-                                0, 'Numero de  não pode ser negativo.'
+                                1, 'Numero de periodos não pode ser menor que 1.'
                             )
                         ],
                         verbose_name='Numero de periodos',
@@ -37,10 +37,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     'unidades_de_tempo_por_periodo',
-                    models.CharField(
-                        choices=[('ANO', 'Ano'), ('MES', 'Mes'), ('DIA', 'Dia')],
-                        default='MES',
-                        max_length=3,
+                    models.IntegerField(
+                        choices=[(365, 'Ano'), (30, 'Mes'), (1, 'Dia')],
+                        default=30,
                         verbose_name='Unidade de tempo por periodo',
                     ),
                 ),

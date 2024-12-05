@@ -27,15 +27,23 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
     filter_form = None
     paginate_by = None
     default_order = []
+    object_list = None
 
     def get_page(self) -> QuerySet:
         """
         Retorna os elementos de uma página
         """
+
+        #TODO rever isso
         if self.paginate_by is None:
             return self.get_queryset()
 
-        queryset = self.get_queryset()
+        queryset = None
+        if self.object_list is not None:
+            queryset = self.object_list
+        else:
+            queryset = self.get_queryset()
+            
         page_number = self.request.GET.get('page')
 
         try:
@@ -77,7 +85,8 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
         if not form.is_valid():
             return {}
 
-        parameters = form.cleaned_data
+        data = form.cleaned_data
+        parameters = {}
 
         try:
             filter_arguments = self.filter_form.Meta.filter_arguments
@@ -87,14 +96,14 @@ class MultipleObjectFilterMixin(MultipleObjectMixin):
 
             if isinstance(filter_arguments, dict):
                 for key, value in filter_arguments.items():
-                    parameters[value] = parameters.pop(key)
+                    if value == '':
+                        continue
+                    parameters[value] = data.get(key)
 
-                for key in self.filter_form.order_arguments:
-                    parameters.pop(key)
             elif isinstance(filter_arguments, list):
                 cleaned_parameters = {}
                 for key in filter_arguments:
-                    cleaned_parameters[key] = parameters[key]
+                    cleaned_parameters[key] = data[key]
                 parameters = cleaned_parameters
             else:
                 raise ImproperlyConfigured(

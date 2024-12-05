@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
-from django.forms.models import model_to_dict
 
 
 __all__ = ['ContratoQuerySet', 'ContratoManager', 'Contrato']

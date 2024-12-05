@@ -129,7 +129,7 @@ class CreateOrUpdateListHTMXView(
         return HttpResponseNotFound()
 
     def form_invalid(self, form):
-        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        return JsonResponse({'success': False, 'message': form.errors}, status=400)
 
     def form_valid(self, form):
         self.object = form.save()

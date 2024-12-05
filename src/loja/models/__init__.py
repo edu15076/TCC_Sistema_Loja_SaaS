@@ -1,5 +1,7 @@
 from .loja import *
 from .funcionario import *
+from .promocao import *
+from .produto import *
 from .caixa import *
 from .fluxodecaixa import *
 from .timeslice import *

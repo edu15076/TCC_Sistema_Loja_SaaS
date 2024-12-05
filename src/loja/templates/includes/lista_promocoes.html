@@ -1,0 +1,30 @@
+<div class="mt-5">
+    {% if promocoes|length > 0 %}
+
+    <div class="table-responsive">
+        <table id="tabela-promocoes" class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Porcentagem</th>
+                    <th scope="col">Data de inicio</th>
+                    <th scope="col">Duração</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody class="">
+                {% for promocao in promocoes %}
+                    {% include 'linhas/linha_promocao.html' %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info" role="alert">
+        Nenhuma promocao encontrada
+    </div>
+
+    {% endif %}
+</div>

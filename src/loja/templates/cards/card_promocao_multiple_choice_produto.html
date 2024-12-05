@@ -1,0 +1,13 @@
+<div class="col-lg-5 col-md-6 col-sm-12 col-xs-12 my-2 py-2 border rounded">
+    <li>
+        <label class="checkbox-label-container w-100">
+            <input type="checkbox" value="{{ value }}" name="promocoes" id="promocao_{{ value }}" {% if label in produto.promocoes.all %}checked{% endif %}>
+            <span class="checkmark"></span>
+            <b>{{ label.descricao }}</b><br>
+            <span>Porcentagem {{ label.porcentagem_desconto }}%</span><br>
+            <span>Data de inicio: {{ label.data_inicio|date:"d/m/Y" }}</span><br>
+            <span>Duração: {{ label.periodo.tempo_total.days }} dias</span><br>
+            <span>Preço com desconto: R$ {{ label.preco_com_desconto|floatformat:2 }}</span><br>
+        </label>
+    </li>
+</div>
