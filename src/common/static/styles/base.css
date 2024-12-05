@@ -183,4 +183,8 @@
   min-height: var(--navbar-height);
 }
 
+.w-fit {
+  width: fit-content !important;
+}
+
 /*# sourceMappingURL=base.css.map */

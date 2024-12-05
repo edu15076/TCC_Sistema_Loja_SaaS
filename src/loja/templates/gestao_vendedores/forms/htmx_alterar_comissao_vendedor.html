@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+<form
+        hx-target="closest .dados-vendedor"
+        hx-swap="outerHTML"
+        hx-trigger="submit, blur from:find .porcentagem-comissao-input"
+        hx-post="{{ action }}"
+        method="post">
+    {% crispy form %}
+</form>

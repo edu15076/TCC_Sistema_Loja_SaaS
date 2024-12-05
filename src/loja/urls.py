@@ -78,4 +78,24 @@ urlpatterns = [
         GestaoFuncionariosView.as_view(),
         name='gerir_funcionarios'
     ),
+    path(
+        'gerir_vendedores/vendedores/',
+        ListVendedoresView.as_view(),
+        name='list_vendedores'
+    ),
+    path(
+        'gerir_vendedores/vendedores/vendedor_detail/<int:pk>/',
+        CardVendedorView.as_view(),
+        name='vendedor_detail'
+    ),
+    path(
+        'gerir_vendedores/vendedores/alterar_comissao/',
+        AlterarComissaoVendedorView.as_view(),
+        name='alterar_comissao'
+    ),
+    path(
+        'gerir_vendedores/',
+        GestaoVendedoresView.as_view(),
+        name='gerir_vendedores'
+    ),
 ]
