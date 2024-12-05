@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from loja.models.fluxodecaixa import FluxoDeCaixa
+from loja.models.trabalhacaixa import TrabalhaCaixa
 
 class CaixaQuerySet(models.QuerySet):
     pass
@@ -25,21 +26,6 @@ class Caixa(models.Model):
     @is_open.setter
     def is_open(self, value):
         self.horario_aberto = timezone.now() if value else None
-
-    def fechar_caixa(self):
-        if not self.is_open:
-            raise ValueError("Caixa já está fechado.")
-
-        fluxo = FluxoDeCaixa.objects.create(
-            caixa=self,
-            horario_aberto=self.horario_aberto,
-            horario_fechado=timezone.now(),
-            valor_em_caixa=self.dinheiro_em_caixa
-        )
-
-        self.horario_aberto = None
-        self.save()
-        return fluxo
 
     def movimentar_dinheiro_em_caixa(self, valor):
         if not self.is_open:

@@ -13,9 +13,16 @@ class Migration(migrations.Migration):
     dependencies = [
         ('common', '0003_periodo'),
         ('loja', '0002_grupos_funcionarios'),
+        ('loja', '0004_alter_caixa_options'),
     ]
 
     operations = [
+        migrations.AlterModelManagers(
+            name='caixa',
+            managers=[
+                ('caixas', django.db.models.manager.Manager()),
+            ],
+        ),
         migrations.CreateModel(
             name='Produto',
             fields=[
@@ -42,19 +49,8 @@ class Migration(migrations.Migration):
                                 1, 'Preço não pode ser nulo ou negativo.'
                             )
                         ],
-                        verbose_name='Preço de venda',
-                    ),
-                ),
-                (
-                    'codigo_de_barras',
-                    models.CharField(
-                        blank=True, max_length=128, verbose_name='Código de barras'
-                    ),
-                ),
-                (
-                    'em_venda',
-                    models.BooleanField(
-                        default=False, verbose_name='À venda'
+                        verbose_name='Preço de venda',                    
+                        default=False
                     ),
                 ),
                 (

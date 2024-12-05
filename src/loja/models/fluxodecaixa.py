@@ -5,7 +5,8 @@ class FluxoDeCaixa(models.Model):
     horario_aberto = models.DateTimeField()
     horario_fechado = models.DateTimeField()
     valor_em_caixa = models.FloatField()
-
+    funcionario = models.ForeignKey('Funcionario', on_delete=models.CASCADE, related_name='fluxos', null=True, blank=True)
+    
     def __str__(self):
         return (f"Fluxo {self.caixa.numero_identificacao} | "
                 f"Abertura: {self.horario_aberto} | Fechamento: {self.horario_fechado}")

@@ -10,6 +10,7 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
     model = Caixa
     template_name = 'estado_caixa.html'
     context_object_name = 'caixas'
+    usuario_class = Caixeiro
 
     def get_queryset(self):
         loja_scope = self.kwargs.get('loja_scope')
@@ -63,7 +64,8 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
                     caixa=caixa,
                     horario_aberto=caixa.horario_aberto,  
                     horario_fechado=timezone.now(), 
-                    valor_em_caixa=caixa.dinheiro_em_caixa
+                    valor_em_caixa=caixa.dinheiro_em_caixa,
+                    funcionario=self.user
                 )
                 fluxo_de_caixa.save() 
                 caixa.horario_aberto = None

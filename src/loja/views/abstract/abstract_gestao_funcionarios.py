@@ -50,7 +50,7 @@ class FuncionarioContextDataMixin:
                     },
                     loja=self.user.loja,
                     auto_id=f'change-funcionario-papel-'
-                            f'{funcionario.pk}-group-{group['pk']}-%s'
+                            f"{funcionario.pk}-group-{group['pk']}-%s"
                 )
             } for group in groups.values('name', 'pk')
         ]
