@@ -26,6 +26,7 @@ __all__ = (
     'Admin',
 )
 
+
 class FuncionarioQuerySet(UsuarioGenericoPessoaFisicaQuerySet):
     @CachedClassProperty
     def _annotated_fields(cls):
@@ -64,13 +65,13 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
         return FuncionarioQuerySet(self.model, using=self._db).complete()
 
     def criar_funcionario(
-        self,
-        cpf: str,
-        loja=None,
-        password: str = None,
-        email: str = None,
-        telefone: str = None,
-        **dados_pessoa,
+            self,
+            cpf: str,
+            loja=None,
+            password: str = None,
+            email: str = None,
+            telefone: str = None,
+            **dados_pessoa,
     ):
         usuario = self.criar_usuario(
             cpf=cpf,
@@ -239,7 +240,7 @@ class Caixeiro(FuncionarioPapel):
         return Group.objects.get(name='loja_caixeiros')
 
     caixeiros = FuncionarioPapelManager()
-    
+
     class Meta:
         proxy = True
 

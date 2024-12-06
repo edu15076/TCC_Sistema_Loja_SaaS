@@ -8,8 +8,8 @@ from loja.views.mixins import UserFromLojaRequiredMixin
 
 
 class ABCGestaoCaixaCRUDListView(
-    ABC, UserFromLojaRequiredMixin, UsuarioMixin, ListView):
-
+    ABC, UserFromLojaRequiredMixin, UsuarioMixin, ListView
+):
     form_class = CaixaForm
 
     def get_context_data(self, **kwargs):

@@ -6,6 +6,7 @@ from loja.models.fluxodecaixa import FluxoDeCaixa
 from loja.models.funcionario import Caixeiro
 from loja.views.interfaces.estado_caixa import ABCEstadoCaixaCRUDListView
 
+
 class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
     model = Caixa
     template_name = 'estado_caixa.html'
@@ -14,12 +15,12 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
 
     def get_queryset(self):
         loja_scope = self.kwargs.get('loja_scope')
-        
+
         try:
             caixeiro = Caixeiro.caixeiros.get(usuario=self.request.user)
         except Caixeiro.DoesNotExist:
-            return Caixa.objects.none() 
-        
+            return Caixa.objects.none()
+
         queryset = Caixa.objects.filter(
             loja=loja_scope,
             ativo=True,
@@ -37,7 +38,7 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
             queryset = queryset.order_by('numero_identificacao')
         elif ordem == 'dinheiro':
             queryset = queryset.order_by('dinheiro_em_caixa')
-        elif ordem == 'id':  
+        elif ordem == 'id':
             queryset = queryset.order_by('id')
 
         return queryset
@@ -46,7 +47,7 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
         context = super().get_context_data(**kwargs)
         context['filtro_ativo'] = self.request.GET.get('filtro', 'todos')
         context['loja_scope'] = self.kwargs.get('loja_scope')
-        context['is_estado_caixa'] = True  
+        context['is_estado_caixa'] = True
         return context
 
     def post(self, request, *args, **kwargs):
@@ -62,12 +63,12 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
             elif acao == 'fechar':
                 fluxo_de_caixa = FluxoDeCaixa(
                     caixa=caixa,
-                    horario_aberto=caixa.horario_aberto,  
-                    horario_fechado=timezone.now(), 
+                    horario_aberto=caixa.horario_aberto,
+                    horario_fechado=timezone.now(),
                     valor_em_caixa=caixa.dinheiro_em_caixa,
                     funcionario=self.user
                 )
-                fluxo_de_caixa.save() 
+                fluxo_de_caixa.save()
                 caixa.horario_aberto = None
                 caixa.save()
 
