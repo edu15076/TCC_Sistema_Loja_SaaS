@@ -111,7 +111,7 @@ urlpatterns = [
     ),
     path(
         'estoque_de_produtos/',
-        GestaoOfertaProdutoListView.as_view(),
+        GestaoEstoqueDeProdutosListView.as_view(),
         name='gestao_estoque_de_produtos',
     ),
     path(
