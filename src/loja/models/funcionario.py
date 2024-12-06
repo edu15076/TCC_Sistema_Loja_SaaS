@@ -14,6 +14,8 @@ from common.models import (
 from util.decorators import CachedClassProperty
 from util.models import cast_to_model
 
+from loja.models.trabalhacaixa import TrabalhaCaixa
+
 __all__ = (
     'Funcionario',
     'GerenteDeRH',
@@ -63,13 +65,13 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
         return FuncionarioQuerySet(self.model, using=self._db).complete()
 
     def criar_funcionario(
-        self,
-        cpf: str,
-        loja=None,
-        password: str = None,
-        email: str = None,
-        telefone: str = None,
-        **dados_pessoa,
+            self,
+            cpf: str,
+            loja=None,
+            password: str = None,
+            email: str = None,
+            telefone: str = None,
+            **dados_pessoa,
     ):
         usuario = self.criar_usuario(
             cpf=cpf,
@@ -241,6 +243,14 @@ class Caixeiro(FuncionarioPapel):
 
     class Meta:
         proxy = True
+
+    def associar_caixa(self, caixa, horarios):
+        for horario in horarios:
+            TrabalhaCaixa.objects.create(
+                caixeiro=self,
+                caixa=caixa,
+                trabalho_por_dia=horario
+            )
 
 
 class VendedorQuerySet(FuncionarioQuerySet):

@@ -13,7 +13,7 @@
         {% if contrato %}
             <section id="cancelar-contrato-section" class="card p-4 mb-4">
                 <h2 class="mb-3">Contrato</h2>
-                <p><strong>Contrato assinado:</strong> {{ contrato.contrato }}</p>
+                <p><strong>Contrato assinado:</strong> {{ contrato.contrato.descricao }}</p>
                 <p><strong>Data de contratação:</strong> {{ contrato.data_contratacao }}</p>
                 <p><strong>Valor por período:</strong> R$ {{ valores.valor_por_periodo }}</p>
                 <p><strong>Telas simultâneas:</strong> {{ valores.telas_simultaneas }}</p>

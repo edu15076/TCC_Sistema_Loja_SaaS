@@ -98,4 +98,14 @@ urlpatterns = [
         GestaoPromocoesCRUDListView.as_view(),
         name='gestao_promocoes',
     ),
+    path(
+        'caixas/',
+        EstadoCaixaListView.as_view(),
+        name='estado_caixa',
+    ),
+    path(
+        'gestao-caixas/',
+        GestaoCaixaCRUDListView.as_view(),
+        name='gestao_caixas',
+    ),
 ]
