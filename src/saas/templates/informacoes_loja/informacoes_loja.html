@@ -4,6 +4,7 @@
     <h1>Minha Loja</h1>
     {% include 'informacoes_loja/gestao_loja/cards/card_dados_loja.html' %}
     <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'editar_dados_loja' %}"></div>
+    <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'deletar_loja' %}"></div>
     <h2>Admins</h2>
     {% include 'informacoes_loja/gestao_admins/cards/card_criar_admin.html' %}
     <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'criar_admin' %}"></div>

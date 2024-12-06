@@ -16,6 +16,11 @@
                     <a href="{% url 'gerir_funcionarios' loja_scope=scope.pk %}" class="nav-link">Gerir Funcionários</a>
                 </li>
             {% endif %}
+            {% if perms.loja.gerir_vendedores %}
+                <li class="nav-item ms-2">
+                    <a href="{% url 'gerir_vendedores' loja_scope=scope.pk %}" class="nav-link">Gerir Vendedores</a>
+                </li>
+            {% endif %}
         {% endblock links_gerente_de_rh %}
         {# TODO: Colocar outros funcionários mantendo o padrão das permissões #}
     {% endif %}

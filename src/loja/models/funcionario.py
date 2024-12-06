@@ -171,6 +171,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
             raise ValueError('User is already inactive.')
         self.is_active = False
         self.is_admin = False
+        self._porcentagem_comissao = None
         self.remover_todos_papeis()
         if commit:
             self.save()
@@ -299,6 +300,8 @@ class Vendedor(FuncionarioPapel):
 
     @porcentagem_comissao.setter
     def porcentagem_comissao(self, porcentagem_comissao: float):
+        if not 0.0 <= porcentagem_comissao <= 100.0:
+            raise ValueError('A porcentagem de comissão deve estar entre 0 e 100.')
         self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = VendedorManager()

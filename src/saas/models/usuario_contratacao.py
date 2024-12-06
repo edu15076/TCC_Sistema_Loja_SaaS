@@ -85,7 +85,7 @@ class ClienteContratante(UsuarioContratacao):
 
     def save(self, *args, **kwargs):
         self.loja = (
-            Loja.lojas.create()
+            Loja.lojas.create(nome=self.nome_fantasia)
             if not hasattr(self, 'loja') or self.loja is None
             else self.loja
         )
@@ -93,11 +93,15 @@ class ClienteContratante(UsuarioContratacao):
 
     def delete(self, *args, **kwargs):
         loja = self.loja
-        super().delete(*args, **kwargs)
-        loja.delete()
+        delete_result = super().delete(*args, **kwargs)
+        loja_delete_result = loja.delete()
+        return (
+            delete_result[0] + loja_delete_result[0],
+            delete_result[1] | loja_delete_result[1],
+        )
 
     def delete_dados_loja(self, *args, **kwargs):
         old_loja: Loja = self.loja
         self.loja = Loja.lojas.create()
         self.save()
-        old_loja.delete(*args, **kwargs)
+        return old_loja.delete(*args, **kwargs)

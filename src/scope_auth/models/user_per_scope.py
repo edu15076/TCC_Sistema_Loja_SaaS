@@ -151,8 +151,12 @@ class AbstractBaseUserPerScope(AbstractBaseUser, metaclass=BaseUserPerScopeMeta)
 
     def delete(self, *args, **kwargs):
         related_username_per_scope = self.get_username_per_scope()
-        super().delete(*args, **kwargs)
-        related_username_per_scope.delete()
+        delete_result = super().delete(*args, **kwargs)
+        delete_related_result = related_username_per_scope.delete()
+        return (
+            delete_result[0] + delete_related_result[0],
+            delete_result[1] | delete_related_result[1]
+        )
 
     class Meta:
         abstract = True

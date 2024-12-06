@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('scope', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='loja', serialize=False, to='common.lojascope')),
                 ('nome', models.CharField(max_length=100)),
-                ('logo', models.ImageField(upload_to=loja.models.loja.loja_path)),
+                ('logo', models.ImageField(blank=True, null=True, upload_to=loja.models.loja.loja_path)),
             ],
             managers=[
                 ('lojas', django.db.models.manager.Manager()),

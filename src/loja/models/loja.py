@@ -29,10 +29,6 @@ class LojaManager(models.Manager):
     def get_queryset(self):
         return LojaQuerySet(self.model, using=self._db).defer('logo')
 
-    def create(self, **kwargs):
-        loja_scope = LojaScope.scopes.create()
-        return super().create(scope=loja_scope, **kwargs)
-
     def funcionarios_por_loja(self):
         return self.get_queryset().funcionarios_por_loja()
 
@@ -42,7 +38,7 @@ class Loja(models.Model):
         LojaScope, on_delete=models.CASCADE, primary_key=True, related_name='loja'
     )
     nome = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to=loja_path)
+    logo = models.ImageField(upload_to=loja_path, null=True, blank=True)
 
     lojas = LojaManager()
 
@@ -57,6 +53,11 @@ class Loja(models.Model):
     def funcionarios(self, funcionarios):
         print(funcionarios)
 
+    def save(self, *args, **kwargs):
+        if self.pk is None and (not hasattr(self, 'scope') or self.scope is None):
+            self.scope = LojaScope.scopes.create()
+        return super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         loja_directory = os.path.join(settings.MEDIA_ROOT, f'lojas/loja_{self.pk}')
 
@@ -64,4 +65,4 @@ class Loja(models.Model):
             with suppress(Exception):
                 shutil.rmtree(loja_directory)
 
-        super().delete(*args, **kwargs)
+        return self.scope.delete()

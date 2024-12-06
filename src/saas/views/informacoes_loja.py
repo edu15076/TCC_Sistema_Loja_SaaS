@@ -20,16 +20,13 @@ from loja.views.abstract import (
     ABCRemoverPapelFuncionarioView
 )
 from util.views import UpdateHTMXView, HTMXTemplateView, HTMXFormMixin
-from ..forms import LojaForm
-from ..forms.informacoes_loja_forms import (
-    AdminCreationForm,
-    FuncionarioIsAdminForm
-)
+from ..forms import LojaForm, AdminCreationForm, DeletarLojaForm, FuncionarioIsAdminForm
 from ..models import ClienteContratante
 
 __all__ = (
     'EditarDadosLojaView',
     'DadosLojaView',
+    'DeletarLojaView',
     'AdminContextDataMixin',
     'ListAdminsView',
     'CardAdminView',
@@ -52,15 +49,16 @@ class EditarDadosLojaView(
     form_class = LojaForm
     template_name = 'informacoes_loja/gestao_loja/modals/modal_editar_dados_loja.html'
     form_template_name = 'informacoes_loja/gestao_loja/forms/htmx_edit_loja.html'
-    usuario_class = ClienteContratante
     form_action = reverse_lazy('editar_dados_loja')
     success_url = reverse_lazy('dados_loja')
     redirect_on_success = False
     restrict_direct_access = True
     login_url = reverse_lazy('login_contratacao')
-    permission_required = 'saas.gerir_cadastro_da_loja'
     hx_target_form_invalid = 'this'
     hx_swap_form_invalid = 'outerHTML'
+
+    usuario_class = ClienteContratante
+    permission_required = 'saas.gerir_cadastro_da_loja'
 
     def get_form_kwargs(self):
         return super().get_form_kwargs() | {'auto_id': 'id_edit_loja_%s'}
@@ -75,12 +73,40 @@ class DadosLojaView(
     template_name = 'informacoes_loja/gestao_loja/cards/card_dados_loja.html'
     restrict_direct_access = True
     login_url = reverse_lazy('login_contratacao')
+
     usuario_class = ClienteContratante
     permission_required = 'saas.gerir_cadastro_da_loja'
 
     @property
     def extra_context(self):
         return {**(super().extra_context or {}), 'loja': self.user.loja}
+
+
+class DeletarLojaView(
+    UserInScopeRequiredMixin, PermissionRequiredMixin, HTMXFormMixin, FormView
+):
+    form_class = DeletarLojaForm
+    template_name = 'informacoes_loja/gestao_loja/modals/modal_deletar_loja.html'
+    form_template_name = 'informacoes_loja/gestao_loja/forms/htmx_delete_loja.html'
+    login_url = reverse_lazy('login_contratacao')
+    form_action = reverse_lazy('deletar_loja')
+    success_url = reverse_lazy('informacoes_loja')
+    restrict_direct_access = False
+    hx_target_form_invalid = 'this'
+    hx_swap_form_invalid = 'outerHTML'
+
+    usuario_class = ClienteContratante
+    permission_required = 'saas.gerir_cadastro_da_loja'
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {
+            'auto_id': 'id_delete_loja_%s',
+            'loja': self.user.loja
+        }
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 
 class AdminContextDataMixin(FuncionarioContextDataMixin):
