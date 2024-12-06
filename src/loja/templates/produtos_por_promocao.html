@@ -1,0 +1,82 @@
+{% extends "base_loja.html" %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block main_content %}
+    <div class="row column-gap-6">
+        <div class="col-lg-3  d-grid ">
+            <section id="promocao" class="mt-4 mb-4">
+                <h1 class="h2">{{ promocao.descricao }}</h1>
+                <p class="h5 my-3">Desconto de {{ promocao.porcentagem_desconto }}%</p>
+                <p class="h5 my-3">Inicio: {{ promocao.data_inicio|date:"d/m/Y" }}</p>
+                <p class="h5 my-3">Duração: {{ promocao.periodo.tempo_total.days }} dias</p>
+                <p class="h5 my-3">Data de Término: {{ data_final|date:"d/m/Y" }}</p>
+                {% if promocao.data_inicio > today %}
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#duplicarPromocaoModal">
+                    Duplicar promoção
+                </button>
+                {% endif %} 
+            </section>
+        </div>
+
+
+        <div class="col-lg-9 d-grid mt-4">
+            <section id="produtos">
+                {% include "includes/lista_produtos_promocao.html" %}
+            </section>
+        </div>
+    </div>
+
+<div class="container">
+    <div class="modal modal-lg fade" id="editarProdutosModal" tabindex="-1" aria-labelledby="editarProdutosModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarProdutosModalLabel">Editar Produtos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mx-4 my-4">
+                    <form method="post" 
+                        hx-post="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" 
+                        hx-target="#produtos"
+                        hx-on::after-request="$('#editarProdutosModal').modal('hide');" 
+                        hx-swap="innerHTML">
+                        {% csrf_token %}
+                        {% comment %} {{ form.produtos|as_crispy_field }} {% endcomment %}
+                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                            {% for value, label in form.produtos.field.choices %}
+                                {% include "cards/card_produto_multiple_choice_promocao.html" %}
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2 w-100">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal modal-lg fade" id="duplicarPromocaoModal" tabindex="-1" aria-labelledby="duplicarPromocaoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="duplicarPromocaoModalLabel">Duplicar {{ promocao.descricao }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mx-4 my-4">
+                    <form method="post" action="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" >
+                        {% csrf_token %}
+                        {{ duplicar_form.data_inicio|as_crispy_field }}
+                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                            {% for value, label in duplicar_form.produtos.field.choices %}
+                                {% include "cards/card_produto_multiple_choice_promocao.html" %}
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2 w-100">Duplicar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main_content %}

@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from .views import *
 
@@ -97,5 +97,35 @@ urlpatterns = [
         'gerir_vendedores/',
         GestaoVendedoresView.as_view(),
         name='gerir_vendedores'
+    ),
+    path(
+        'oferta_produtos/',
+        GestaoOfertaProdutoListView.as_view(),
+        name='gestao_oferta_produtos',
+    ),
+    path(
+        'promocoes_produto/<int:pk>/',
+        GestaoPromocoesProdutoCRUDView.as_view(),
+        name='gestao_promocoes_produto',
+    ),
+    path(
+        'produtos_promocao/<int:pk>/',
+        GestaoProdutosPromocaoCRUDView.as_view(),
+        name='gestao_produtos_promocao',
+    ),
+    re_path(
+        r'^promocoes/(?P<pk>\d+)?/?$',
+        GestaoPromocoesCRUDListView.as_view(),
+        name='gestao_promocoes',
+    ),
+    path(
+        'caixas/',
+        EstadoCaixaListView.as_view(),
+        name='estado_caixa',
+    ),
+    path(
+        'gestao-caixas/',
+        GestaoCaixaCRUDListView.as_view(),
+        name='gestao_caixas',
     ),
 ]

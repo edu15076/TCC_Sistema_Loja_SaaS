@@ -1,0 +1,41 @@
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% if promocao.data_inicio > today %}
+<div class="d-flex justify-content-between align-items-center">
+    <h2>Produtos </h2>
+    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editarProdutosModal">
+        Editar produtos
+    </button>
+</div>
+{% endif %} 
+
+{% if produtos.exists %}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Descrição</th>
+                <th scope="col">Código de barras</th>
+                <th scope="col">Preço de venda</th>
+                <th scope="col">Desconto</th>
+                <th scope="col">Preço com desconto</th>
+                <th scope="col">À venda</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos %}
+                {% include 'linhas/linha_produto_promocao.html' %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+
+<div class="alert alert-info" role="alert">
+    Nenhum produto encontrado
+</div>
+
+{% endif %}

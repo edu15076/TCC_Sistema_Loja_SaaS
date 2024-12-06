@@ -1,0 +1,39 @@
+<div class="">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Promoções</h2>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editarPromocoesModal">
+            Editar promoções
+        </button>
+    </div>
+
+
+    {% if promocoes.exists %}
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Porcentagem</th>
+                    <th scope="col">Data incio</th>
+                    <th scope="col">Duracao</th>
+                    <th scope="col">Preco com desconto</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for promocao in promocoes %}
+                    {% include 'linhas/linha_promocao_produto.html' %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% else %}
+
+    <div class="alert alert-info" role="alert">
+        Nenhuma promocao encontrada
+    </div>
+
+    {% endif %}
+</div>
