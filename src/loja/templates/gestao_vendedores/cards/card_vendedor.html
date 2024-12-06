@@ -1,0 +1,10 @@
+{% url 'alterar_comissao' loja_scope=scope.pk as alterar_comissao_action %}
+
+<div id="dados-vendedor-{{ vendedor.pk }}" class="dados-vendedor card mb-3">
+    <div class="card-body">
+        {% include 'gestao_vendedores/includes/data_vendedor.html' with funcionario=vendedor %}
+        {% if vendedor.alterar_comissao_form %}
+            {% include 'gestao_vendedores/forms/htmx_alterar_comissao_vendedor.html' with action=alterar_comissao_action form=vendedor.alterar_comissao_form %}
+        {% endif %}
+    </div>
+</div>

@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.layout import Submit, Layout, Field, Div, HTML
+from crispy_forms.layout import Submit, Layout, Field
 
 from loja.forms import BaseFuncionarioCreationForm
 from loja.forms.validators import ActiveFuncionarioValidator
@@ -45,7 +45,11 @@ class DeletarLojaForm(CrispyFormMixin, forms.Form):
         self.helper = self.create_helper()
         self.loja = loja
         self.fields['nome'].help_text = (
-                _('Digite o nome da sua loja \"<span class="loja_nome">%(nome)s</span>\" para confirmar a deleção')
+                _(
+                    'Digite o nome da sua loja '
+                    '\"<span class="loja_nome">%(nome)s</span>\"'
+                    ' para confirmar a deleção'
+                )
                 % {'nome': loja.nome}
         )
 

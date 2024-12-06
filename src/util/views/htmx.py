@@ -89,7 +89,9 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
 
     def form_valid(self, form):
         if self.get_success_url() is None:
-            return JsonResponse({'status': True}, status=200)
+            response = JsonResponse({'status': True}, status=200)
+            response['HX-Reswap'] = 'none'
+            return response
         if self.redirect_on_success:
             return HttpResponseHTMXRedirect(self.get_success_url())
 
