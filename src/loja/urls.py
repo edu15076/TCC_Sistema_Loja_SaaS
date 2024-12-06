@@ -110,6 +110,11 @@ urlpatterns = [
         name='gerir_oferta_produtos',
     ),
     path(
+        'estoque_de_produtos/',
+        GestaoOfertaProdutoListView.as_view(),
+        name='gestao_estoque_de_produtos',
+    ),
+    path(
         'promocoes_produto/<int:pk>/',
         GestaoPromocoesProdutoCRUDView.as_view(),
         name='gerir_promocoes_produto',

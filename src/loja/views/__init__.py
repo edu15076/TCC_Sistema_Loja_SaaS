@@ -9,3 +9,4 @@ from .gestao_promocoes import *
 from .estado_caixa import *
 from .gestao_caixa import *
 from .efetuar_venda import *
+from .gestao_estoque_de_produtos import *
