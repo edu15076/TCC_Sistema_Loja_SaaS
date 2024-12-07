@@ -1,12 +1,18 @@
 from django.urls import path, re_path
 
 from .views import *
+from .views.media_access import LojaLogoView
 
 urlpatterns = [
     path(
         '',
         HomeLojaView.as_view(),
         name='home_loja'
+    ),
+    path(
+        'logo/',
+        LojaLogoView.as_view(),
+        name='logo_loja'
     ),
     path(
         'login/',

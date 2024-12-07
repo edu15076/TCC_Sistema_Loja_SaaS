@@ -1,4 +1,5 @@
 from django import forms
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from crispy_forms.layout import Submit, Layout, Field
 
@@ -18,6 +19,12 @@ __all__ = (
 
 
 class LojaForm(ModalCrispyFormMixin, forms.ModelForm):
+    def get_fields(self):
+        return [
+            Field('nome'),
+            Field('logo', template='widgets/clearable_image_input.html')
+        ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
@@ -28,6 +35,13 @@ class LojaForm(ModalCrispyFormMixin, forms.ModelForm):
     class Meta:
         model = Loja
         fields = ['nome', 'logo']
+        widgets = {
+            'logo': forms.ClearableFileInput(attrs={
+                'accept': 'image/*',
+                'img_url': reverse_lazy('logo_loja_contratacao'),
+                'img_height': '6rem',
+            })
+        }
 
 
 class DeletarLojaForm(CrispyFormMixin, forms.Form):

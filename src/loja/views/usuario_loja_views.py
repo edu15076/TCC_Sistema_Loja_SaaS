@@ -76,8 +76,7 @@ class UpdateUsuarioLojaView(UserFromLojaRequiredMixin, UpdateUsuarioGenericoView
     def success_url(self):
         return reverse('home_loja', kwargs={'loja_scope': int(self.scope)})
 
-    @property
-    def login_url(self):
+    def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
 
     @property

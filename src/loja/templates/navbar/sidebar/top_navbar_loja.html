@@ -1,5 +1,15 @@
 {% extends 'navbar/sidebar/top_navbar.html' %}
 
+{% block brand %}
+    <a class="d-flex align-items-center gap-3 p-0 navbar-brand" href="{% url 'home_loja' loja_scope=scope.pk %}">
+        <img class="rounded"
+                     src="{% url 'logo_loja' loja_scope=scope.pk %}"
+                     alt="Logo da loja"
+                     style="height: 3.5rem;">
+        {{ scope.loja.nome }}
+    </a>
+{% endblock brand %}
+
 {% block user_dropdown %}
     {% url 'editar_usuario_loja' loja_scope=scope.pk as edit_user_url %}
     {% url 'login_loja' loja_scope=scope.pk as login_url %}
