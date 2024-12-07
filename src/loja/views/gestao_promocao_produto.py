@@ -10,14 +10,14 @@ from django.shortcuts import redirect, render
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.htmx import UpdateHTMXView
 from loja.models import Produto, Promocao
-from loja.views import UserFromLojaRequiredMixin, FilterForSameLojaMixin
+from loja.views import UserFromLojaRequiredMixin, PermissionRequiredMixin, FilterForSameLojaMixin
 from loja.forms import *
 from util.mixins import MultipleFormsViewMixin
 
 
 class GestaoPromocoesProdutoCRUDView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin,
+    UserFromLojaRequiredMixin, PermissionRequiredMixin,
     FilterForSameLojaMixin,
     UpdateHTMXView,
     DetailView,
@@ -130,7 +130,7 @@ class GestaoPromocoesProdutoCRUDView(
 
 class GestaoProdutosPromocaoCRUDView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin,
+    UserFromLojaRequiredMixin, PermissionRequiredMixin,
     FilterForSameLojaMixin,
     UpdateHTMXView,
     DetailView,

@@ -8,7 +8,7 @@ from util.mixins import MultipleFormsViewMixin
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Promocao
-from loja.views import UserFromLojaRequiredMixin, FilterForSameLojaMixin
+from loja.views import UserFromLojaRequiredMixin, PermissionRequiredMixin, FilterForSameLojaMixin
 from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
 
 # TODO - Passar loja no get_form_kwargs
@@ -16,7 +16,7 @@ from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
 
 class GestaoPromocoesCRUDListView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin,
+    UserFromLojaRequiredMixin, PermissionRequiredMixin,
     FilterForSameLojaMixin,
     PermissionRequiredMixin,
     CreateOrUpdateListHTMXView,

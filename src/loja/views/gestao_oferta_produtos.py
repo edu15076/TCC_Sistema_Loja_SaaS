@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import render
 
 from util.mixins import MultipleFormsViewMixin
-from loja.views.mixins import UserFromLojaRequiredMixin
+from loja.views.mixins import UserFromLojaRequiredMixin, PermissionRequiredMixin
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Produto, GerenteFinanceiro, ConfiguracaoDeVendas
 from loja.forms import (
@@ -23,7 +23,7 @@ from loja.forms import (
 
 
 class GestaoOfertaProdutoListView(
-    MultipleFormsViewMixin, UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
+    MultipleFormsViewMixin, UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'gestao_oferta_produtos/oferta_produtos.html'
