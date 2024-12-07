@@ -1,0 +1,23 @@
+{% extends 'gestao_funcionarios/includes/extends/basic_data_funcionario.html' %}
+
+{% block funcionario_title %}
+    Vendedor: {{ funcionario.cpf }}
+{% endblock funcionario_title %}
+
+{# TODO: Colocar dados de vendedor como comissao ganha no mes atual #}
+{% block funcionario_extra_data %}
+    <br>
+    <strong>Quantidade de Vendas Novembro 2024:</strong> 51<br>
+    <strong>Valor Vendido Novembro 2024:</strong> R$ 13.050,00<br>
+    <strong>Comissão Novembro 2024:</strong> R$ 1.305,00<br>
+    
+    {% if funcionario == user %}
+        <small class="d-block text-body-secondary">Esse vendedor é você</small>
+    {% endif %}
+    {% if funcionario.is_admin %}
+        <small class="d-block text-body-secondary">Esse vendedor é um administrador</small>
+    {% endif %}
+    {% if not funcionario.is_active %}
+        <small class="d-block text-body-secondary">Esse vendedor está inativo</small>
+    {% endif %}
+{% endblock funcionario_extra_data %}

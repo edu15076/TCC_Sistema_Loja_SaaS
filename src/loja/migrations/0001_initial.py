@@ -7,6 +7,7 @@ import loja.models.funcionario
 import loja.models.loja
 import scope_auth.models.user_per_scope
 from django.db import migrations, models
+from decimal import Decimal
 
 
 class Migration(migrations.Migration):
@@ -22,7 +23,25 @@ class Migration(migrations.Migration):
             name='Funcionario',
             fields=[
                 ('usuario', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, related_name='funcionario_loja', serialize=False, to='common.usuariogenericopessoafisica')),
-                ('_porcentagem_comissao', models.DecimalField(decimal_places=2, max_digits=4, null=True, blank=True)),
+                (
+                    '_porcentagem_comissao',
+                    models.DecimalField(
+                        blank=True,
+                        decimal_places=2,
+                        max_digits=5,
+                        null=True,
+                        validators=[
+                            django.core.validators.MaxValueValidator(
+                                Decimal('100'),
+                                message='Porcentagem não pode exceder 100%.'
+                            ),
+                            django.core.validators.MinValueValidator(
+                                Decimal('0'),
+                                message='Porcentagem não pode ser negativo.'
+                            ),
+                        ],
+                    ),
+                ),
                 ('is_admin', models.BooleanField(blank=True, default=False)),
             ],
             options={
@@ -40,7 +59,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('scope', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='loja', serialize=False, to='common.lojascope')),
                 ('nome', models.CharField(max_length=100)),
-                ('logo', models.ImageField(upload_to=loja.models.loja.loja_path)),
+                ('logo', models.ImageField(blank=True, null=True, upload_to=loja.models.loja.loja_path)),
             ],
             managers=[
                 ('lojas', django.db.models.manager.Manager()),

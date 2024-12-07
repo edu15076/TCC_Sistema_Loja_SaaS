@@ -10,6 +10,7 @@ grupos_funcionarios = {
     'loja_gerentes_de_rh': [
         'is_gerente_de_rh',
         'gerir_funcionarios',
+        'gerir_vendedores',
     ],
     'loja_gerentes_de_estoque': [
         'is_gerente_de_estoque',
