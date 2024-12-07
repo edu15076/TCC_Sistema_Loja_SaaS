@@ -2,7 +2,7 @@
     {% if produtos|length > 0 %}
 
     <div class="table-responsive">
-        <table class="table table-hover  align-middle">
+        <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th scope="col">Descrição</th>
@@ -13,7 +13,7 @@
             </thead>
             <tbody>
                 {% for produto in produtos %}
-                    {% include 'linhas/linha_oferta_produto.html' %}
+                    {% include 'gestao_oferta_produtos/linhas/linha_oferta_produto.html' %}
                 {% endfor %}
             </tbody>
         </table>

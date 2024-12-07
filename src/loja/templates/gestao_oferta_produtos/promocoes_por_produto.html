@@ -1,0 +1,136 @@
+{% extends "base_loja.html" %}
+
+{% load crispy_forms_tags %}
+{% load heroicons %}
+{% load static %}
+
+{% block main_content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 d-grid">
+            <section id="produto" class="mb-4">
+                <h1>{{ produto.descricao }}</h1>
+                
+                <p class="h6 my-3">{{ produto.codigo_de_barras }}</p>
+                <p class="h6 my-3">Preço de venda: R$ <span id="preco-valor">{{ produto.preco_de_venda }}</span>
+                    <span class="mx-2 btn btn-sm btn-primary" onclick="$('#preco-form').toggleClass('d-none'); return false;">
+                        {% heroicon_solid "pencil" size=20 %}
+                    </span>
+                </p>
+                <form id="preco-form" class="d-none row row-cols-lg-auto g-3 align-items-end" 
+                    method="post" 
+                    name="`{{ preco_de_venda_form.get_submit_button.name }}"
+                    hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
+                    hx-swap="none"
+                    hx-on::after-request="$('#preco-form').addClass('d-none')"
+                    hx-on:htmx:after-on-load="updatePrecoVendaSpan(event)"
+                    hx-vals='{"id": "{{ produto.id }}" }'>
+                    {% crispy preco_de_venda_form %}
+                </form>
+
+                <div class="row row-cols-lg-auto ">
+                    <p class="h6 my-3">À venda:</p>
+                    <form  method="post" class="form-check form-switch my-3">
+                        {% csrf_token %}
+                        <input name="{{ em_venda_form.submit_name }}" type="hidden" value="{{ em_venda_form.get_submit_button.value }}">
+                        <input class="form-check-input" 
+                            type="checkbox" 
+                            id="em_venda-switch-{{ produto.id }}" 
+                            {% if produto.em_venda %}checked{% endif %} 
+                            hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
+                            hx-vals='{"em_venda": "{{ produto.em_venda|yesno:"false,true" }}" }'
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-on:htmx:after-on-load="$('#em_venda-label-{{ produto.id }}').html(this.checked ? 'Sim' : 'Não')">
+                        <label class="form-check-label" id="em_venda-label-{{ produto.id }}" for="em_venda-switch-{{ produto.id }}">
+                            {% if produto.em_venda %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </label>
+                    </form>
+                </div>
+                
+            </section>
+        </div>
+        <div class="col-lg-8 d-grid mt-2">
+            <section id="promocoes">
+                {% include "gestao_oferta_produtos/listas/lista_promocoes_produto.html" %}
+            </section>
+        </div>
+    </div>
+    <div class="modal fade" id="duplicarPromocaoModal" tabindex="-1" aria-labelledby="duplicarPromocaoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="duplicarPromocaoModalLabel">Duplicar Promoção</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form name="{{ duplicar_promocao_form.get_submit_button.name }}"
+                        id="duplicar-promocao-form" 
+                        method="post" 
+                        hx-swap="afterbegin"
+                        hx-post="{{ action }}"
+                        hx-target="#tabela-promocoes tbody"
+                        hx-on::after-request="this.reset(); $('#duplicarPromocaoModal').modal('hide');">
+                        {% csrf_token %}
+                        {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
+                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                            {% for value, label in duplicar_promocao_form.produtos.field.choices %}
+                                {% include "gestao_oferta_produtos//cards/card_produto_multiple_choice_promocao.html" %}
+                            {% endfor %}
+                        </div>
+                        <button name="{{ duplicar_promocao_form.submit_name }}" 
+                            value="{{ duplicar_promocao_form.get_submit_button.value }}"
+                            type="submit" 
+                            class="btn btn-block w-100 btn-primary mt-2">
+                            Duplicar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal modal-lg fade" id="editarPromocoesModal" tabindex="-1" aria-labelledby="editarPromocoesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarPromocoesModalLabel">Editar Promoções</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mx-4 my-4">
+                    <form method="post" name="{{ promocoes_por_produto_form.get_submit_button.name }}"
+                        hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
+                        hx-target="#promocoes"
+                        hx-on::after-request="$('#editarPromocoesModal').modal('hide');" 
+                        hx-swap="innerHTML">
+                        {% csrf_token %}
+                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                            {% for value, label in promocoes_por_produto_form.promocoes.field.choices %}
+                                {% include "gestao_oferta_produtos/cards/card_promocao_multiple_choice_produto.html" %}
+                            {% endfor %}
+                        </div>
+                        <button name="{{ promocoes_por_produto_form.submit_name }}" 
+                            value="{{ promocoes_por_produto_form.get_submit_button.value }}"
+                            type="submit" 
+                            class="btn btn-primary mt-2 w-100">
+                            Salvar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %}
+
+{% block scripts %}
+
+<script src="{% static 'scripts/comportamento_produtos_promocoes.js' %}"></script>
+<script src="{% static 'scripts/formatters/format_moeda.js' %}"></script>
+
+{% endblock scripts %}

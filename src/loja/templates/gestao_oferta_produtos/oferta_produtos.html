@@ -1,0 +1,55 @@
+{% extends 'base_loja.html' %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block main_content %}
+    <h1>Produtos</h1>
+    <p>{{ produtos|length }} de {{ produtos_count }} produtos</p>
+    <p>Limite de desconto: <span id="limite_porcentagem_desconto_maximo">{{ configuracao_de_venda.limite_porcentagem_desconto_maximo }}%</span>
+        <span class="mx-2 btn btn-sm btn-primary" onclick="$('#configuracao_de_venda_form').toggleClass('d-none'); return false;">
+            {% heroicon_solid "pencil" size=20 %}
+        </span>
+    </p>
+    <form id="configuracao_de_venda_form" class="d-none row row-cols-lg-auto g-3 align-items-end" 
+        method="post" 
+        hx-post="{% url 'gerir_oferta_produtos' scope.pk %}" 
+        hx-swap="none"
+        hx-on::after-request="$('#configuracao_de_venda_form').addClass('d-none')"
+        hx-on:htmx:after-on-load="updateLimiteDescontoSpan(event)">
+        {% crispy configuracao_de_venda_form %}
+    </form>
+
+    <section id="filtro-form">
+        <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
+            {{ filter_form.ordem|as_crispy_field }}
+            {{ filter_form.em_venda|as_crispy_field }}
+            <button type="submit" class="btn btn-primary my-3">{% heroicon_solid "magnifying-glass" %}</button>
+        </form>
+    </section>
+    
+{% comment %} 
+    <section id="query-form">
+        <form  class="row row-cols-lg-auto g-3 align-items-end"
+            hx-post="{% url 'gerir_oferta_produtos' scope.pk %}" 
+            hx-trigger="keyup changed delay:1000ms" 
+            hx-target="#ofertas" 
+            hx-swap="innerHTML">   
+            {% csrf_token %}
+            {{ query_form.query|as_crispy_field }}
+        </form>
+    </section> 
+{% endcomment %}
+
+    <section id="ofertas">
+        {% include "gestao_oferta_produtos/listas/lista_ofertas_produtos.html" %}
+    </section>
+{% endblock main_content %}
+
+{% block scripts %}
+
+<script src="{% static 'scripts/comportamento_produtos_promocoes.js' %}"></script>
+<script src="{% static 'scripts/formatters/format_porcentagem.js' %}"></script>
+
+{% endblock scripts %}
