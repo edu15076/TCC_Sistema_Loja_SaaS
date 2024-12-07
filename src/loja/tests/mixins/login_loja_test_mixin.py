@@ -214,7 +214,7 @@ class UsuarioScopeLojaTestMixin:
 
     @classmethod
     def _get_url(cls, scope):
-        return reverse('gestao_oferta_produtos', kwargs={'loja_scope': scope})
+        return reverse('gerir_oferta_produtos', kwargs={'loja_scope': scope})
 
     def _login(self, funcionario):
         return self.client.login(

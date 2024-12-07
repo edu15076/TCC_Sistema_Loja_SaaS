@@ -6,7 +6,7 @@
 
 <tr class="linha-promocao" id="linha-promocao-produto-{{ promocao_produto.id }}">
     {% comment %} <td>{{ promocao.descricao }}</td> {% endcomment %}
-    <td><a href="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" class="text-decoration-none text-primary">{{ promocao.descricao }}</a></td>
+    <td><a href="{% url 'gerir_produtos_promocao' scope.pk promocao.pk %}" class="text-decoration-none text-primary">{{ promocao.descricao }}</a></td>
     <td>{{ promocao.porcentagem_desconto }}%</td>
     <td>{{ promocao.data_inicio|date:"d/m/Y" }}</td>
     <td>{{ promocao.periodo.tempo_total.days }} dias</td>

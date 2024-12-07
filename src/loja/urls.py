@@ -81,22 +81,22 @@ urlpatterns = [
     path(
         'oferta_produtos/',
         GestaoOfertaProdutoListView.as_view(),
-        name='gestao_oferta_produtos',
+        name='gerir_oferta_produtos',
     ),
     path(
         'promocoes_produto/<int:pk>/',
         GestaoPromocoesProdutoCRUDView.as_view(),
-        name='gestao_promocoes_produto',
+        name='gerir_promocoes_produto',
     ),
     path(
         'produtos_promocao/<int:pk>/',
         GestaoProdutosPromocaoCRUDView.as_view(),
-        name='gestao_produtos_promocao',
+        name='gerir_produtos_promocao',
     ),
     re_path(
         r'^promocoes/(?P<pk>\d+)?/?$',
         GestaoPromocoesCRUDListView.as_view(),
-        name='gestao_promocoes',
+        name='gerir_promocoes',
     ),
     path(
         'caixas/',

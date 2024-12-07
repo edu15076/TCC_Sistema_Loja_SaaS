@@ -36,7 +36,7 @@
                 </div>
                 <div class="modal-body mx-4 my-4">
                     <form method="post" 
-                        hx-post="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" 
+                        hx-post="{% url 'gerir_produtos_promocao' scope.pk promocao.pk %}" 
                         hx-target="#produtos"
                         hx-on::after-request="$('#editarProdutosModal').modal('hide');" 
                         hx-swap="innerHTML">
@@ -66,7 +66,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body mx-4 my-4">
-                    <form method="post" action="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" >
+                    <form method="post" action="{% url 'gerir_produtos_promocao' scope.pk promocao.pk %}" >
                         {% csrf_token %}
                         {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">

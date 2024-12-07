@@ -7,6 +7,7 @@ from django.http.response import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.shortcuts import render
 
+from util.mixins import MultipleFormsViewMixin
 from loja.models.funcionario import GerenteFinanceiro
 from loja.views.mixins import UserFromLojaRequiredMixin
 from util.views.edit_list import CreateOrUpdateListHTMXView
@@ -22,12 +23,13 @@ from loja.forms import (
 
 
 class GestaoOfertaProdutoListView(
-    UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
+    MultipleFormsViewMixin, UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'oferta_produtos.html'
-    preco_form_class = PrecoDeVendaProdutoForm
-    em_venda_form_class = ProdutoEmVendaForm
+    permission_required = 'loja.gerir_oferta_de_produto'
+    usuario_class = GerenteFinanceiro
+    raise_exception = True
     filter_form = OfertaProdutosFilterForm
     query_form = ProdutoQueryForm
     model = Produto
@@ -35,9 +37,10 @@ class GestaoOfertaProdutoListView(
     object = None
     default_order = ['id']
     paginate_by = 30
-    usuario_class = GerenteFinanceiro
-    permission_required = 'loja.gerir_oferta_de_produto'
-    raise_exception = True
+    forms_class = {
+        'preco_de_venda': PrecoDeVendaProdutoForm,
+        'em_venda': ProdutoEmVendaForm,
+    }
 
     def get_pk_slug(self) -> tuple[int | None, str | None]:
         return self.object_pk, None
@@ -52,16 +55,24 @@ class GestaoOfertaProdutoListView(
 
     def get_queryset(self) -> QuerySet[Any]:
         return super().get_queryset().filter(loja__scope=self.scope)
+    
+    def get_form_kwargs(self, form_class=None, request=None) -> dict[str, Any]:
+        kwargs = {}
+        # kwargs['scope'] = self.scope
+        if request is not None:
+            kwargs['instance'] = self.get_object()
+            kwargs['data'] = request.POST
 
-    def get_form(self, form_class: type | None = ...):
-        return None
+        return kwargs
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         self.object_list = self.get_queryset()
         context = super().get_context_data()
 
-        context['preco_form'] = self.preco_form_class()
-        context['em_venda_form'] = self.em_venda_form_class()
+        form = self.get_forms()
+        for form in form.values():
+            context[form.form_name()] = form
+
         context['filter_form'] = self.filter_form()
         context['query_form'] = self.query_form()
         context['produtos'] = self.get_page()
@@ -78,7 +89,7 @@ class GestaoOfertaProdutoListView(
         request = self.request
         cards = request.GET.get('visualizacao') == 'cards'
 
-        if 'em_venda' in request.POST or 'preco_de_venda' in request.POST:
+        if 'em_venda_submit' in request.POST or 'preco_de_venda_submit' in request.POST:
             if cards:
                 return ['cards/card_oferta_produto.html']
             else:
@@ -102,8 +113,8 @@ class GestaoOfertaProdutoListView(
             self.get_template_names()[0],
             {
                 'produtos': queryset,
-                'em_venda_form': self.em_venda_form_class(),
-                'preco_form': self.preco_form_class(),
+                'em_venda_form': self.get_form(self.forms_class['em_venda']),
+                'preco_form': self.get_form(self.forms_class['preco_de_venda']),
             },
         )
 
@@ -114,8 +125,8 @@ class GestaoOfertaProdutoListView(
             self.get_template_names()[0],
             {
                 'produto': produto,
-                'em_venda_form': self.em_venda_form_class(),
-                'preco_form': self.preco_form_class(),
+                self.forms_class['em_venda'].form_name(): self.get_form(self.forms_class['em_venda']),
+                self.forms_class['preco_de_venda'].form_name(): self.get_form(self.forms_class['preco_de_venda']),
                 'success': True,
             },
         )
@@ -124,19 +135,9 @@ class GestaoOfertaProdutoListView(
         try:
             if 'query' in request.POST:
                 return self.pesquisar_produtos(request)
-            if 'preco_de_venda' in request.POST:
-                self.object_pk = request.POST.get('id')
-                form = self.preco_form_class(request.POST, instance=self.get_object())
-            elif 'em_venda' in request.POST:
-                self.object_pk = request.POST.get('id')
-                form = self.em_venda_form_class(
-                    request.POST, instance=self.get_object()
-                )
-
-            if form.is_valid():
-                return self.form_valid(form)
             else:
-                return self.form_invalid(form)
+                self.object_pk = request.POST.get('id')
+                return super().post(request)
 
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+            return JsonResponse({'success': False, 'type':'error', 'message': str(e)}, status=400)

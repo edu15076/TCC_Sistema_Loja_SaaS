@@ -65,6 +65,9 @@ class MultipleFormsViewMixin:
                     form_class = form
                     break
 
+        if form_class is None:
+            return None
+
         return form_class(**self.get_form_kwargs(form_class, request))
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
@@ -76,6 +79,7 @@ class MultipleFormsViewMixin:
 
             return self.form_invalid(form)
         except Exception as e:
+            # TODO - Log error
             return JsonResponse(
                 {'success': False, 'type': 'error', 'message': str(e)}, status=400
             )

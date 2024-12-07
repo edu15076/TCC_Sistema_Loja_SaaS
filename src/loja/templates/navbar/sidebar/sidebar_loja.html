@@ -17,6 +17,19 @@
                 </li>
             {% endif %}
         {% endblock links_gerente_de_rh %}
+        {% if perms.loja.is_gerente_financeiro %}
+            <strong>Gerente de Financeiro</strong>
+        {% endif %}
+        {% block links_gerente_financeiro %}
+            {% if perms.loja.gerir_oferta_de_produto %}
+                <li class="nav-item ms-2">
+                    <a href="{% url 'gerir_oferta_produtos' loja_scope=scope.pk %}" class="nav-link">Gerir Oferta de Produtos</a>
+                </li>
+                <li class="nav-item ms-2">
+                    <a href="{% url 'gerir_promocoes' loja_scope=scope.pk %}" class="nav-link">Gerir Promoções</a>
+                </li>
+            {% endif %}
+        {% endblock links_gerente_financeiro %}
         {# TODO: Colocar outros funcionários mantendo o padrão das permissões #}
     {% endif %}
 {% endblock nav_items %}

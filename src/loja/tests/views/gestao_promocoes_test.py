@@ -93,7 +93,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
                 'gestao_promocao',
                 kwargs={'loja_scope': scope_pk, 'promocao_pk': promocao_pk},
             )
-        return reverse('gestao_promocoes', kwargs={'loja_scope': scope_pk})
+        return reverse('gerir_promocoes', kwargs={'loja_scope': scope_pk})
 
     def test_get(self):
         self._login(self.gerente_financeiro[0])

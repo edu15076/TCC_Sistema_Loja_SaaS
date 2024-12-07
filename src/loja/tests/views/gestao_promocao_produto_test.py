@@ -79,7 +79,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
 
     def _get_url(self, scope_pk, produto):
         return reverse(
-            'gestao_promocoes_produto',
+            'gerir_promocoes_produto',
             kwargs={'loja_scope': scope_pk, 'pk': produto.pk},
         )
 
@@ -302,7 +302,7 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
 
     def _get_url(self, scope_pk, promocoa):
         return reverse(
-            'gestao_produtos_promocao',
+            'gerir_produtos_promocao',
             kwargs={'loja_scope': scope_pk, 'pk': promocoa.pk},
         )
 

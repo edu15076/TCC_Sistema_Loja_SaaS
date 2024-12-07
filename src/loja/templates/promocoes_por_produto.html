@@ -21,7 +21,7 @@
                 <form id="preco-form" class="d-none row row-cols-lg-auto g-3 align-items-end" 
                     method="post" 
                     name="`{{ preco_de_venda_form.get_submit_button.name }}"
-                    hx-post="{% url 'gestao_promocoes_produto' scope.pk produto.pk %}" 
+                    hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
                     hx-swap="none"
                     hx-on::after-request="$('#preco-form').addClass('d-none')"
                     hx-on:htmx:after-on-load="$('#preco-valor').html(formatMoeda($('#id_preco_de_venda').val()));"
@@ -38,7 +38,7 @@
                             type="checkbox" 
                             id="em_venda-switch-{{ produto.id }}" 
                             {% if produto.em_venda %}checked{% endif %} 
-                            hx-post="{% url 'gestao_promocoes_produto' scope.pk produto.pk %}" 
+                            hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
                             hx-vals='{"em_venda": "{{ produto.em_venda|yesno:"false,true" }}" }'
                             hx-trigger="change"
                             hx-swap="none"
@@ -103,7 +103,7 @@
                 </div>
                 <div class="modal-body mx-4 my-4">
                     <form method="post" name="{{ promocoes_por_produto_form.get_submit_button.name }}"
-                        hx-post="{% url 'gestao_promocoes_produto' scope.pk produto.pk %}" 
+                        hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
                         hx-target="#promocoes"
                         hx-on::after-request="$('#editarPromocoesModal').modal('hide');" 
                         hx-swap="innerHTML">

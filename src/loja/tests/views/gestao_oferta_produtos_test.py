@@ -66,7 +66,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'oferta_produtos.html')
-        self.assertIn('form', response.context)
+        self.assertIn('preco_de_venda_form', response.context)
         self.assertIn('filter_form', response.context)
         self.assertIn('produtos', response.context)
         self.assertIn('scope', response.context)
@@ -111,7 +111,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'oferta_produtos.html')
-        self.assertIn('preco_form', response.context)
+        self.assertIn('preco_de_venda_form', response.context)
         self.assertIn('em_venda_form', response.context)
         self.assertIn('filter_form', response.context)
         self.assertIn('produtos', response.context)

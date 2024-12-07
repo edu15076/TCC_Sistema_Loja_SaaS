@@ -209,7 +209,7 @@ class GestaoProdutosPromocaoCRUDView(
         elif type(form) == self.forms_class['duplicar_promocao']:
             return redirect(
                 reverse(
-                    'gestao_produtos_promocao',
+                    'gerir_produtos_promocao',
                     kwargs={'loja_scope': self.scope.pk, 'pk': object.pk},
                 )
             )
