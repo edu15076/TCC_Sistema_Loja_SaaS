@@ -3,12 +3,10 @@ from django.urls import reverse
 
 from common.forms import (
     UsuarioGenericoPessoaFisicaAuthenticationForm,
-    UsuarioGenericoPessoaFisicaCreationForm,
     UsuarioGenericoPessoaFisicaChangeForm,
 )
 from common.views import (
     LoginUsuarioGenericoView,
-    CreateUsuarioGenericoView,
     UpdateUsuarioGenericoView,
     LogoutUsuarioGenericoView,
     PasswordChangeUsuarioGenericoView,

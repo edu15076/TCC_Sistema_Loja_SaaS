@@ -4,7 +4,7 @@
         hx-target="#dados-loja"
         hx-swap="outerHTML"
         hx-post="{{ action }}"
-        hx-on::after-request="$('#editar-dados-loja').modal('hide')"
+        hx-on::after-request="$('#editar-dados-loja').modal('hide'); $('.loja_nome').text($('#id_nome_loja_card').text());"
         method="post"
         enctype="multipart/form-data">
     {% crispy form %}

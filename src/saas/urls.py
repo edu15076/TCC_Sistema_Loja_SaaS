@@ -6,7 +6,7 @@ from .views import *
 urlpatterns = [
     path(
         '',
-        TemplateView.as_view(template_name='home_contratacao.html'),
+        HomeContratacao.as_view(),
         name='home_contratacao',
     ),
     path(
@@ -68,6 +68,11 @@ urlpatterns = [
         'minha_loja/editar_dados_loja/',
         EditarDadosLojaView.as_view(),
         name='editar_dados_loja'
+    ),
+    path(
+        'minha_loja/deletar_loja/',
+        DeletarLojaView.as_view(),
+        name='deletar_loja'
     ),
     path(
         'minha_loja/admins/criar_admin/',

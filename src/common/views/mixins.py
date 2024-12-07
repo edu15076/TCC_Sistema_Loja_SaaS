@@ -43,11 +43,17 @@ class UsuarioMixin:
 
 
 class UserInScopeRequiredMixin(
-    UsuarioMixin, ScopeMixin, LoginRequiredMixin, UserPassesTestMixin
+    UsuarioMixin, ScopeMixin, UserPassesTestMixin
 ):
     """Classe que valida se o usuário está logado e está acessando o escopo correto"""
+
+    bypass_unauthenticated_user = False
+
     def is_user_in_scope(self) -> bool:
-        return self.user.scope == self.scope
+        return (
+            (self.bypass_unauthenticated_user and not self.user.is_authenticated)
+            or (self.user.is_authenticated and self.user.scope == self.scope)
+        )
 
     def get_test_func(self):
         return self.is_user_in_scope

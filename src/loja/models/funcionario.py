@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import Group
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Coalesce
@@ -94,7 +95,20 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     )
 
     _porcentagem_comissao = models.DecimalField(
-        max_digits=4, decimal_places=2, null=True, blank=True
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MaxValueValidator(
+                Decimal('100'),
+                message='Porcentagem não pode exceder 100%.'
+            ),
+            MinValueValidator(
+                Decimal('0'),
+                message='Porcentagem não pode ser negativo.'
+            )
+        ]
     )
 
     is_admin = models.BooleanField(default=False, null=False, blank=True)
@@ -171,6 +185,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
             raise ValueError('User is already inactive.')
         self.is_active = False
         self.is_admin = False
+        self._porcentagem_comissao = None
         self.remover_todos_papeis()
         if commit:
             self.save()
@@ -299,6 +314,8 @@ class Vendedor(FuncionarioPapel):
 
     @porcentagem_comissao.setter
     def porcentagem_comissao(self, porcentagem_comissao: float):
+        if not 0.0 <= porcentagem_comissao <= 100.0:
+            raise ValueError('A porcentagem de comissão deve estar entre 0 e 100.')
         self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = VendedorManager()
