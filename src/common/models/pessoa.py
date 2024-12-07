@@ -59,6 +59,9 @@ class Pessoa(models.Model):
     def get_short_name(self):
         raise NotImplementedError('Subclass must implement this method')
 
+    def get_codigo_masked(self):
+        raise NotImplementedError('Subclass must implement this method')
+
     class Meta:
         abstract = True
 
@@ -105,6 +108,9 @@ class PessoaFisica(Pessoa):
 
     def get_short_name(self):
         return self.nome
+
+    def get_codigo_masked(self):
+        return f'{self.cpf[:3]}.{self.cpf[3:6]}.{self.cpf[6:9]}-{self.cpf[9:]}'
 
     def clean(self):
         if self.cpf and len(self.cpf) != PESSOA_FISICA_CODIGO_LEN:
@@ -161,6 +167,10 @@ class PessoaJuridica(Pessoa):
 
     def get_short_name(self):
         return self.nome_fantasia
+
+    def get_codigo_masked(self):
+        return (f'{self.cnpj[:2]}.{self.cnpj[2:5]}.{self.cnpj[5:8]}/'
+                f'{self.cnpj[8:12]}-{self.cnpj[12:]}')
 
     def clean(self):
         if self.cnpj and len(self.cnpj) != PESSOA_JURIDICA_CODIGO_LEN:
