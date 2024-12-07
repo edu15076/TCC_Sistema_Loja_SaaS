@@ -7,21 +7,72 @@
         <li class="nav-item">
             <a href="{% url 'home_loja' loja_scope=scope.pk %}" class="nav-link">Home</a>
         </li>
+        
         {% if perms.loja.is_gerente_de_rh %}
             <strong>Gerente de RH</strong>
+            <div id="links-gerente-de-rh" class="permission-links ms-3">
         {% endif %}
         {% block links_gerente_de_rh %}
             {% if perms.loja.gerir_funcionarios %}
-                <li class="nav-item ms-2">
-                    <a href="{% url 'gerir_funcionarios' loja_scope=scope.pk %}" class="nav-link">Gerir Funcionários</a>
+                <li class="nav-item">
+                    <a href="{% url 'gerir_funcionarios' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Funcionários</a>
                 </li>
             {% endif %}
             {% if perms.loja.gerir_vendedores %}
-                <li class="nav-item ms-2">
-                    <a href="{% url 'gerir_vendedores' loja_scope=scope.pk %}" class="nav-link">Gerir Vendedores</a>
+                <li class="nav-item">
+                    <a href="{% url 'gerir_vendedores' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Vendedores</a>
+                </li>
+            {% endif %}
+            {% if perms.loja.gerir_caixas %}
+                <li class="nav-item">
+                    <a href="{% url 'gestao_caixas' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Caixas</a>
                 </li>
             {% endif %}
         {% endblock links_gerente_de_rh %}
-        {# TODO: Colocar outros funcionários mantendo o padrão das permissões #}
+        {% if perms.loja.is_gerente_de_rh %}</div>{% endif %}
+        
+        {% if perms.loja.is_gerente_de_estoque %}
+            <strong>Gerente de Estoque</strong>
+            <div id="links-gerente-de-estoque" class="permission-links ms-3">
+        {% endif %}
+        {% block links_gerente_de_estoque %}
+            
+        {% endblock links_gerente_de_estoque %}
+        {% if perms.loja.is_gerente_de_estoque %}</div>{% endif %}
+        
+        {% if perms.loja.is_gerente_financeiro %}
+            <strong>Gerente Financeiro</strong>
+            <div id="links-gerente-financeiro" class="permission-links ms-3">
+        {% endif %}
+        {% block links_gerente_financeiro %}
+            {% if perms.loja.gerir_oferta_de_produto %}
+                <li class="nav-item">
+                    <a href="{% url 'gestao_oferta_produtos' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Oferta de Produtos</a>
+                </li>
+            {% endif %}
+        {% endblock links_gerente_financeiro %}
+        {% if perms.loja.is_gerente_financeiro %}</div>{% endif %}
+        
+        {% if perms.loja.is_caixeiro %}
+            <strong>Caixeiro</strong>
+            <div id="links-caixeiro" class="permission-links ms-3">
+        {% endif %}
+        {% block links_caixeiro %}
+            {% if perms.loja.gerir_estado_do_caixa %}
+                <li class="nav-item">
+                    <a href="{% url 'estado_caixa' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Caixa</a>
+                </li>
+            {% endif %}
+        {% endblock links_caixeiro %}
+        {% if perms.loja.is_caixeiro %}</div>{% endif %}
+        
+        {% if perms.loja.is_vendedor %}
+            <strong>Vendedor</strong>
+            <div id="links-vendedor" class="permission-links ms-3">
+        {% endif %}
+        {% block links_vendedor %}
+            
+        {% endblock links_vendedor %}
+        {% if perms.loja.is_vendedor %}</div>{% endif %}
     {% endif %}
 {% endblock nav_items %}
