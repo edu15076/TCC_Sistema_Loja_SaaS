@@ -20,6 +20,7 @@ from loja.forms import (
 
 # TODO - Refatorar para usar get_form_kwargs
 
+
 class GestaoOfertaProdutoListView(
     UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
 ):

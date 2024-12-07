@@ -91,8 +91,8 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'promocoes_por_produto.html')
-        self.assertIn('form', response.context)
-        self.assertIn('preco_form', response.context)
+        self.assertIn('promocoes_por_produto_form', response.context)
+        self.assertIn('preco_de_venda_form', response.context)
         self.assertIn('em_venda_form', response.context)
         self.assertIn('scope', response.context)
         self.assertEqual(response.context['scope'], self.lojas[0].scope)
@@ -107,12 +107,12 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
     def test_post_editar_em_venda_produto(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
-        data = {'em_venda': False}
+        data = {'em_venda': False, 'em_venda_submit': 'Salvar'}
         response = self.client.post(
             self._get_url(scope.pk, self.produtos[0]), data=data
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, response.content)
 
         produto = Produto.produtos.get(pk=self.produtos[0].pk)
         produto_response = response.context['produto']
@@ -120,7 +120,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertFalse(produto.em_venda)
         self.assertEqual(produto, produto_response)
 
-        data = {'em_venda': True}
+        data = {'em_venda': True, 'em_venda_submit': 'Salvar'}
         response = self.client.post(
             self._get_url(scope.pk, self.produtos[0]), data=data
         )
@@ -134,7 +134,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
     def test_post_editar_preco_de_venda_produto(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
-        data = {'preco_de_venda': 150}
+        data = {'preco_de_venda': 150, 'preco_de_venda_submit': 'Salvar'}
         response = self.client.post(
             self._get_url(scope.pk, self.produtos[0]), data=data
         )
@@ -145,10 +145,13 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(produto.preco_de_venda, 150)
         self.assertEqual(produto, produto_response)
 
-    def test_post_adcionar_promocoes_validas_produto(self):
+    def test_post_adicionar_promocoes_validas_produto(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
-        data = {'promocoes': [self.promocoes[1].pk]}
+        data = {
+            'promocoes': [self.promocoes[1].pk],
+            'promocoes_por_produto_submit': 'Salvar',
+        }
         response = self.client.post(
             self._get_url(scope.pk, self.produtos[0]), data=data
         )
@@ -168,7 +171,10 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
     def test_post_remover_promocoes_produto(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
-        data = {'promocoes': [self.promocoes[0].pk, self.promocoes[3].pk]}
+        data = {
+            'promocoes': [self.promocoes[0].pk, self.promocoes[3].pk],
+            'promocoes_por_produto_submit': 'Salvar',
+        }
 
         response = self.client.post(
             self._get_url(scope.pk, self.produtos[0]), data=data
@@ -190,6 +196,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
             'data_inicio': date.today() + timedelta(days=200),
             'promocao': self.promocoes[0].pk,
             'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
+            'duplicar_promocao_submit': 'Salvar',
         }
 
         response = self.client.post(
@@ -308,8 +315,8 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'produtos_por_promocao.html')
         self.assertIn('produtos', response.context)
-        self.assertIn('form', response.context)
-        self.assertIn('duplicar_form', response.context)
+        self.assertIn('produtos_por_promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('promocao', response.context)
         self.assertEqual(response.context['scope'], self.lojas[0].scope)
 
@@ -326,6 +333,7 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         data = {
             'data_inicio': date.today() + timedelta(days=200),
             'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
+            'duplicar_promocao_submit': 'Salvar',
         }
 
         response = self.client.post(
@@ -345,11 +353,12 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         self.assertEqual(nova_promocao.data_inicio, data['data_inicio'])
         self.assertNotEqual(promocao.data_inicio, nova_promocao.data_inicio)
 
-    def test_post_adcionar_produtos_promocao(self):
+    def test_post_adicionar_produtos_promocao(self):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
         data = {
-            'produtos': [self.produtos[4].pk, self.produtos[0].pk, self.produtos[2].pk]
+            'produtos': [self.produtos[4].pk, self.produtos[0].pk, self.produtos[2].pk],
+            'produtos_por_promocao_submit': 'Salvar',
         }
 
         response = self.client.post(

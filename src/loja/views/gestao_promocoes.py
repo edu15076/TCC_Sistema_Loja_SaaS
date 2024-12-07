@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.urls import reverse_lazy
 from django.shortcuts import render
 
+from util.mixins import MultipleFormsViewMixin
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Promocao
@@ -12,32 +13,38 @@ from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
 
 # TODO - Passar loja no get_form_kwargs
 
+
 class GestaoPromocoesCRUDListView(
-    UserFromLojaRequiredMixin, FilterForSameLojaMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
+    MultipleFormsViewMixin,
+    UserFromLojaRequiredMixin,
+    FilterForSameLojaMixin,
+    PermissionRequiredMixin,
+    CreateOrUpdateListHTMXView,
 ):
     login_url = reverse_lazy('login_contratacao')
+    permission_required = 'loja.gerir_oferta_de_produto'
+    raise_exception = True
     template_name = 'promocoes.html'
-    duplicar_promocao_form_class = DuplicarPromocaoForm
-    form_class = PromocaoForm
     filter_form = FiltroPromocaoForm
     model = Promocao
     object = None
     default_order = ['id']
     paginate_by = 30
     usuario_class = GerenteFinanceiro
-    permission_required = 'loja.gerir_oferta_de_produto'
-    raise_exception = True
-
-    def get_form(self, form_class: type | None = ...):
-        return self.form_class(scope=self.scope)
+    forms_class = {
+        'promocao': PromocaoForm,
+        'duplicar_promocao': DuplicarPromocaoForm,
+    }
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
-        context = super().get_context_data(**kwargs)
+        context = {}
+
+        forms = self.get_forms()
+        for form in forms.values():
+            context[form.form_name()] = form
 
         context['promocoes'] = self.object_list
-        context['duplicar_form'] = self.duplicar_promocao_form_class(scope=self.scope)
-        context['form'] = self.get_form()
         context['filter_form'] = self.filter_form(scope=self.scope)
         context['promocoes_count'] = Promocao.promocoes.filter(
             loja__scope=self.scope
@@ -45,11 +52,10 @@ class GestaoPromocoesCRUDListView(
 
         return context
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self, form_class=None, request=None) -> dict[str, any]:
         kwargs = super().get_form_kwargs()
         kwargs['scope'] = self.scope
         kwargs['instance'] = self.get_object()
-        # kwargs['loja'] = self.get_loja()
 
         return kwargs
 
@@ -78,21 +84,5 @@ class GestaoPromocoesCRUDListView(
             self.get_template_names()[1],
             {'promocao': promocao, 'erros': erros},
         )
-    
+
     # TODO def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-
-    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        try:
-            if 'promocao' not in request.POST:
-                form = self.form_class(data=request.POST, scope=self.scope)
-            else:
-                form = self.duplicar_promocao_form_class(
-                    data=request.POST, scope=self.scope
-                )
-
-            if form.is_valid():
-                return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=400)

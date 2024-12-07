@@ -73,12 +73,15 @@ class Produto(ValidateModelMixin, models.Model):
         """
         return self.promocao_por_data(date.today())
 
-    def promocao_valida(self, data: date):
+    def promocao_valida(self, promocao=None, data: date=date.today()):
         """
         Verifica promoção é válida para período passado.
         """
         try:
-            validate_unique_promocao(self, self.promocao_por_data(data))
+            if promocao is None:
+                promocao = self.promocao_por_data(data)
+
+            validate_unique_promocao(self, promocao)
             return True
         except ValidationError:
             return False

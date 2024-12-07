@@ -12,21 +12,28 @@ from util.views.htmx import UpdateHTMXView
 from loja.models import Produto, Promocao
 from loja.views import UserFromLojaRequiredMixin, FilterForSameLojaMixin
 from loja.forms import *
+from util.mixins import MultipleFormsViewMixin
 
 
 class GestaoPromocoesProdutoCRUDView(
-    UserFromLojaRequiredMixin, FilterForSameLojaMixin, UpdateHTMXView, DetailView
+    MultipleFormsViewMixin,
+    UserFromLojaRequiredMixin,
+    FilterForSameLojaMixin,
+    UpdateHTMXView,
+    DetailView,
 ):
     login_url = reverse_lazy('login_contratacao')
-    template_name = 'promocoes_por_produto.html'
-    model = Produto
-    promocoes_form_class = PromocoesPorProdutoForm
-    preco_form_class = PrecoDeVendaProdutoForm
-    em_venda_form_class = ProdutoEmVendaForm
-    duplicar_promocao_form_class = DuplicarPromocaoForm
-    usuario_class = GerenteFinanceiro
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
+    template_name = 'promocoes_por_produto.html'
+    model = Produto
+    usuario_class = GerenteFinanceiro
+    forms_class = {
+        'promocoes_por_produto': PromocoesPorProdutoForm,
+        'preco_de_venda': PrecoDeVendaProdutoForm,
+        'em_venda': ProdutoEmVendaForm,
+        'duplicar_promocao': DuplicarPromocaoForm,
+    }
 
     def get_template_names(self, request=None) -> list[str]:
         templates = [self.template_name]
@@ -45,31 +52,36 @@ class GestaoPromocoesProdutoCRUDView(
             templates.append('includes/article_produto_oferta.html')
 
         return templates
-    
-    def get_form_kwargs(self) -> dict[str, Any]:
-        kwargs = super().get_form_kwargs()
-        kwargs['scope'] = self.scope
-        kwargs['instance'] = self.get_object()
-        # kwargs['loja'] = self.get_loja()
+
+    def get_form_kwargs(self, form_class=None, request=None) -> dict[str, any]:
+        kwargs = {}
+
+        if form_class is None and request is not None:
+            form_class = self.get_form_class(request)
+
+        if request is not None:
+            kwargs['data'] = request.POST
+
+        if (
+            form_class != self.forms_class['em_venda']
+            and form_class != self.forms_class['preco_de_venda']
+        ):
+            kwargs['scope'] = self.scope
+
+        if form_class != self.forms_class['duplicar_promocao']:
+            kwargs['instance'] = self.get_object()
 
         return kwargs
-    
-    def get_form(self, form_class: type | None = ...) -> BaseForm:
-        kwargs = self.get_form_kwargs()
-
-        if form_class != self.promocoes_form_class:
-            kwargs.pop('scope')
-
-        return form_class(**kwargs)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = {}
         produto = self.get_object()
 
+        forms = self.get_forms()
+        for key, form in forms.items():
+            context[f"{key}_form"] = form
+
         context['produto'] = produto
-        context['form'] = self.get_form(self.promocoes_form_class)
-        context['preco_form'] = self.get_form(self.preco_form_class)
-        context['em_venda_form'] = self.get_form(self.em_venda_form_class)
         context['promocoes'] = produto.promocoes.all().annotate(
             desconto=ExpressionWrapper(
                 produto.preco_de_venda * F('porcentagem_desconto') / 100,
@@ -90,7 +102,20 @@ class GestaoPromocoesProdutoCRUDView(
 
         if type(object) is Promocao:
             self.object = Produto.produtos.get(pk=self.kwargs['pk'])
-            context['promocao'] = object
+            context['promocao'] = (
+                Promocao.promocoes.filter(pk=object.pk)
+                .annotate(
+                    desconto=ExpressionWrapper(
+                        self.object.preco_de_venda * F('porcentagem_desconto') / 100,
+                        output_field=DecimalField(),
+                    ),
+                    preco_com_desconto=ExpressionWrapper(
+                        self.object.preco_de_venda - F('desconto'),
+                        output_field=DecimalField(),
+                    ),
+                )
+                .first()
+            )
         else:
             self.object = object
             context['produto'] = self.object
@@ -100,42 +125,24 @@ class GestaoPromocoesProdutoCRUDView(
 
         return render(self.request, self.get_template_names()[1], context)
 
-    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        try:
-            produto = self.get_object()
-
-            if 'promocoes' in request.POST:
-                form = self.promocoes_form_class(
-                    data=request.POST, scope=self.scope, instance=produto
-                )
-            elif 'data_inicio' in request.POST:
-                form = self.duplicar_promocao_form_class(
-                    data=request.POST, scope=self.scope
-                )
-            elif 'preco_de_venda' in request.POST:
-                form = self.preco_form_class(request.POST, instance=produto)
-            elif 'em_venda' in request.POST:
-                form = self.em_venda_form_class(request.POST, instance=produto)
-
-            if form.is_valid():
-                return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=400)
-
 
 class GestaoProdutosPromocaoCRUDView(
-    UserFromLojaRequiredMixin, FilterForSameLojaMixin, UpdateHTMXView, DetailView
+    MultipleFormsViewMixin,
+    UserFromLojaRequiredMixin,
+    FilterForSameLojaMixin,
+    UpdateHTMXView,
+    DetailView,
 ):
     login_url = reverse_lazy('login_contratacao')
-    template_name = 'produtos_por_promocao.html'
-    model = Promocao
-    produtos_form_class = ProdutosPorPromocaoForm
-    duplicar_promocao_form_class = DuplicarPromocaoForm
-    usuario_class = GerenteFinanceiro
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
+    template_name = 'produtos_por_promocao.html'
+    model = Promocao
+    usuario_class = GerenteFinanceiro
+    forms_class = {
+        'produtos_por_promocao': ProdutosPorPromocaoForm,
+        'duplicar_promocao': DuplicarPromocaoForm,
+    }
 
     def get_template_names(self, request=None) -> list[str]:
         templates = [self.template_name]
@@ -152,6 +159,10 @@ class GestaoProdutosPromocaoCRUDView(
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = {}
 
+        forms = self.get_forms()
+        for form in forms.values():
+            context[form.form_name()] = form
+
         promocao = self.get_object()
         context['promocao'] = promocao
         context['produtos'] = promocao.produtos.all().annotate(
@@ -161,17 +172,19 @@ class GestaoProdutosPromocaoCRUDView(
             ),
             preco_com_desconto=F('preco_de_venda') - F('desconto'),
         )
-        context['form'] = self.get_form(self.produtos_form_class)
-        context['duplicar_form'] = self.get_form(self.duplicar_promocao_form_class)
         context['data_final'] = promocao.data_inicio + promocao.periodo.tempo_total
         context['today'] = date.today()
 
         return context
 
-    def get_form_kwargs(self) -> dict[str, Any]:
+    def get_form_kwargs(self, form_class=None, request=None) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs['scope'] = self.scope
         kwargs['instance'] = self.get_object()
+
+        if request is not None:
+            kwargs['data'] = request.POST
+
         # kwargs['loja'] = self.get_loja()
 
         return kwargs
@@ -181,7 +194,7 @@ class GestaoProdutosPromocaoCRUDView(
         context = {}
         context['erros'] = form.errors
 
-        if type(form) == self.produtos_form_class:
+        if type(form) == self.forms_class['produtos_por_promocao']:
             self.object = object
             context['promocao'] = object
             context['produtos'] = object.produtos.all().annotate(
@@ -193,31 +206,10 @@ class GestaoProdutosPromocaoCRUDView(
             )
 
             return render(self.request, self.get_template_names()[1], context)
-        elif type(form) == self.duplicar_promocao_form_class:
+        elif type(form) == self.forms_class['duplicar_promocao']:
             return redirect(
                 reverse(
                     'gestao_produtos_promocao',
                     kwargs={'loja_scope': self.scope.pk, 'pk': object.pk},
                 )
             )
-
-    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        try:
-            promocao = self.get_object()
-            form = None
-
-            if 'data_inicio' in request.POST:
-                form = self.duplicar_promocao_form_class(
-                    data=request.POST, scope=self.scope, instance=promocao
-                )
-            elif 'produtos' in request.POST:
-                form = self.produtos_form_class(
-                    data=request.POST, scope=self.scope, instance=promocao
-                )
-
-            if form.is_valid():
-                return self.form_valid(form)
-            else:
-                return self.form_invalid(form)
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=400)

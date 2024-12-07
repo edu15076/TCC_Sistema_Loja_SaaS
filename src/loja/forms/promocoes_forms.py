@@ -13,12 +13,15 @@ from util.forms import (
     CustomModelMultipleChoiceField
 )
 from .mixins import LojaValidatorFormMixin
+from util.mixins import NameFormMixin
 from loja.models import Produto, Promocao
 from loja.validators import validate_unique_promocao
 
 # TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
-class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
+class PromocoesPorProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'promocoes_por_produto'
+
     promocoes = CustomModelMultipleChoiceField(
         queryset=Promocao.promocoes.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -30,7 +33,7 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
         fields = ['promocoes']
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Salvar')
+        return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, scope, queryset=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,7 +85,9 @@ class PromocoesPorProdutoForm(CrispyFormMixin, forms.ModelForm):
         return instance
 
 
-class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
+class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'produtos_por_promocao'
+
     produtos = CustomModelMultipleChoiceField(
         queryset=Produto.produtos.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -95,7 +100,7 @@ class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
         fields = ['produtos']
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Salvar')
+        return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, scope=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -144,7 +149,9 @@ class ProdutosPorPromocaoForm(CrispyFormMixin, forms.ModelForm):
         return instance
 
 
-class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
+class DuplicarPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'duplicar_promocao'
+
     data_inicio = forms.DateField(
         label=_('Data de início'),
         widget=forms.DateInput(attrs={'type': 'date'}),
@@ -164,7 +171,7 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         fields = ['data_inicio', 'produtos']
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Duplicar')
+        return Submit(self.submit_name(), 'Duplicar')
 
     def __init__(self, scope=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -192,6 +199,7 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
 
             self.fields['produtos'].queryset = produtos_queryset
             self.scope = scope
+            self.errors.clear()
 
     def clean_promocao(self):
         promocao = self.cleaned_data.get('promocao')
@@ -201,7 +209,7 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
 
         self.cleaned_data['promocao'] = Promocao.promocoes.get(pk=promocao)
         return self.cleaned_data['promocao']
-
+    
     def save(self, commit: bool = ...) -> Any:
         instance = self.instance
 
@@ -214,6 +222,7 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         replicate = instance.clonar_promocao(
             self.cleaned_data['data_inicio'], commit=False
         )
+
         produtos = []
 
         for produto in self.cleaned_data['produtos']:
@@ -230,7 +239,9 @@ class DuplicarPromocaoForm(CrispyFormMixin, forms.ModelForm):
         return replicate
 
 
-class PromocaoForm(CrispyFormMixin, forms.ModelForm):
+class PromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'promocao'
+
     numero_de_periodos = forms.IntegerField(
         label=_('Número de períodos'),
         min_value=0,
@@ -267,7 +278,7 @@ class PromocaoForm(CrispyFormMixin, forms.ModelForm):
         ]
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Salvar')
+        return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, scope=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -317,7 +328,7 @@ class PromocaoForm(CrispyFormMixin, forms.ModelForm):
                 validate_unique_promocao(produto, promocao)
                 produtos.append(produto)
             except Exception as e:
-                self.add_error('produtos', e)
+                self.add_error('produtos', _(f"Produto {produto} já está em outra promoção durante o mesmo periodo."))
 
         if commit:
             promocao.save()

@@ -29,7 +29,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form 
+                    <form name="{{ duplicar_promocao_form.get_submit_button.name }}"
                         id="duplicar-promocao-form" 
                         method="post" 
                         hx-swap="afterbegin"
@@ -37,13 +37,18 @@
                         hx-target="#tabela-promocoes tbody"
                         hx-on::after-request="this.reset(); $('#duplicarPromocaoModal').modal('hide');">
                         {% csrf_token %}
-                        {{ duplicar_form.data_inicio|as_crispy_field }}
+                        {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
-                            {% for value, label in duplicar_form.produtos.field.choices %}
+                            {% for value, label in duplicar_promocao_form.produtos.field.choices %}
                                 {% include "cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
                         </div>
-                        <button type="submit" class="btn btn-block w-100 btn-primary mt-2">Duplicar</button>
+                        <button name="{{ duplicar_promocao_form.submit_name }}"
+                            value="{{ duplicar_promocao_form.get_submit_button.value }}"
+                            type="submit" 
+                            class="btn btn-block w-100 btn-primary mt-2">
+                                Cadastrar
+                        </button>
                     </form>
                 </div>
             </div>
@@ -66,19 +71,24 @@
                         hx-on::after-request="this.reset(); $('#addPromocaoModal').modal('hide');" 
                         method="post">
                         {% csrf_token %}
-                        {{ form.descricao|as_crispy_field }}
-                        {{ form.porcentagem_desconto|as_crispy_field }}
-                        {{ form.data_inicio|as_crispy_field }}
-                        {{ form.numero_de_periodos|as_crispy_field }}
-                        {{ form.unidades_de_tempo_por_periodo|as_crispy_field }}
+                        {{ promocao_form.descricao|as_crispy_field }}
+                        {{ promocao_form.porcentagem_desconto|as_crispy_field }}
+                        {{ promocao_form.data_inicio|as_crispy_field }}
+                        {{ promocao_form.numero_de_periodos|as_crispy_field }}
+                        {{ promocao_form.unidades_de_tempo_por_periodo|as_crispy_field }}
 
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
-                            {% for value, label in form.produtos.field.choices %}
+                            {% for value, label in promocao_form.produtos.field.choices %}
                                 {% include "cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
                         </div>
 
-                        <button type="submit" class="btn btn-block w-100 btn-primary mt-2">Cadastrar</button>
+                        <button name="{{ promocao_form.submit_name }}"
+                            value="{{ promocao_form.get_submit_button.value }}"
+                            type="submit" 
+                            class="btn btn-block w-100 btn-primary mt-2">
+                                Cadastrar
+                        </button>
                     </form>
                 </div>
             </div>

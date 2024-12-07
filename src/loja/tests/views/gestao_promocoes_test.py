@@ -103,9 +103,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'promocoes.html')
-        self.assertIn('form', response.context, 'form não encontrado')
+        self.assertIn('promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
-        self.assertIn('duplicar_form', response.context)
 
         self.assertEqual(
             response.context['promocoes_count'],
@@ -120,9 +120,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         response = self.client.get(self._get_url(scope.pk), data)
         self.assertTemplateUsed(response, 'promocoes.html')
-        self.assertIn('form', response.context)
+        self.assertIn('promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
-        self.assertIn('duplicar_form', response.context)
 
         self.assertListEqual(
             list(
@@ -145,9 +145,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         response = self.client.get(self._get_url(scope.pk), data)
         self.assertTemplateUsed(response, 'promocoes.html')
-        self.assertIn('form', response.context)
+        self.assertIn('promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
-        self.assertIn('duplicar_form', response.context)
 
         self.assertListEqual(
             list(
@@ -164,9 +164,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         response = self.client.get(self._get_url(scope.pk), data)
         self.assertTemplateUsed(response, 'promocoes.html')
-        self.assertIn('form', response.context)
+        self.assertIn('promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
-        self.assertIn('duplicar_form', response.context)
 
         promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
             '-data_inicio'
@@ -189,9 +189,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         response = self.client.get(self._get_url(scope.pk), data)
         self.assertTemplateUsed(response, 'promocoes.html')
-        self.assertIn('form', response.context)
+        self.assertIn('promocao_form', response.context)
+        self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
-        self.assertIn('duplicar_form', response.context)
 
         promocoes = Promocao.promocoes.filter(loja=self.lojas[0]).order_by(
             '-porcentagem_desconto'
@@ -214,6 +214,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'promocao': self.promocoes[0].pk,
             'data_inicio': date.today() + timedelta(days=100),
             'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
+            'duplicar_promocao_submit': 'Duplicar',
         }
 
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -232,6 +233,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'promocao': self.promocoes[0].pk,
             'data_inicio': date.today() + timedelta(days=10),
             'produtos': [p.pk for p in self.promocoes[0].produtos.all()],
+            'duplicar_promocao_submit': 'Duplicar',
         }
 
         response = self.client.post(
@@ -255,6 +257,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'produtos': [self.produtos[0].pk],
             'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.DIA,
             'numero_de_periodos': 10,
+            'promocao_submit': 'Salvar',
         }
 
         response = self.client.post(self._get_url(scope.pk), data=data)
@@ -277,6 +280,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
             'produtos': [self.produtos[0].pk],
             'unidades_de_tempo_por_periodo': Periodo.UnidadeDeTempo.DIA,
             'numero_de_periodos': 10,
+            'promocao_submit': 'Salvar',
         }
 
         response = self.client.post(self._get_url(scope.pk), data=data)

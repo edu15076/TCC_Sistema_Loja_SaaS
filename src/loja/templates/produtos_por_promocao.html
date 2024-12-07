@@ -19,8 +19,6 @@
                 {% endif %} 
             </section>
         </div>
-
-
         <div class="col-lg-9 d-grid mt-4">
             <section id="produtos">
                 {% include "includes/lista_produtos_promocao.html" %}
@@ -43,13 +41,17 @@
                         hx-on::after-request="$('#editarProdutosModal').modal('hide');" 
                         hx-swap="innerHTML">
                         {% csrf_token %}
-                        {% comment %} {{ form.produtos|as_crispy_field }} {% endcomment %}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
-                            {% for value, label in form.produtos.field.choices %}
+                            {% for value, label in produtos_por_promocao_form.produtos.field.choices %}
                                 {% include "cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2 w-100">Salvar</button>
+                        <button name="{{ produtos_por_promocao_form.submit_name }}" 
+                            value="{{ produtos_por_promocao_form.get_submit_button.value }}"
+                            type="submit" 
+                            class="btn btn-primary mt-2 w-100">
+                            Salvar
+                        </button>
                     </form>
                 </div>
             </div>
@@ -66,17 +68,18 @@
                 <div class="modal-body mx-4 my-4">
                     <form method="post" action="{% url 'gestao_produtos_promocao' scope.pk promocao.pk %}" >
                         {% csrf_token %}
-                        {{ duplicar_form.data_inicio|as_crispy_field }}
+                        {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
-                            {% for value, label in duplicar_form.produtos.field.choices %}
+                            {% for value, label in duplicar_promocao_form.produtos.field.choices %}
                                 {% include "cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2 w-100">Duplicar</button>
+                        <button name="{{ duplicar_promocao_form.submit_name }}" value="{{ duplicar_promocao_form.get_submit_button.value }}" type="submit" class="btn btn-primary mt-2 w-100">Duplicar</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 {% endblock main_content %}

@@ -3,18 +3,21 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from util.forms import CrispyFormMixin
+from util.mixins import NameFormMixin
 from .mixins import LojaValidatorFormMixin
 from loja.models import Produto
 
 # TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
-class ProdutoEmVendaForm(CrispyFormMixin, forms.ModelForm):
+class ProdutoEmVendaForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'em_venda'
+
     class Meta:
         model = Produto
         fields = ['em_venda']
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Salvar')
+        return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -22,13 +25,15 @@ class ProdutoEmVendaForm(CrispyFormMixin, forms.ModelForm):
         self.helper.form_method = 'post'
 
 
-class PrecoDeVendaProdutoForm(CrispyFormMixin, forms.ModelForm):
+class PrecoDeVendaProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+    _name = 'preco_de_venda'
+
     class Meta:
         model = Produto
         fields = ['preco_de_venda']
 
     def get_submit_button(self) -> Submit:
-        return Submit('submit', 'Salvar')
+        return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
