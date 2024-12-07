@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from crispy_forms.bootstrap import AppendedText
 from crispy_forms.layout import Submit, Layout
 from django import forms
@@ -28,24 +30,36 @@ class AlterarComissaoVendedorForm(LojaValidatorFormMixin, CrispyFormMixin, forms
         validators=[ActiveFuncionarioValidator()]
     )
     comissao = forms.DecimalField(
-        min_value=0, max_value=100, step_size=0.01, max_digits=5, decimal_places=2,
+        min_value=Decimal('0'), max_value=Decimal('100'), step_size=Decimal('0.01'),
+        max_digits=5, decimal_places=2,
         required=True,
         label=_('Comissão'),
-        widget=forms.NumberInput(attrs={'class': 'porcentagem-comissao-input'})
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'porcentagem-comissao-input check-on-blur',
+                'style': 'max-width: 7rem;'
+            }
+        )
     )
 
     def get_submit_button(self) -> Submit:
         return Submit('submit', _('Submit'), css_class='d-none')
 
-    def __init__(self, *args, disabled=False, **kwargs):
+    def __init__(self, *args, disabled=False, add_is_valid=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
         self.helper.layout = Layout(
             'vendedor',
-            AppendedText('comissao', '%', wrapper_class='w-fit'),
+            AppendedText(
+                'comissao', '%', template='form_fields/crispy_append_text.html'),
         )
         if disabled:
             self.fields['comissao'].widget.attrs['disabled'] = True
+        if add_is_valid:
+            self.add_is_valid()
+
+    def add_is_valid(self):
+        self.fields['comissao'].widget.attrs['class'] += ' is-valid'
 
     def clean_comissao(self):
         comissao: bool = self.cleaned_data['comissao']

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import Group
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Coalesce
@@ -94,7 +95,20 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     )
 
     _porcentagem_comissao = models.DecimalField(
-        max_digits=4, decimal_places=2, null=True, blank=True
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MaxValueValidator(
+                Decimal('100'),
+                message='Porcentagem não pode exceder 100%.'
+            ),
+            MinValueValidator(
+                Decimal('0'),
+                message='Porcentagem não pode ser negativo.'
+            )
+        ]
     )
 
     is_admin = models.BooleanField(default=False, null=False, blank=True)

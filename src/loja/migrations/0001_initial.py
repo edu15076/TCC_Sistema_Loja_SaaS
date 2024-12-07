@@ -7,6 +7,7 @@ import loja.models.funcionario
 import loja.models.loja
 import scope_auth.models.user_per_scope
 from django.db import migrations, models
+from decimal import Decimal
 
 
 class Migration(migrations.Migration):
@@ -22,7 +23,25 @@ class Migration(migrations.Migration):
             name='Funcionario',
             fields=[
                 ('usuario', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, related_name='funcionario_loja', serialize=False, to='common.usuariogenericopessoafisica')),
-                ('_porcentagem_comissao', models.DecimalField(decimal_places=2, max_digits=4, null=True, blank=True)),
+                (
+                    '_porcentagem_comissao',
+                    models.DecimalField(
+                        blank=True,
+                        decimal_places=2,
+                        max_digits=5,
+                        null=True,
+                        validators=[
+                            django.core.validators.MaxValueValidator(
+                                Decimal('100'),
+                                message='Porcentagem não pode exceder 100%.'
+                            ),
+                            django.core.validators.MinValueValidator(
+                                Decimal('0'),
+                                message='Porcentagem não pode ser negativo.'
+                            ),
+                        ],
+                    ),
+                ),
                 ('is_admin', models.BooleanField(blank=True, default=False)),
             ],
             options={

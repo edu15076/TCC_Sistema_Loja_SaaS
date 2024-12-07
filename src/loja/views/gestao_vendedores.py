@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseNotFound, JsonResponse
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, TemplateView, FormView
 
@@ -21,19 +22,20 @@ class VendedorContextDataMixin:
     def pode_alterar_comissao(self, vendedor: Vendedor):
         return vendedor.is_active and vendedor != self.user
 
-    def get_alterar_comissao_form(self, vendedor: Vendedor):
+    def get_alterar_comissao_form(self, vendedor: Vendedor, add_is_valid=False):
         return AlterarComissaoVendedorForm(
             initial={
                 'vendedor': vendedor.pk,
                 'comissao': vendedor.porcentagem_comissao,
             },
             disabled=not self.pode_alterar_comissao(vendedor),
+            add_is_valid=add_is_valid,
             loja=self.user.loja,
             auto_id=f'alterar-comissao-vendedor-{vendedor.pk}-%s'
         )
 
-    def get_context_data_vendedor(self, vendedor: Vendedor) -> Vendedor:
-        vendedor.alterar_comissao_form = self.get_alterar_comissao_form(vendedor)
+    def get_context_data_vendedor(self, vendedor: Vendedor, add_is_valid=False) -> Vendedor:
+        vendedor.alterar_comissao_form = self.get_alterar_comissao_form(vendedor, add_is_valid)
         return vendedor
 
 
@@ -72,7 +74,7 @@ class CardVendedorView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        self.get_context_data_vendedor(context['vendedor'])
+        self.get_context_data_vendedor(context['vendedor'], add_is_valid=True)
         return context
 
     def get_login_url(self):
@@ -103,27 +105,15 @@ class AlterarComissaoVendedorView(
             }),
         }
 
-    def get_success_url(self):
-        success_url = reverse('vendedor_detail', kwargs=self.get_success_url_kwargs())
-        return None  # Altere isso se quiser uma atualização do card
-
-    def get_success_url_kwargs(self) -> dict:
-        return {
-            'pk': self.form.cleaned_data['vendedor'].pk,
-            'loja_scope': int(self.user.loja),
-        }
-
     def get_form_kwargs(self) -> dict:
         return super().get_form_kwargs() | {'loja': self.user.loja}
 
-    def get_form(self, form_class=None):
-        if not hasattr(self, 'form'):
-            setattr(self, 'form', super().get_form(form_class))
-        return self.form
-
     def form_valid(self, form):
         form.save()
-        return super().form_valid(form)
+        form.add_is_valid()
+        return TemplateResponse(
+            self.request, self.form_template_name, self.get_context_data(form=form)
+        )
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})

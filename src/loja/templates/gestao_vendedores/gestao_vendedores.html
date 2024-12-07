@@ -1,4 +1,5 @@
 {% extends 'base_loja.html' %}
+{% load static %}
 
 {% block main_content %}
     <h1>Vendedores</h1>
@@ -8,3 +9,7 @@
         </div>
     </div>
 {% endblock main_content %}
+
+{% block scripts %}
+    <script src="{% static 'scripts/inputs/check_on_blur.js' %}"></script>
+{% endblock scripts %}

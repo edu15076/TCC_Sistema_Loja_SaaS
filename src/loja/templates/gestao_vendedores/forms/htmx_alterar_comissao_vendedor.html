@@ -1,8 +1,9 @@
 {% load crispy_forms_tags %}
 <form
-        hx-target="closest .dados-vendedor"
+        hx-target="this"
         hx-swap="outerHTML"
         hx-trigger="submit, blur from:find .porcentagem-comissao-input"
+        hx-on::before-request="$(this).find('.porcentagem-comissao-input:first').prop('disabled', 'true');"
         hx-post="{{ action }}"
         method="post">
     {% crispy form %}
