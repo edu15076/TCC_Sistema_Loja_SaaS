@@ -110,6 +110,7 @@ class UsuarioGenericoPessoaFisicaCreationForm(
         model = UsuarioGenericoPessoaFisica
         fields = PessoaFisicaCreationForm.Meta.fields
         labels = getattr(PessoaFisicaCreationForm.Meta, 'labels', {})
+        widgets = getattr(PessoaFisicaCreationForm.Meta, 'widgets', {})
 
 
 class UsuarioGenericoPessoaJuridicaCreationForm(
@@ -124,6 +125,7 @@ class UsuarioGenericoPessoaJuridicaCreationForm(
         model = UsuarioGenericoPessoaJuridica
         fields = PessoaJuridicaCreationForm.Meta.fields
         labels = getattr(PessoaJuridicaCreationForm.Meta, 'labels', {})
+        widgets = getattr(PessoaJuridicaCreationForm.Meta, 'widgets', {})
 
 
 class UsuarioGenericoAuthenticationForm(CrispyFormMixin, AuthenticationForm):
@@ -200,6 +202,7 @@ class UsuarioGenericoPessoaFisicaChangeForm(
         fields = tuple(dict.fromkeys(
             UsuarioGenericoChangeForm.Meta.fields + PessoaFisicaChangeForm.Meta.fields
         ))
+        widgets = getattr(PessoaFisicaChangeForm.Meta, 'widgets', {})
 
 
 class UsuarioGenericoPessoaJuridicaChangeForm(

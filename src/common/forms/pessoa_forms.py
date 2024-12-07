@@ -81,6 +81,11 @@ class PessoaFisicaCreationForm(PessoaCreationForm):
         labels = {
             'codigo': 'CPF',
         }
+        widgets = {
+            'data_nascimento': forms.DateInput(
+                attrs={'type': 'date'}, format='%Y-%m-%d'
+            )
+        }
 
 
 class PessoaJuridicaCreationForm(PessoaCreationForm):
@@ -131,6 +136,11 @@ class PessoaFisicaChangeForm(PessoaChangeForm):
         fields = tuple(dict.fromkeys(
             PessoaChangeForm.Meta.fields + ('nome', 'sobrenome', 'data_nascimento')
         ))
+        widgets = {
+            'data_nascimento': forms.DateInput(
+                attrs={'type': 'date'}, format='%Y-%m-%d'
+            )
+        }
 
 
 class PessoaJuridicaChangeForm(PessoaChangeForm):

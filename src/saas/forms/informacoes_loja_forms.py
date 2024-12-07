@@ -97,6 +97,7 @@ class AdminCreationForm(ModalCrispyFormMixin, BaseFuncionarioCreationForm):
         model = Admin
         fields = BaseFuncionarioCreationForm.Meta.fields
         labels = getattr(BaseFuncionarioCreationForm.Meta, 'labels', {})
+        widgets = getattr(BaseFuncionarioCreationForm.Meta, 'widgets', {})
 
 
 class FuncionarioIsAdminForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
