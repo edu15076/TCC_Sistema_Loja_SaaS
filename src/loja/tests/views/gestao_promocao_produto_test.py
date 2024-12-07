@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -90,7 +91,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.get(self._get_url(scope.pk, self.produtos[0]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'promocoes_por_produto.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes_por_produto.html')
         self.assertIn('promocoes_por_produto_form', response.context)
         self.assertIn('preco_de_venda_form', response.context)
         self.assertIn('em_venda_form', response.context)
@@ -140,10 +141,10 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         )
 
         produto = Produto.produtos.get(pk=self.produtos[0].pk)
-        produto_response = response.context['produto']
+        preco_de_venda_response = Decimal(response.json()['preco_de_venda'])
 
-        self.assertEqual(produto.preco_de_venda, 150)
-        self.assertEqual(produto, produto_response)
+        self.assertEqual(preco_de_venda_response, 150)
+        self.assertEqual(produto.preco_de_venda, preco_de_venda_response)
 
     def test_post_adicionar_promocoes_validas_produto(self):
         self._login(self.gerente_financeiro[0])
@@ -313,7 +314,7 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.get(self._get_url(scope.pk, self.promocoes[0]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'produtos_por_promocao.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/produtos_por_promocao.html')
         self.assertIn('produtos', response.context)
         self.assertIn('produtos_por_promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)

@@ -25,7 +25,7 @@ class GestaoPromocoesProdutoCRUDView(
     login_url = reverse_lazy('login_contratacao')
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
-    template_name = 'promocoes_por_produto.html'
+    template_name = 'gestao_oferta_produtos/promocoes_por_produto.html'
     model = Produto
     usuario_class = GerenteFinanceiro
     forms_class = {
@@ -42,14 +42,14 @@ class GestaoPromocoesProdutoCRUDView(
         cards = request.GET.get('visualizacao') == 'cards'
 
         if 'promocoes' in request.POST:
-            templates.append('includes/lista_promocoes_produto.html')
+            templates.append('gestao_oferta_produtos/listas/lista_promocoes_produto.html')
         elif 'data_inicio' in request.POST:
             if cards:
-                templates.append('cards/card_promocao_produto.html')
+                templates.append('gestao_oferta_produtos/cards/card_promocao_produto.html')
             else:
-                templates.append('linhas/linha_promocao_produto.html')
+                templates.append('gestao_oferta_produtos/linhas/linha_promocao_produto.html')
         elif 'em_venda' in request.POST or 'preco_de_venda' in request.POST:
-            templates.append('includes/article_produto_oferta.html')
+            templates.append('gestao_oferta_produtos/articles/article_produto_oferta.html')
 
         return templates
 
@@ -100,7 +100,9 @@ class GestaoPromocoesProdutoCRUDView(
         context = {}
         context['erros'] = form.errors
 
-        if type(object) is Promocao:
+        if type(form) == self.forms_class['preco_de_venda']:
+            return JsonResponse({'success': True, 'preco_de_venda': object.preco_de_venda})
+        elif type(object) is Promocao:
             self.object = Produto.produtos.get(pk=self.kwargs['pk'])
             context['promocao'] = (
                 Promocao.promocoes.filter(pk=object.pk)
@@ -136,7 +138,7 @@ class GestaoProdutosPromocaoCRUDView(
     login_url = reverse_lazy('login_contratacao')
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
-    template_name = 'produtos_por_promocao.html'
+    template_name = 'gestao_oferta_produtos/produtos_por_promocao.html'
     model = Promocao
     usuario_class = GerenteFinanceiro
     forms_class = {
@@ -150,9 +152,9 @@ class GestaoProdutosPromocaoCRUDView(
         request = self.request
 
         if 'produtos' in request.POST:
-            templates.append('includes/lista_produtos_promocao.html')
+            templates.append('gestao_oferta_produtos/listas/lista_produtos_promocao.html')
         elif 'data_inicio' in request.POST:
-            templates.append('includes/article_promocao.html')
+            templates.append('gestao_oferta_produtos/articles/article_promocao.html')
 
         return templates
 

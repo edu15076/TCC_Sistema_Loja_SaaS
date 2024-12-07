@@ -31,7 +31,7 @@ class ProdutoModelTest(TestCase):
         self.assertEqual(self.produto.qtd_em_estoque, 10)
 
     def test_produto_promocao_por_data(self):
-        promocao = self.produto.promocao_por_data(datetime.now())
+        promocao = self.produto.promocao_por_data(datetime.today())
         self.assertIsNone(promocao)
 
     def test_produto_promocao_ativa(self):

@@ -24,7 +24,7 @@ class GestaoPromocoesCRUDListView(
     login_url = reverse_lazy('login_contratacao')
     permission_required = 'loja.gerir_oferta_de_produto'
     raise_exception = True
-    template_name = 'promocoes.html'
+    template_name = 'gestao_oferta_produtos/promocoes.html'
     filter_form = FiltroPromocaoForm
     model = Promocao
     object = None
@@ -70,9 +70,9 @@ class GestaoPromocoesCRUDListView(
         cards = request.GET.get('visualizacao') == 'cards'
 
         if cards:
-            templates.append('cards/card_promocao.html')
+            templates.append('gestao_oferta_produtos/cards/card_promocao.html')
         else:
-            templates.append('linhas/linha_promocao.html')
+            templates.append('gestao_oferta_produtos/linhas/linha_promocao.html')
 
         return templates
 

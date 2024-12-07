@@ -1,4 +1,6 @@
+from datetime import datetime
 from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.db.models import F, Q
@@ -34,4 +36,10 @@ def validate_unique_promocao(produto, promocao):
                 'O produto %(produto)s tem outra(s) promoção(ões) ativa(s) no período da promoção atual: %(promocoes)s'
             ),
             params={'produto': produto.descricao, 'promocoes': promocoes},
+        )
+
+def validate_data_atual_promocao(data):
+    if data < datetime.today().date():
+        raise ValidationError(
+            _('A data de início não pode ser no passado.')
         )

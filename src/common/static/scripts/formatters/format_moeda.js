@@ -1,0 +1,1 @@
+const formatMoeda = (valor) => parseFloat(valor).toFixed(2).replace('.', ',');

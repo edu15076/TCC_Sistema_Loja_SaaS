@@ -1,0 +1,1 @@
+const formatPorcentagem = (valor) => parseFloat(valor).toFixed(2).replace('.', ',') + '%';

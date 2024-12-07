@@ -8,11 +8,11 @@ from django.urls import reverse_lazy
 from django.shortcuts import render
 
 from util.mixins import MultipleFormsViewMixin
-from loja.models.funcionario import GerenteFinanceiro
 from loja.views.mixins import UserFromLojaRequiredMixin
 from util.views.edit_list import CreateOrUpdateListHTMXView
-from loja.models import Produto
+from loja.models import Produto, GerenteFinanceiro, ConfiguracaoDeVendas
 from loja.forms import (
+    ConfiguracaoDeVendasForm,
     PrecoDeVendaProdutoForm,
     ProdutoEmVendaForm,
     OfertaProdutosFilterForm,
@@ -26,7 +26,7 @@ class GestaoOfertaProdutoListView(
     MultipleFormsViewMixin, UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
 ):
     login_url = reverse_lazy('login_contratacao')
-    template_name = 'oferta_produtos.html'
+    template_name = 'gestao_oferta_produtos/oferta_produtos.html'
     permission_required = 'loja.gerir_oferta_de_produto'
     usuario_class = GerenteFinanceiro
     raise_exception = True
@@ -40,6 +40,7 @@ class GestaoOfertaProdutoListView(
     forms_class = {
         'preco_de_venda': PrecoDeVendaProdutoForm,
         'em_venda': ProdutoEmVendaForm,
+        'configuracao_de_venda': ConfiguracaoDeVendasForm,
     }
 
     def get_pk_slug(self) -> tuple[int | None, str | None]:
@@ -58,11 +59,17 @@ class GestaoOfertaProdutoListView(
     
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, Any]:
         kwargs = {}
-        # kwargs['scope'] = self.scope
+
         if request is not None:
-            kwargs['instance'] = self.get_object()
+            if self.forms_class['configuracao_de_venda'].submit_name() in request.POST:
+                # kwargs['scope'] = self.scope
+                pass
+            else:
+                kwargs['instance'] = self.get_object()
+                
             kwargs['data'] = request.POST
 
+        # print(kwargs)
         return kwargs
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -73,6 +80,7 @@ class GestaoOfertaProdutoListView(
         for form in form.values():
             context[form.form_name()] = form
 
+        context['configuracao_de_venda'] = ConfiguracaoDeVendas.configuracoes.get(loja__scope=self.scope)
         context['filter_form'] = self.filter_form()
         context['query_form'] = self.query_form()
         context['produtos'] = self.get_page()
@@ -91,11 +99,11 @@ class GestaoOfertaProdutoListView(
 
         if 'em_venda_submit' in request.POST or 'preco_de_venda_submit' in request.POST:
             if cards:
-                return ['cards/card_oferta_produto.html']
+                return ['gestao_oferta_produtos//cards/card_oferta_produto.html']
             else:
-                return ['linhas/linha_oferta_produto.html']
+                return ['gestao_oferta_produtos/linhas/linha_oferta_produto.html']
         elif 'query' in request.POST:
-            return ['includes/exibe_ofertas_produtos.html']
+            return ['gestao_oferta_produtos/listas/lista_ofertas_produtos.html']
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         return render(request, self.template_name, self.get_context_data())
@@ -119,6 +127,10 @@ class GestaoOfertaProdutoListView(
         )
 
     def form_valid(self, form):
+        if type(form) == self.forms_class['configuracao_de_venda']:
+            configuracao = form.save()
+            return JsonResponse({'success': True, 'limite_porcentagem_desconto_maximo': configuracao.limite_porcentagem_desconto_maximo})
+
         produto = form.save()
         return render(
             self.request,

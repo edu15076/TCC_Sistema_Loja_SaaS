@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from common.models.periodo import Periodo
 
-from loja.validators import validate_unique_promocao
+from loja.validators import validate_unique_promocao, validate_data_atual_promocao
 from util.mixins import ValidateModelMixin, NotUpdatableFieldMixin
 from loja.models import Loja
 from .produto import Produto
@@ -34,11 +34,7 @@ class Promocao(ValidateModelMixin, models.Model):
     data_inicio = models.DateField(
         _('Data de início'),
         blank=False,
-        validators=[
-            MinValueValidator(
-                datetime.now().date(), _('A data de início não pode ser no passado.')
-            )
-        ],
+        validators=[validate_data_atual_promocao],
     )
     descricao = models.CharField(_('Descrição'), max_length=246, blank=True)
     periodo = models.ForeignKey(

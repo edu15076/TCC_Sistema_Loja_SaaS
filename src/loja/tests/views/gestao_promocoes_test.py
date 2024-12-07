@@ -102,7 +102,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.get(self._get_url(scope.pk))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'promocoes.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes.html')
         self.assertIn('promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
@@ -119,7 +119,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         data = {'status': 1, 'ordem': 'id'}
 
         response = self.client.get(self._get_url(scope.pk), data)
-        self.assertTemplateUsed(response, 'promocoes.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes.html')
         self.assertIn('promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
@@ -144,7 +144,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         data = {'produtos': [self.produtos[1].pk], 'ordem': 'id'}
 
         response = self.client.get(self._get_url(scope.pk), data)
-        self.assertTemplateUsed(response, 'promocoes.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes.html')
         self.assertIn('promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
@@ -163,7 +163,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         data = {'status': 0, 'ordem': '-data_inicio'}
 
         response = self.client.get(self._get_url(scope.pk), data)
-        self.assertTemplateUsed(response, 'promocoes.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes.html')
         self.assertIn('promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
@@ -188,7 +188,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         data = {'status': 0, 'ordem': '-porcentagem_desconto'}
 
         response = self.client.get(self._get_url(scope.pk), data)
-        self.assertTemplateUsed(response, 'promocoes.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes.html')
         self.assertIn('promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)
         self.assertIn('filter_form', response.context)
@@ -220,7 +220,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'linhas/linha_promocao.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/linhas/linha_promocao.html')
         self.assertIn('promocao', response.context)
 
         self.assertEqual(data['data_inicio'], response.context['promocao'].data_inicio)
@@ -263,7 +263,7 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'linhas/linha_promocao.html')
+        self.assertTemplateUsed(response, 'gestao_oferta_produtos/linhas/linha_promocao.html')
         self.assertIn('promocao', response.context)
 
         promocao = Promocao.promocoes.get(descricao='Promoção 5')

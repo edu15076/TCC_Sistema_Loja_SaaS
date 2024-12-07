@@ -1,4 +1,5 @@
 from .loja import *
+from .configuracao_de_vendas import *
 from .funcionario import *
 from .promocao import *
 from .produto import *
