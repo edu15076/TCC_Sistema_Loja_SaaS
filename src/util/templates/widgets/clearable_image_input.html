@@ -1,0 +1,59 @@
+{% load crispy_forms_field %}
+
+<{% if tag %}{{ tag }}{% else %}div{% endif %} id="div_{{ field.auto_id }}" class="{% if field|is_checkbox and form_show_labels %}form-check{% else %}mb-3{% if 'form-horizontal' in form_class %} row{% endif %}{% endif %}{% if wrapper_class %} {{ wrapper_class }}{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
+    {% if field.label and not field|is_checkbox and form_show_labels %}
+        {% if field.use_fieldset %}<fieldset{% if 'form-horizontal' in form_class %} class="row"{% endif %}>{% endif %}
+        <{% if field.use_fieldset %}legend{% else %}label{% endif %}
+            {% if field.id_for_label %}for="{{ field.id_for_label }}"{% endif %} class="{% if 'form-horizontal' in form_class %}col-form-label pt-0{% else %}form-label{% endif %}{% if label_class %} {{ label_class }}{% endif %}{% if field.field.required %} requiredField{% endif %}">
+            {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+        </{% if field.use_fieldset %}legend{% else %}label{% endif %}>
+    {% endif %}
+
+    {% if field|is_checkboxselectmultiple or field|is_radioselect %}
+        {% include 'bootstrap5/layout/radio_checkbox_select.html' %}
+    {% endif %}
+
+    {% if not field|is_checkboxselectmultiple and not field|is_radioselect %}
+        {% if field|is_checkbox and form_show_labels %}
+                {% if field.errors %}
+                    {% crispy_field field 'class' 'form-check-input is-invalid' %}
+                {% else %}
+                    {% crispy_field field 'class' 'form-check-input' %}
+                {% endif %}
+            <label for="{{ field.id_for_label }}" class="form-check-label{% if field.field.required %} requiredField{% endif %}">
+                {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+            </label>
+            {% include 'bootstrap5/layout/help_text_and_errors.html' %}
+        {% else %}
+            {% if field_class %}<div class="{{ field_class }}">{% endif %}
+                {% for widget in field.subwidgets %}
+                {% if widget.data.is_initial %}
+                <div class="input-group mb-2">
+                    <span class="input-group-text">{{ widget.data.initial_text }}</span>
+                    <div class="form-control d-flex h-auto">
+                        <span class="text-break flex-grow-1">
+                            {{ widget.keys }}
+                            <img src="{{ widget.data.attrs.img_url }}?t={% now 'His' %}" alt="{{ widget.data.initial_text }}" style="height: {{ widget.data.attrs.img_height }}">
+                        </span>
+                        {% if not widget.data.required %}
+                        <span class="align-self-center ml-2">
+                            <span class="form-check">
+                                <input type="checkbox" name="{{ widget.data.checkbox_name }}" id="{{ widget.data.checkbox_id }}" class="form-check-input"{% if field.field.disabled %} disabled{% endif %} >
+                                <label class="form-check-label mb-0" for="{{ widget.data.checkbox_id }}">{{ widget.data.clear_checkbox_label }}</label>
+                            </span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                <div{% if field.errors %} class="is-invalid"{%endif%}>
+                    <input type="{{ widget.data.type }}" name="{{ widget.data.name }}" class="form-control{% if widget.data.attrs.class %} {{ widget.data.attrs.class }}{% endif %}{% if field.errors %} is-invalid{%endif%}"{% if field.field.disabled %} disabled{% endif %}{% for name, value in widget.data.attrs.items %}{% if value is not False and name != 'class' %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}>
+                    {% include 'bootstrap5/layout/help_text_and_errors.html' %}
+                </div>
+                {% endfor %}
+
+            {% if field_class %}</div>{% endif %}
+        {% endif %}
+    {% endif %}
+    {% if field.use_fieldset and field.label and form_show_labels %}</fieldset>{% endif %}
+</{% if tag %}{{ tag }}{% else %}div{% endif %}>

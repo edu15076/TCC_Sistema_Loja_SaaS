@@ -42,6 +42,9 @@ class Loja(models.Model):
 
     lojas = LojaManager()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def __int__(self):
         return self.pk
 
@@ -53,9 +56,20 @@ class Loja(models.Model):
     def funcionarios(self, funcionarios):
         print(funcionarios)
 
+    def _delete_old_logo(self, old_logo):
+        logo_path = os.path.join(settings.MEDIA_ROOT, old_logo.name)
+        if os.path.exists(logo_path) and os.path.isfile(logo_path):
+            with suppress(Exception):
+                os.remove(logo_path)
+
     def save(self, *args, **kwargs):
         if self.pk is None and (not hasattr(self, 'scope') or self.scope is None):
             self.scope = LojaScope.scopes.create()
+        if self.pk is not None:
+            with suppress(Loja.DoesNotExist):
+                if (old_logo := Loja.lojas.get(pk=self.pk).logo) != self.logo:
+                    self._delete_old_logo(old_logo)
+
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

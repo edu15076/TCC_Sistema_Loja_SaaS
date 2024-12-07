@@ -1,13 +1,18 @@
 from django.urls import path, re_path
-from django.views.generic import TemplateView
 
 from .views import *
+from .views.media_access import LojaLogoView
 
 urlpatterns = [
     path(
         '',
         HomeContratacao.as_view(),
         name='home_contratacao',
+    ),
+    path(
+        'loja_logo/',
+        LojaLogoView.as_view(),
+        name='logo_loja_contratacao'
     ),
     path(
         'criar_usuario/',

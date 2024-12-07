@@ -52,7 +52,7 @@ class EditarDadosLojaView(
     form_action = reverse_lazy('editar_dados_loja')
     success_url = reverse_lazy('dados_loja')
     redirect_on_success = False
-    restrict_direct_access = True
+    restrict_direct_access = False
     login_url = reverse_lazy('login_contratacao')
     hx_target_form_invalid = 'this'
     hx_swap_form_invalid = 'outerHTML'

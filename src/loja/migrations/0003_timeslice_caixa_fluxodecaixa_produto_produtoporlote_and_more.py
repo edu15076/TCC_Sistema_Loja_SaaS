@@ -220,7 +220,7 @@ class Migration(migrations.Migration):
                     models.DateField(
                         validators=[
                             django.core.validators.MinValueValidator(
-                                datetime.date(2024, 12, 5),
+                                datetime.date(2024, 12, 7),
                                 'A data de início não pode ser no passado.',
                             )
                         ],
