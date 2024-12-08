@@ -4,8 +4,7 @@ from django.urls import reverse
 from django.db.models import F
 
 from common.models.periodo import Periodo
-from common.models.scopes import LojaScope
-from loja.models import Produto, Loja, Promocao
+from loja.models import Produto, Promocao
 from loja.tests.mixins import UsuarioScopeLojaTestMixin
 
 
@@ -219,8 +218,10 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
 
         response = self.client.post(self._get_url(scope.pk), data=data)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'gestao_oferta_produtos/linhas/linha_promocao.html')
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTemplateUsed(
+            response, 'gestao_oferta_produtos/linhas/linha_promocao.html'
+        )
         self.assertIn('promocao', response.context)
 
         self.assertEqual(data['data_inicio'], response.context['promocao'].data_inicio)
@@ -263,7 +264,9 @@ class TestGestaoPromocoesListView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.post(self._get_url(scope.pk), data=data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'gestao_oferta_produtos/linhas/linha_promocao.html')
+        self.assertTemplateUsed(
+            response, 'gestao_oferta_produtos/linhas/linha_promocao.html'
+        )
         self.assertIn('promocao', response.context)
 
         promocao = Promocao.promocoes.get(descricao='Promoção 5')

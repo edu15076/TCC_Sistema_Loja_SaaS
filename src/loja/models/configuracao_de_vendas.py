@@ -29,7 +29,7 @@ class ConfiguracaoDeVendas(ValidateModelMixin, models.Model):
         default=0,
         validators=[
             MinValueValidator(0, _('Desconto máximo não pode ser negativo.')),
-            MaxValueValidator(100, _('Desconto máximo não pode ser maior que 100%.')),
+            MaxValueValidator(100, _('Desconto máximo não pode exceder 100%.')),
         ],
     )
 

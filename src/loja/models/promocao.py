@@ -23,8 +23,10 @@ class PromocaoManager(models.Manager):
 
 
 class Promocao(ValidateModelMixin, models.Model):
-    porcentagem_desconto = models.IntegerField(
+    porcentagem_desconto = models.DecimalField(
         _('Porcentagem do desconto'),
+        max_digits=5,
+        decimal_places=2,
         blank=False,
         validators=[
             MaxValueValidator(100, _('Porcentagem não pode exceder 100%.')),

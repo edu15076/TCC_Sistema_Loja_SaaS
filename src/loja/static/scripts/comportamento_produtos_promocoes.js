@@ -17,3 +17,10 @@ const updateLimiteDescontoSpan = (event) => {
         $('#limite_porcentagem_desconto_maximo').html(formatPorcentagem(response.limite_porcentagem_desconto_maximo));
     }
 }
+
+const itenAdcionadoLista = (form, modalId, listaId, alertId) => {
+    $(alertId).addClass('d-none');
+    $('#list-empty').removeClass('d-none');
+    $(modalId).modal('hide');
+    form.reset();
+}

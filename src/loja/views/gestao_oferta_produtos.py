@@ -3,12 +3,11 @@ from typing import Any
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.shortcuts import render
 
 from util.mixins import MultipleFormsViewMixin
-from loja.views.mixins import UserFromLojaRequiredMixin, PermissionRequiredMixin
+from loja.views.mixins import LojaProtectionMixin
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Produto, GerenteFinanceiro, ConfiguracaoDeVendas
 from loja.forms import (
@@ -19,11 +18,12 @@ from loja.forms import (
     ProdutoQueryForm,
 )
 
-# TODO - Refatorar para usar get_form_kwargs
-
 
 class GestaoOfertaProdutoListView(
-    MultipleFormsViewMixin, UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateOrUpdateListHTMXView
+    MultipleFormsViewMixin,
+    LojaProtectionMixin,
+    LoginRequiredMixin,
+    CreateOrUpdateListHTMXView,
 ):
     login_url = reverse_lazy('login_contratacao')
     template_name = 'gestao_oferta_produtos/oferta_produtos.html'
@@ -56,9 +56,10 @@ class GestaoOfertaProdutoListView(
 
     def get_queryset(self) -> QuerySet[Any]:
         return super().get_queryset().filter(loja__scope=self.scope)
-    
+
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, Any]:
         kwargs = {}
+        kwargs['loja'] = self.get_loja()
 
         if request is not None:
             if self.forms_class['configuracao_de_venda'].submit_name() in request.POST:
@@ -66,10 +67,9 @@ class GestaoOfertaProdutoListView(
                 pass
             else:
                 kwargs['instance'] = self.get_object()
-                
+
             kwargs['data'] = request.POST
 
-        # print(kwargs)
         return kwargs
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -80,7 +80,9 @@ class GestaoOfertaProdutoListView(
         for form in form.values():
             context[form.form_name()] = form
 
-        context['configuracao_de_venda'] = ConfiguracaoDeVendas.configuracoes.get(loja__scope=self.scope)
+        context['configuracao_de_venda'] = ConfiguracaoDeVendas.configuracoes.get(
+            loja__scope=self.scope
+        )
         context['filter_form'] = self.filter_form()
         context['query_form'] = self.query_form()
         context['produtos'] = self.get_page()
@@ -129,7 +131,12 @@ class GestaoOfertaProdutoListView(
     def form_valid(self, form):
         if type(form) == self.forms_class['configuracao_de_venda']:
             configuracao = form.save()
-            return JsonResponse({'success': True, 'limite_porcentagem_desconto_maximo': configuracao.limite_porcentagem_desconto_maximo})
+            return JsonResponse(
+                {
+                    'success': True,
+                    'limite_porcentagem_desconto_maximo': configuracao.limite_porcentagem_desconto_maximo,
+                }
+            )
 
         produto = form.save()
         return render(
@@ -137,8 +144,12 @@ class GestaoOfertaProdutoListView(
             self.get_template_names()[0],
             {
                 'produto': produto,
-                self.forms_class['em_venda'].form_name(): self.get_form(self.forms_class['em_venda']),
-                self.forms_class['preco_de_venda'].form_name(): self.get_form(self.forms_class['preco_de_venda']),
+                self.forms_class['em_venda'].form_name(): self.get_form(
+                    self.forms_class['em_venda']
+                ),
+                self.forms_class['preco_de_venda'].form_name(): self.get_form(
+                    self.forms_class['preco_de_venda']
+                ),
                 'success': True,
             },
         )
@@ -152,4 +163,6 @@ class GestaoOfertaProdutoListView(
                 return super().post(request)
 
         except Exception as e:
-            return JsonResponse({'success': False, 'type':'error', 'message': str(e)}, status=400)
+            return JsonResponse(
+                {'success': False, 'type': 'error', 'message': str(e)}, status=400
+            )

@@ -5,12 +5,14 @@ from django.utils.translation import gettext_lazy as _
 from util.forms import CrispyFormMixin
 from util.mixins import NameFormMixin
 from .mixins import LojaValidatorFormMixin
-from loja.models import Produto
+from loja.models import Produto, Loja
 
-# TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
-class ProdutoEmVendaForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+class ProdutoEmVendaForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
     _name = 'em_venda'
+    should_check_model_form = True
 
     class Meta:
         model = Produto
@@ -19,14 +21,17 @@ class ProdutoEmVendaForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, loja: Loja = None, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
 
-class PrecoDeVendaProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+class PrecoDeVendaProdutoForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
     _name = 'preco_de_venda'
+    should_check_model_form = True
 
     class Meta:
         model = Produto
@@ -35,8 +40,8 @@ class PrecoDeVendaProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, loja: Loja = None, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 

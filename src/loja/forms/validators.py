@@ -10,6 +10,7 @@ __all__ = (
 
 class LojaEqualRequiredValidator:
     """Validator to ensure the object belongs to the specified loja."""
+
     error_messages = {
         'field_not_from_loja': _('%(field_name) não existe nessa loja'),
     }
@@ -26,24 +27,25 @@ class LojaEqualRequiredValidator:
 
         try:
             # If it's a model instance, check if the loja matches
-            if not hasattr(value, 'loja') or value.loja != self.loja:
+            if not isinstance(value, list) and (
+                not hasattr(value, 'loja') or value.loja != self.loja
+            ):
                 raise forms.ValidationError(
                     self.error_messages['field_not_from_loja'],
                     code='field_not_from_loja',
                     params={'field_name': value.__class__.__name__},
                 )
         except AttributeError:
-            raise forms.ValidationError(
-                _('Invalid field value'),
-                code='invalid'
-            )
+            raise forms.ValidationError(_('Invalid field value'), code='invalid')
 
 
 class NotAdminValidator:
     """Validator to ensure the user is not an admin."""
+
     error_messages = {
-        'funcionario_admin':
-            _('O funcionário não pode ser um admin para realizar essa ação'),
+        'funcionario_admin': _(
+            'O funcionário não pode ser um admin para realizar essa ação'
+        ),
     }
 
     def __call__(self, value):
@@ -52,15 +54,15 @@ class NotAdminValidator:
 
         if value.is_admin:
             raise forms.ValidationError(
-                self.error_messages['funcionario_admin'],
-                code='funcionario_admin'
+                self.error_messages['funcionario_admin'], code='funcionario_admin'
             )
 
 
 class ActiveFuncionarioValidator:
     error_messages = {
-        'funcionario_not_active':
-            _('O funcionário deve estar ativo para realizar essa ação'),
+        'funcionario_not_active': _(
+            'O funcionário deve estar ativo para realizar essa ação'
+        ),
     }
 
     def __call__(self, value):
@@ -70,7 +72,7 @@ class ActiveFuncionarioValidator:
         if not value.is_active:
             raise forms.ValidationError(
                 self.error_messages['funcionario_not_active'],
-                code='funcionario_not_active'
+                code='funcionario_not_active',
             )
 
 
@@ -88,6 +90,5 @@ class SelfValidator:
 
         if value == self.myself:
             raise forms.ValidationError(
-                self.error_messages['self_not_allowed'],
-                code='self_not_allowed'
+                self.error_messages['self_not_allowed'], code='self_not_allowed'
             )

@@ -4,8 +4,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from common.models.periodo import Periodo
-from common.models.scopes import LojaScope
-from loja.models import Produto, Loja, Promocao
+from loja.models import Produto, Promocao
 from loja.tests.mixins import UsuarioScopeLojaTestMixin
 
 
@@ -72,7 +71,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
                 porcentagem_desconto=10,
                 data_inicio=date.today() + timedelta(days=10),
                 periodo=self.periodos[0],
-                loja=self.lojas[0],
+                loja=self.lojas[1],
             ),
         ]
 
@@ -91,7 +90,9 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.get(self._get_url(scope.pk, self.produtos[0]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'gestao_oferta_produtos/promocoes_por_produto.html')
+        self.assertTemplateUsed(
+            response, 'gestao_oferta_produtos/promocoes_por_produto.html'
+        )
         self.assertIn('promocoes_por_produto_form', response.context)
         self.assertIn('preco_de_venda_form', response.context)
         self.assertIn('em_venda_form', response.context)
@@ -173,7 +174,7 @@ class TestGestaoPromocoesProdutoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         self._login(self.gerente_financeiro[0])
         scope = self.gerente_financeiro[0].loja.scope
         data = {
-            'promocoes': [self.promocoes[0].pk, self.promocoes[3].pk],
+            'promocoes': [self.promocoes[0].pk],
             'promocoes_por_produto_submit': 'Salvar',
         }
 
@@ -314,7 +315,9 @@ class TestGestaoProdutosPromocaoCRUDView(UsuarioScopeLojaTestMixin, TestCase):
         response = self.client.get(self._get_url(scope.pk, self.promocoes[0]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'gestao_oferta_produtos/produtos_por_promocao.html')
+        self.assertTemplateUsed(
+            response, 'gestao_oferta_produtos/produtos_por_promocao.html'
+        )
         self.assertIn('produtos', response.context)
         self.assertIn('produtos_por_promocao_form', response.context)
         self.assertIn('duplicar_promocao_form', response.context)

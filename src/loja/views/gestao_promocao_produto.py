@@ -1,24 +1,24 @@
 from typing import Any
 
 from django.db.models import F, ExpressionWrapper, DecimalField
-from django.forms.forms import BaseForm
 from django.views.generic.detail import DetailView
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect, render
 
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.htmx import UpdateHTMXView
 from loja.models import Produto, Promocao
-from loja.views import UserFromLojaRequiredMixin, PermissionRequiredMixin, FilterForSameLojaMixin
+from loja.views import LojaProtectionMixin
 from loja.forms import *
 from util.mixins import MultipleFormsViewMixin
 
 
 class GestaoPromocoesProdutoCRUDView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin, PermissionRequiredMixin,
-    FilterForSameLojaMixin,
+    LojaProtectionMixin,
+    LoginRequiredMixin,
     UpdateHTMXView,
     DetailView,
 ):
@@ -42,31 +42,34 @@ class GestaoPromocoesProdutoCRUDView(
         cards = request.GET.get('visualizacao') == 'cards'
 
         if 'promocoes' in request.POST:
-            templates.append('gestao_oferta_produtos/listas/lista_promocoes_produto.html')
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_promocoes_produto.html'
+            )
         elif 'data_inicio' in request.POST:
             if cards:
-                templates.append('gestao_oferta_produtos/cards/card_promocao_produto.html')
+                templates.append(
+                    'gestao_oferta_produtos/cards/card_promocao_produto.html'
+                )
             else:
-                templates.append('gestao_oferta_produtos/linhas/linha_promocao_produto.html')
+                templates.append(
+                    'gestao_oferta_produtos/linhas/linha_promocao_produto.html'
+                )
         elif 'em_venda' in request.POST or 'preco_de_venda' in request.POST:
-            templates.append('gestao_oferta_produtos/articles/article_produto_oferta.html')
+            templates.append(
+                'gestao_oferta_produtos/articles/article_produto_oferta.html'
+            )
 
         return templates
 
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, any]:
         kwargs = {}
+        kwargs['loja'] = self.get_loja()
 
         if form_class is None and request is not None:
             form_class = self.get_form_class(request)
 
         if request is not None:
             kwargs['data'] = request.POST
-
-        if (
-            form_class != self.forms_class['em_venda']
-            and form_class != self.forms_class['preco_de_venda']
-        ):
-            kwargs['scope'] = self.scope
 
         if form_class != self.forms_class['duplicar_promocao']:
             kwargs['instance'] = self.get_object()
@@ -101,7 +104,9 @@ class GestaoPromocoesProdutoCRUDView(
         context['erros'] = form.errors
 
         if type(form) == self.forms_class['preco_de_venda']:
-            return JsonResponse({'success': True, 'preco_de_venda': object.preco_de_venda})
+            return JsonResponse(
+                {'success': True, 'preco_de_venda': object.preco_de_venda}
+            )
         elif type(object) is Promocao:
             self.object = Produto.produtos.get(pk=self.kwargs['pk'])
             context['promocao'] = (
@@ -130,8 +135,8 @@ class GestaoPromocoesProdutoCRUDView(
 
 class GestaoProdutosPromocaoCRUDView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin, PermissionRequiredMixin,
-    FilterForSameLojaMixin,
+    LojaProtectionMixin,
+    LoginRequiredMixin,
     UpdateHTMXView,
     DetailView,
 ):
@@ -152,7 +157,9 @@ class GestaoProdutosPromocaoCRUDView(
         request = self.request
 
         if 'produtos' in request.POST:
-            templates.append('gestao_oferta_produtos/listas/lista_produtos_promocao.html')
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_produtos_promocao.html'
+            )
         elif 'data_inicio' in request.POST:
             templates.append('gestao_oferta_produtos/articles/article_promocao.html')
 
@@ -181,7 +188,8 @@ class GestaoProdutosPromocaoCRUDView(
 
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
-        kwargs['scope'] = self.scope
+        kwargs['loja'] = self.get_loja()
+        # kwargs['scope'] = self.scope
         kwargs['instance'] = self.get_object()
 
         if request is not None:

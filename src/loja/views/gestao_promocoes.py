@@ -1,4 +1,3 @@
-from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
@@ -8,16 +7,14 @@ from util.mixins import MultipleFormsViewMixin
 from loja.models.funcionario import GerenteFinanceiro
 from util.views.edit_list import CreateOrUpdateListHTMXView
 from loja.models import Promocao
-from loja.views import UserFromLojaRequiredMixin, PermissionRequiredMixin, FilterForSameLojaMixin
+from loja.views import LojaProtectionMixin
 from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
-
-# TODO - Passar loja no get_form_kwargs
 
 
 class GestaoPromocoesCRUDListView(
     MultipleFormsViewMixin,
-    UserFromLojaRequiredMixin, PermissionRequiredMixin,
-    FilterForSameLojaMixin,
+    LojaProtectionMixin,
+    LoginRequiredMixin,
     PermissionRequiredMixin,
     CreateOrUpdateListHTMXView,
 ):
@@ -38,7 +35,6 @@ class GestaoPromocoesCRUDListView(
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
-        # super().get_context_data()
         context = {}
 
         forms = self.get_forms()
@@ -46,7 +42,9 @@ class GestaoPromocoesCRUDListView(
             context[form.form_name()] = form
 
         context['promocoes'] = self.object_list
-        context['filter_form'] = self.filter_form(scope=self.scope)
+        context['filter_form'] = self.filter_form(
+            **self.get_form_kwargs(form_class=self.filter_form)
+        )
         context['promocoes_count'] = Promocao.promocoes.filter(
             loja__scope=self.scope
         ).count()
@@ -54,9 +52,13 @@ class GestaoPromocoesCRUDListView(
         return context
 
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, any]:
-        kwargs = super().get_form_kwargs()
-        kwargs['scope'] = self.scope
-        kwargs['instance'] = self.get_object()
+        kwargs = {}
+        kwargs['loja'] = self.get_loja()
+        if request is not None:
+            kwargs['data'] = request.POST
+
+        if form_class in self.forms_class.values():
+            kwargs['instance'] = self.get_object()
 
         return kwargs
 

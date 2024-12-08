@@ -1,7 +1,7 @@
 <div class="mt-5">
-    {% if promocoes|length > 0 %}
+    {% comment %} {% if promocoes|length > 0 %} {% endcomment %}
 
-    <div class="table-responsive">
+    <div class="table-responsive {% if promocoes|length == 0 %}d-none{% endif %}">
         <table id="tabela-promocoes" class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
@@ -20,11 +20,9 @@
         </table>
     </div>
 
-    {% else %}
-
-    <div class="alert alert-info" role="alert">
+    <div class="alert alert-info {% if promocoes|length > 0 %}d-none{% endif %}" role="alert">
         Nenhuma promocao encontrada
     </div>
 
-    {% endif %}
+    {% comment %} {% endif %} {% endcomment %}
 </div>

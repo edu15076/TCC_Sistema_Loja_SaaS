@@ -1,8 +1,6 @@
 from django.test import TestCase, Client
-from django.urls import reverse
 
-from common.models.scopes import LojaScope
-from loja.models import Produto, Loja, ProdutoPorLote
+from loja.models import Produto
 from loja.tests.mixins import UsuarioScopeLojaTestMixin
 
 
@@ -161,7 +159,7 @@ class TestGestaoOfertaProdutoListView(UsuarioScopeLojaTestMixin, TestCase):
         }
         response = self.client.post(self._get_url(scope.pk), data=data)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, response.content)
         self.assertIn('produto', response.context)
 
         produto = Produto.produtos.get(pk=self.produtos[0].pk)

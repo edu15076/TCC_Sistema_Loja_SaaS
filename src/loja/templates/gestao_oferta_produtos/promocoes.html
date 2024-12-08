@@ -29,14 +29,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form name="{{ duplicar_promocao_form.get_submit_button.name }}"
+                    <form
                         id="duplicar-promocao-form" 
-                        method="post" 
+                        {% comment %} method="post"  {% endcomment %}
                         hx-swap="afterbegin"
                         hx-post="{{ action }}"
                         hx-target="#tabela-promocoes tbody"
-                        hx-on::after-request="this.reset(); $('#duplicarPromocaoModal').modal('hide');">
+                        hx-on::after-request="itenAdcionadoLista(this, '#duplicarPromocaoModal', '#tabela-promocoes tbody');">
                         {% csrf_token %}
+                        {{ duplicar_promocao_form.descricao|as_crispy_field }}
                         {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
                             {% for value, label in duplicar_promocao_form.produtos.field.choices %}
@@ -68,7 +69,7 @@
                         hx-post="{{ action }}" 
                         hx-target="#tabela-promocoes tbody"
                         hx-swap="afterbegin" 
-                        hx-on::after-request="this.reset(); $('#addPromocaoModal').modal('hide');" 
+                        hx-on::after-request="itenAdcionadoLista(this, '#addPromocaoModal', '#tabela-promocoes tbody', '#tableEmpty');" 
                         method="post">
                         {% csrf_token %}
                         {{ promocao_form.descricao|as_crispy_field }}

@@ -8,10 +8,8 @@ from django.db.models import F, ExpressionWrapper, DecimalField
 
 from common.models import Periodo
 from loja.models.loja import Loja
-from util.forms import (
-    CrispyFormMixin,
-    CustomModelMultipleChoiceField
-)
+from util.forms import CrispyFormMixin, CustomModelMultipleChoiceField
+from util.forms.model_fields import ModelIntegerField
 from .mixins import LojaValidatorFormMixin
 from util.mixins import NameFormMixin
 from loja.models import Produto, Promocao
@@ -19,8 +17,13 @@ from loja.validators import validate_unique_promocao
 
 # TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
-class PromocoesPorProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+
+class PromocoesPorProdutoForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
     _name = 'promocoes_por_produto'
+    should_check_model_form = True
+    fields_loja_check = ['promocoes']
 
     promocoes = CustomModelMultipleChoiceField(
         queryset=Promocao.promocoes.all(),
@@ -35,13 +38,13 @@ class PromocoesPorProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, scope, queryset=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, loja=None, *args, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
         self.fields['promocoes'].queryset = Promocao.promocoes.filter(
-            loja__scope=scope,
+            loja=loja,
             data_inicio__gt=date.today(),
         )
 
@@ -49,7 +52,7 @@ class PromocoesPorProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
             self.fields['promocoes'].initial = self.instance.promocoes.all()
 
             self.fields['promocoes'].queryset = Promocao.promocoes.filter(
-                loja__scope=scope,
+                loja=loja,
                 data_inicio__gt=date.today(),
             ).annotate(
                 desconto=ExpressionWrapper(
@@ -85,8 +88,16 @@ class PromocoesPorProdutoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         return instance
 
 
-class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+class ProdutosPorPromocaoForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
+    error_messages = {
+        'produto_nao_pertence_a_loja': _('Produto não pertence a loja.'),
+    }
+
     _name = 'produtos_por_promocao'
+    should_check_model_form = True
+    fields_loja_check = ['produtos']
 
     produtos = CustomModelMultipleChoiceField(
         queryset=Produto.produtos.all(),
@@ -102,15 +113,13 @@ class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, scope=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, loja=None, *args, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
 
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
-        self.fields['produtos'].queryset = Produto.produtos.filter(
-            loja__scope=scope
-        ).annotate(
+        self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja).annotate(
             desconto=ExpressionWrapper(
                 F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
                 output_field=DecimalField(
@@ -119,6 +128,20 @@ class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
             ),
             preco_com_desconto=F('preco_de_venda') - F('desconto'),
         )
+
+    def clean_produtos(self):
+        produtos = self.cleaned_data.get('produtos')
+
+        if produtos is None:
+            return None
+
+        for produto in produtos:
+            if produto.loja != self.loja:
+                raise forms.ValidationError(
+                    self.error_messages['produto_nao_pertence_a_loja']
+                )
+
+        return produtos
 
     def full_clean(self) -> None:
         super().full_clean()
@@ -132,7 +155,6 @@ class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
 
     def save(self, commit: bool = True):
         instance = super().save(commit=False)
-
         instance.produtos.clear()
 
         for produto in self.cleaned_data['produtos']:
@@ -149,8 +171,12 @@ class ProdutosPorPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         return instance
 
 
-class DuplicarPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+class DuplicarPromocaoForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
     _name = 'duplicar_promocao'
+    fields_loja_check = ['promocao', 'produtos']
+    should_check_model_form = True
 
     data_inicio = forms.DateField(
         label=_('Data de início'),
@@ -162,54 +188,66 @@ class DuplicarPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         label=_('Produtos'),
         required=False,
     )
-    promocao = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+    promocao = ModelIntegerField(
+        required=False, widget=forms.HiddenInput, model_cls=Promocao
+    )
 
     fields_loja_check = ['promocao']
 
     class Meta:
         model = Promocao
-        fields = ['data_inicio', 'produtos']
+        fields = ['data_inicio', 'descricao', 'produtos']
 
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Duplicar')
 
-    def __init__(self, scope=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, loja=None, scope=None, *args, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
         self.helper.form_id = 'duplicar_promocao_form'
 
+        produtos_queryset = Produto.produtos.filter(loja=loja)
+
         instance = None
-        if kwargs.get('instance'):
-            instance = kwargs['instance']
-            self.fields['produtos'].initial = [instance.produtos]
+        if self.instance is not None and self.instance.pk is not None:
+            self.fields['produtos'].initial = [self.instance.produtos]
 
-        if scope is not None:
-            produtos_queryset = Produto.produtos.filter(loja__scope=scope)
-            if instance is not None:
-                produtos_queryset = produtos_queryset.annotate(
-                    desconto=ExpressionWrapper(
-                        F('preco_de_venda') * (instance.porcentagem_desconto / 100),
-                        output_field=DecimalField(
-                            _('Desconto'), max_digits=10, decimal_places=2
-                        ),
+            produtos_queryset = produtos_queryset.annotate(
+                desconto=ExpressionWrapper(
+                    F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
+                    output_field=DecimalField(
+                        _('Desconto'), max_digits=10, decimal_places=2
                     ),
-                    preco_com_desconto=F('preco_de_venda') - F('desconto'),
-                )
+                ),
+                preco_com_desconto=F('preco_de_venda') - F('desconto'),
+            )
 
-            self.fields['produtos'].queryset = produtos_queryset
-            self.scope = scope
-            self.errors.clear()
+            self.fields['descricao'].initial = self.instance.descricao
 
-    def clean_promocao(self):
-        promocao = self.cleaned_data.get('promocao')
+        self.fields['produtos'].queryset = produtos_queryset
+        self.errors.clear()
 
-        if promocao is None:
+    def clean_descricao(self):
+        descricao = self.cleaned_data.get('descricao')
+
+        if descricao is None:
             return None
 
-        self.cleaned_data['promocao'] = Promocao.promocoes.get(pk=promocao)
-        return self.cleaned_data['promocao']
-    
+        if len(descricao) == 0:
+            del self.cleaned_data['descricao']
+            return None
+
+        return self.cleaned_data.get('descricao')
+
+    def clean(self):
+        if self.instance.pk is None:
+            self.instance = self.cleaned_data['promocao']
+        else:
+            self.cleaned_data['promocao'] = self.instance
+
+        return super().clean()
+
     def save(self, commit: bool = ...) -> Any:
         instance = self.instance
 
@@ -222,6 +260,9 @@ class DuplicarPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         replicate = instance.clonar_promocao(
             self.cleaned_data['data_inicio'], commit=False
         )
+
+        if replicate.descricao is None or len(replicate.descricao) == 0:
+            replicate.descricao = Promocao.promocoes.get(pk=instance.pk).descricao
 
         produtos = []
 
@@ -239,8 +280,12 @@ class DuplicarPromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         return replicate
 
 
-class PromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
+class PromocaoForm(
+    NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
+):
     _name = 'promocao'
+    should_check_model_form = False
+    fields_loja_check = ['produtos']
 
     numero_de_periodos = forms.IntegerField(
         label=_('Número de períodos'),
@@ -280,16 +325,12 @@ class PromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, scope=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, loja=None, *args, **kwargs):
+        super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
-        if scope is not None:
-            self.scope = scope
-            self.fields['produtos'].queryset = Produto.produtos.filter(
-                loja__scope=scope
-            )
+        self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja)
 
         if self.instance.pk is not None:
             self.fields['produtos'].queryset.annotate(
@@ -319,7 +360,7 @@ class PromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
         )
         promocao = super().save(commit=False)
         promocao.periodo = periodo
-        promocao.loja = Loja.lojas.get(scope=self.scope)
+        promocao.loja = self.loja
 
         produtos = []
 
@@ -328,7 +369,12 @@ class PromocaoForm(NameFormMixin, CrispyFormMixin, forms.ModelForm):
                 validate_unique_promocao(produto, promocao)
                 produtos.append(produto)
             except Exception as e:
-                self.add_error('produtos', _(f"Produto {produto} já está em outra promoção durante o mesmo periodo."))
+                self.add_error(
+                    'produtos',
+                    _(
+                        f"Produto {produto} já está em outra promoção durante o mesmo periodo."
+                    ),
+                )
 
         if commit:
             promocao.save()
@@ -366,13 +412,18 @@ class FiltroPromocaoForm(CrispyFormMixin, forms.Form):
     def get_submit_button(self) -> Submit:
         return Submit('submit', 'Filtrar')
 
-    def __init__(self, data=None, scope=None, *args, **kwargs):
+    def __init__(self, data=None, scope=None, loja=None, *args, **kwargs):
         super().__init__(data=data, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'get'
         self.Meta.filter_arguments = {'produtos': 'produtos__in', 'status': ''}
 
-        if scope is not None:
+        # if scope is None and loja is None:
+        #     raise ValueError('Scope ou loja devem ser fornecidos.')
+
+        if loja is not None:
+            self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja)
+        elif scope is not None:
             self.fields['produtos'].queryset = Produto.produtos.filter(
                 loja__scope=scope
             )

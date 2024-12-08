@@ -61,6 +61,7 @@
             </section>
         </div>
     </div>
+    {% comment %} section Modais {% endcomment %}
     <div class="modal fade" id="duplicarPromocaoModal" tabindex="-1" aria-labelledby="duplicarPromocaoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -77,6 +78,7 @@
                         hx-target="#tabela-promocoes tbody"
                         hx-on::after-request="this.reset(); $('#duplicarPromocaoModal').modal('hide');">
                         {% csrf_token %}
+                        {{ duplicar_promocao_form.descricao|as_crispy_field }}
                         {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
                         <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
                             {% for value, label in duplicar_promocao_form.produtos.field.choices %}
@@ -101,6 +103,7 @@
                     <h5 class="modal-title" id="editarPromocoesModalLabel">Editar Promoções</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                {% if promocoes_por_produto_form.promocoes|length > 0 %}
                 <div class="modal-body mx-4 my-4">
                     <form method="post" name="{{ promocoes_por_produto_form.get_submit_button.name }}"
                         hx-post="{% url 'gerir_promocoes_produto' scope.pk produto.pk %}" 
@@ -121,6 +124,11 @@
                         </button>
                     </form>
                 </div>
+                {% else %}
+                <div class="alert alert-info my-4 mx-3" role="alert">
+                    Nenhuma promoção encontrada
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
