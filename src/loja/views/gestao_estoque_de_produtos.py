@@ -9,7 +9,6 @@ __all__ = (
     'GestaoEstoqueDeProdutosListView',
 )
 
-
 class GestaoEstoqueDeProdutosListView(
     UserFromLojaRequiredMixin, CreateOrUpdateListHTMXView
 ):
@@ -18,9 +17,20 @@ class GestaoEstoqueDeProdutosListView(
     model = ProdutoPorLote
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        queryset = self.get_page()
-
+        queryset = self.get_page().filter(produto__loja=self.user.loja)
         return render(request, self.template_name, {'estoque': queryset})
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        return JsonResponse({'success': True}, status=200)
+        acao = request.POST.get('acao')
+        produto_id = request.POST.get('id')
+
+        produto = self.model.produtos_por_lote.get(id=produto_id)
+
+        if(acao == "atualizar"):
+            qtd_em_estoque = request.POST.get('qtd_em_estoque')
+            produto.qtd_em_estoque = qtd_em_estoque
+            produto.save()
+        elif(acao == "deletar"):
+            produto.delete()
+
+        return render(request, self.template_name, {'estoque': self.get_page().filter(produto__loja=self.user.loja)})
