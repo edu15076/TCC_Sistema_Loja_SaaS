@@ -4,28 +4,6 @@
 {% block main_content %}
     <h1>Gestão de Estoque</h1>
     <div class="card-body mt-4">
-        <table class="table table-hover table-striped">
-            <thead class="table-dark">
-                <tr>
-                <th>Nome do Lote</th>
-                <th>Nome do Produto</th>
-                <th>Quantidade em Estoque</th>
-                <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lote in estoque %}
-                    <tr>
-                        <td>{{ lote.lote }}</td>
-                        <td>{{ lote.produto.descricao }}</td>
-                        <td>{{ lote.qtd_em_estoque }}</td>
-                        <td>
-                            <button class="btn btn-primary" data-bs-toggle="modal">Editar</button>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-      </div>
+        {% include 'includes/lista_lotes_no_estoque.html' %}
     </div>
 {% endblock main_content %}
