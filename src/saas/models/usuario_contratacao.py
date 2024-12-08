@@ -102,6 +102,6 @@ class ClienteContratante(UsuarioContratacao):
 
     def delete_dados_loja(self, *args, **kwargs):
         old_loja: Loja = self.loja
-        self.loja = Loja.lojas.create()
+        self.loja = Loja.lojas.create(nome=self.nome_fantasia)
         self.save()
         return old_loja.delete(*args, **kwargs)

@@ -25,6 +25,7 @@ class BaseFuncionarioCreationForm(UsuarioGenericoPessoaFisicaCreationForm):
         model = Funcionario
         fields = UsuarioGenericoPessoaFisicaCreationForm.Meta.fields
         labels = getattr(UsuarioGenericoPessoaFisicaCreationForm.Meta, 'labels', {})
+        widgets = getattr(UsuarioGenericoPessoaFisicaCreationForm.Meta, 'widgets', {})
 
 
 class FuncionarioCreationForm(ModalCrispyFormMixin, BaseFuncionarioCreationForm):
@@ -37,6 +38,7 @@ class FuncionarioCreationForm(ModalCrispyFormMixin, BaseFuncionarioCreationForm)
         model = Funcionario
         fields = BaseFuncionarioCreationForm.Meta.fields
         labels = getattr(BaseFuncionarioCreationForm.Meta, 'labels', {})
+        widgets = getattr(BaseFuncionarioCreationForm.Meta, 'widgets', {})
 
 
 class FuncionarioPapelForm(LojaValidatorFormMixin, CrispyFormMixin, forms.Form):
