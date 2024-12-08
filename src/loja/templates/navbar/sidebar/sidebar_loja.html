@@ -47,7 +47,10 @@
         {% block links_gerente_financeiro %}
             {% if perms.loja.gerir_oferta_de_produto %}
                 <li class="nav-item">
-                    <a href="{% url 'gestao_oferta_produtos' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Oferta de Produtos</a>
+                    <a href="{% url 'gerir_oferta_produtos' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Oferta de Produtos</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'gerir_promocoes' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Promoções</a>
                 </li>
             {% endif %}
         {% endblock links_gerente_financeiro %}
