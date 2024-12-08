@@ -1,0 +1,84 @@
+<div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title text-center">Caixa {{ caixa.numero_identificacao }}</h5>
+            <p class="card-text">
+                <strong>Status:</strong> {% if caixa.horario_aberto %}Aberto{% else %}Fechado{% endif %}<br>
+                <strong>Dinheiro em Caixa:</strong> R$ {{ caixa.dinheiro_em_caixa }}<br>
+                <strong>Horário de Abertura:</strong> 
+                {% if caixa.horario_aberto %}
+                    {{ caixa.horario_aberto|date:"d/m/Y H:i:s" }}
+                {% else %}
+                    Caixa está fechado
+                {% endif %}
+            </p>
+            {% if is_estado_caixa %}  
+                <form method="post" action="{% url 'estado_caixa' loja_scope=loja_scope %}" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+                    {% if caixa.horario_aberto %}
+                        <button name="acao" value="fechar" class="btn btn-warning btn-block">Fechar Caixa</button>
+                    {% else %}
+                        <button name="acao" value="abrir" class="btn btn-primary btn-block">Abrir Caixa</button>
+                    {% endif %}
+                </form>
+            {% else %}  
+                <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}" class="d-grid gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+                    <button name="acao" value="remover" class="btn btn-danger btn-block">Remover Caixa</button>
+                </form>
+                
+                <div class="row justify-content-center mt-2">
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#associarCaixeiroModal-{{ caixa.id }}">
+                        Associar Caixeiro
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="associarCaixeiroModal-{{ caixa.id }}" tabindex="-1" aria-labelledby="associarCaixeiroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="associarCaixeiroModalLabel">Associar Caixeiro ao Caixa {{ caixa.numero_identificacao }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="associar_caixeiro">
+                    <input type="hidden" name="id" value="{{ caixa.id }}">
+
+                    <label for="caixeiro_id" class="form-label">Selecionar Caixeiro:</label>
+                    <select name="caixeiro_id" class="form-select w-auto" required>
+                        {% for caixeiro in caixeiros %}
+                            <option value="{{ caixeiro.codigo }}" {% if caixeiro.codigo == caixeiro_padrao.codigo %}selected{% endif %}>{{ caixeiro.nome }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="horario_inicio" class="form-label">Horário de Trabalho (Início):</label>
+                    <input type="time" name="horario_inicio" class="form-control" required>
+
+                    <label for="horario_fim" class="form-label">Horário de Trabalho (Fim):</label>
+                    <input type="time" name="horario_fim" class="form-control" required>
+
+                    <label for="dias_trabalho" class="form-label">Selecionar Dias da Semana:</label>
+                    <select name="dias_trabalho" class="form-select w-auto" multiple required>
+                        <option value="domingo">Domingo</option>
+                        <option value="segunda">Segunda</option>
+                        <option value="terca">Terça</option>
+                        <option value="quarta">Quarta</option>
+                        <option value="quinta">Quinta</option>
+                        <option value="sexta">Sexta</option>
+                        <option value="sabado">Sábado</option>
+                    </select>
+                        
+                    <button type="submit" class="btn btn-success mt-2">Associar Caixeiro</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

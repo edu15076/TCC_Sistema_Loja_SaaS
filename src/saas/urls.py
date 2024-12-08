@@ -1,13 +1,18 @@
 from django.urls import path, re_path
-from django.views.generic import TemplateView
 
 from .views import *
+from .views.media_access import LojaLogoView
 
 urlpatterns = [
     path(
         '',
-        TemplateView.as_view(template_name='home_contratacao.html'),
+        HomeContratacao.as_view(),
         name='home_contratacao',
+    ),
+    path(
+        'loja_logo/',
+        LojaLogoView.as_view(),
+        name='logo_loja_contratacao'
     ),
     path(
         'criar_usuario/',
@@ -68,6 +73,11 @@ urlpatterns = [
         'minha_loja/editar_dados_loja/',
         EditarDadosLojaView.as_view(),
         name='editar_dados_loja'
+    ),
+    path(
+        'minha_loja/deletar_loja/',
+        DeletarLojaView.as_view(),
+        name='deletar_loja'
     ),
     path(
         'minha_loja/admins/criar_admin/',

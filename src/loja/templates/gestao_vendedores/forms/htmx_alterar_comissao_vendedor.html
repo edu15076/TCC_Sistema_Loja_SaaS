@@ -1,0 +1,14 @@
+{% load crispy_forms_tags %}
+<form
+        hx-target="this"
+        hx-swap="outerHTML"
+        hx-trigger="submit, blur from:find .porcentagem-comissao-input"
+        hx-on::before-request="
+            $(this).find('.porcentagem-comissao-input:first').prop('disabled', 'true');
+            $(this).find('.porcentagem-comissao-input:first').removeClass('is-valid');
+            $(this).find('.porcentagem-comissao-input:first').removeClass('is-invalid');
+        "
+        hx-post="{{ action }}"
+        method="post">
+    {% crispy form %}
+</form>

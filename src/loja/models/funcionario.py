@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import Group
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Coalesce
@@ -13,6 +14,8 @@ from common.models import (
 )
 from util.decorators import CachedClassProperty
 from util.models import cast_to_model
+
+from loja.models.trabalhacaixa import TrabalhaCaixa
 
 __all__ = (
     'Funcionario',
@@ -63,13 +66,13 @@ class FuncionarioManager(UsuarioGenericoPessoaFisicaManager):
         return FuncionarioQuerySet(self.model, using=self._db).complete()
 
     def criar_funcionario(
-        self,
-        cpf: str,
-        loja=None,
-        password: str = None,
-        email: str = None,
-        telefone: str = None,
-        **dados_pessoa,
+            self,
+            cpf: str,
+            loja=None,
+            password: str = None,
+            email: str = None,
+            telefone: str = None,
+            **dados_pessoa,
     ):
         usuario = self.criar_usuario(
             cpf=cpf,
@@ -92,7 +95,20 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     )
 
     _porcentagem_comissao = models.DecimalField(
-        max_digits=4, decimal_places=2, null=True, blank=True
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MaxValueValidator(
+                Decimal('100'),
+                message='Porcentagem não pode exceder 100%.'
+            ),
+            MinValueValidator(
+                Decimal('0'),
+                message='Porcentagem não pode ser negativo.'
+            )
+        ]
     )
 
     is_admin = models.BooleanField(default=False, null=False, blank=True)
@@ -169,6 +185,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
             raise ValueError('User is already inactive.')
         self.is_active = False
         self.is_admin = False
+        self._porcentagem_comissao = None
         self.remover_todos_papeis()
         if commit:
             self.save()
@@ -242,6 +259,14 @@ class Caixeiro(FuncionarioPapel):
     class Meta:
         proxy = True
 
+    def associar_caixa(self, caixa, horarios):
+        for horario in horarios:
+            TrabalhaCaixa.objects.create(
+                caixeiro=self,
+                caixa=caixa,
+                trabalho_por_dia=horario
+            )
+
 
 class VendedorQuerySet(FuncionarioQuerySet):
     def complete(self):
@@ -289,6 +314,8 @@ class Vendedor(FuncionarioPapel):
 
     @porcentagem_comissao.setter
     def porcentagem_comissao(self, porcentagem_comissao: float):
+        if not 0.0 <= porcentagem_comissao <= 100.0:
+            raise ValueError('A porcentagem de comissão deve estar entre 0 e 100.')
         self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = VendedorManager()

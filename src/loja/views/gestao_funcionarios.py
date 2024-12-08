@@ -32,9 +32,6 @@ __all__ = (
 )
 
 
-# TODO: adicionar permissoes permission_required = 'loja.gerir_funcionarios_da_loja'
-
-
 class FuncionarioContextDataControlledMixin(FuncionarioContextDataMixin):
     def pode_trocar_papeis(self, funcionario: Funcionario) -> bool:
         return not funcionario.is_admin and funcionario != self.user

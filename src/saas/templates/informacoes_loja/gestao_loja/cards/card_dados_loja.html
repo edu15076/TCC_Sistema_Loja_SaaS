@@ -1,22 +1,37 @@
 <div id="dados-loja" class="card mb-5">
     <h5 class="card-header">Loja</h5>
     <div class="card-body">
-        <h5 class="card-title">{{ loja.nome }}</h5>
-        <div class="d-flex gap-2">
-            <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
-                    data-bs-target="#editar-dados-loja">
-                Editar dados da loja
-            </button>
-            {% if user.clientecontratante %}
-                <a
-                        class="btn btn-primary
-                            {% if not user.clientecontratante.is_signing_contract %}
-                                disabled
-                            {% endif %}"
-                        role="button"
-                        href="{% url 'login_loja' loja_scope=loja.scope.scope %}"
-                >Entrar no sistema da loja</a>
+        <div class="d-flex align-items-center gap-3 mb-2">
+            {% if loja.logo %}
+                <img class="rounded"
+                     src="{% url 'logo_loja_contratacao' %}?t={% now 'His' %}"
+                     alt="Logo da loja"
+                     style="height: 3.5rem;">
             {% endif %}
+            <h5 class="card-title mb-0" id="id_nome_loja_card">{{ loja.nome }}</h5>
+        </div>
+        <div class="d-flex gap-2 justify-content-between">
+            <div class="d-flex gap-2">
+                <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
+                        data-bs-target="#editar-dados-loja">
+                    Editar dados da loja
+                </button>
+                {% if user.clientecontratante %}
+                    <a class="btn btn-primary
+                       {% if not user.clientecontratante.is_signing_contract %}
+                           disabled
+                       {% endif %}"
+                       role="button"
+                       href="{% url 'login_loja' loja_scope=loja.scope.scope %}">
+                        Entrar no sistema da loja
+                    </a>
+                {% endif %}
+            </div>
+            <button class="btn btn-danger" type="button" data-bs-toggle="modal"
+                    data-bs-target="#deletar-loja">
+                Deletar Loja
+            </button>
         </div>
     </div>
 </div>
+<div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'editar_dados_loja' %}"></div>

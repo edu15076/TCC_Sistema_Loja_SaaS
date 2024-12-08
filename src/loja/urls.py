@@ -1,12 +1,18 @@
 from django.urls import path, re_path
 
 from .views import *
+from .views.media_access import LojaLogoView
 
 urlpatterns = [
     path(
         '',
         HomeLojaView.as_view(),
         name='home_loja'
+    ),
+    path(
+        'logo/',
+        LojaLogoView.as_view(),
+        name='logo_loja'
     ),
     path(
         'login/',
@@ -79,6 +85,26 @@ urlpatterns = [
         name='gerir_funcionarios'
     ),
     path(
+        'gerir_vendedores/vendedores/',
+        ListVendedoresView.as_view(),
+        name='list_vendedores'
+    ),
+    path(
+        'gerir_vendedores/vendedores/vendedor_detail/<int:pk>/',
+        CardVendedorView.as_view(),
+        name='vendedor_detail'
+    ),
+    path(
+        'gerir_vendedores/vendedores/alterar_comissao/',
+        AlterarComissaoVendedorView.as_view(),
+        name='alterar_comissao'
+    ),
+    path(
+        'gerir_vendedores/',
+        GestaoVendedoresView.as_view(),
+        name='gerir_vendedores'
+    ),
+    path(
         'oferta_produtos/',
         GestaoOfertaProdutoListView.as_view(),
         name='gestao_oferta_produtos',
@@ -102,5 +128,15 @@ urlpatterns = [
         r'^promocoes/(?P<pk>\d+)?/?$',
         GestaoPromocoesCRUDListView.as_view(),
         name='gestao_promocoes',
+    ),
+    path(
+        'caixas/',
+        EstadoCaixaListView.as_view(),
+        name='estado_caixa',
+    ),
+    path(
+        'gestao-caixas/',
+        GestaoCaixaCRUDListView.as_view(),
+        name='gestao_caixas',
     ),
 ]

@@ -9,7 +9,7 @@
                         {{ user.get_short_name }}
                     {% endif %}
                 </div>
-                <div>{{ user.codigo }}</div>
+                <div>{{ user.get_codigo_masked }}</div>
             </a>
             <ul class="dropdown-menu position-absolute dropdown-menu-end" aria-labelledby="userActionsDropdown">
                 <li><a class="dropdown-item" href="{{ edit_user_url }}">Editar conta</a></li>

@@ -10,6 +10,10 @@
   min-height: var(--navbar-height);
 }
 
+.w-fit {
+  width: fit-content !important;
+}
+
 $color-mode-type: data;
 
 @include color-mode(dark) {
