@@ -23,6 +23,7 @@ grupos_funcionarios = {
     'loja_caixeiros': [
         'is_caixeiro',
         'gerir_estado_do_caixa',
+        'efetuar_venda'
     ],
     'loja_vendedores': [
         'is_vendedor',

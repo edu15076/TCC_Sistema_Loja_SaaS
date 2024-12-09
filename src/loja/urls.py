@@ -134,4 +134,9 @@ urlpatterns = [
         GestaoCaixaCRUDListView.as_view(),
         name='gestao_caixas',
     ),
+    path(
+        'venda/',
+        EfetuarVendaView.as_view(),
+        name='efetuar_venda',
+    ),
 ]

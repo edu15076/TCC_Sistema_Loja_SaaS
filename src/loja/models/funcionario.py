@@ -370,6 +370,14 @@ class Caixeiro(FuncionarioPapel):
                 trabalho_por_dia=horario
             )
 
+    def recuperar_caixa(self, data_hora):
+        return TrabalhaCaixa.objects.filter(
+            caixeiro=self,
+            trabalho_por_dia__dia_da_semana=data_hora.weekday(),
+            trabalho_por_dia__timeslices__hora_inicio__lte=data_hora.time(),
+            trabalho_por_dia__timeslices__hora_fim__gte=data_hora.time()
+        ).first().caixa
+
 
 class VendedorQuerySet(FuncionarioQuerySet):
     def complete(self):
