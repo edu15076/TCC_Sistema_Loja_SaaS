@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.contrib.auth.models import Group
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import F, QuerySet, Sum, Q
+from django.db.models import F, Sum
 from django.db.models.functions import Coalesce
 
 from common.models import (
@@ -13,7 +13,6 @@ from common.models import (
     UsuarioGenericoPessoaFisicaQuerySet,
     LojaScope,
 )
-from loja.models import Venda, VendaQuerySet
 from util.decorators import CachedClassProperty
 from util.models import cast_to_model
 
@@ -195,7 +194,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     def _get_qtd_vendas_como_vendedor(self, filters: dict = None):
         if not hasattr(self, 'vendas_como_vendedor'):
             return 0
-        vendas: VendaQuerySet = self.vendas_como_vendedor
+        vendas = self.vendas_como_vendedor
         if filters is not None:
             vendas = vendas.filter(**filters)
         return vendas.count()
@@ -203,7 +202,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     def _get_valor_vendas_como_vendedor(self, filters: dict = None):
         if not hasattr(self, 'vendas_como_vendedor'):
             return Decimal('0')
-        vendas: VendaQuerySet = self.vendas_como_vendedor
+        vendas = self.vendas_como_vendedor
         if filters is not None:
             vendas = vendas.filter(**filters)
         return vendas.annotate_preco_total_com_desconto().aggregate(
@@ -213,7 +212,7 @@ class Funcionario(UsuarioGenericoPessoaFisica):
     def _get_comissao_vendas_como_vendedor(self, filters: dict = None):
         if not hasattr(self, 'vendas_como_vendedor'):
             return Decimal('0')
-        vendas: VendaQuerySet = self.vendas_como_vendedor
+        vendas = self.vendas_como_vendedor
         if filters is not None:
             vendas = vendas.filter(**filters)
         return vendas.aggregate(

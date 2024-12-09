@@ -1,8 +1,15 @@
-<tr id="item-{{ item.produto.id }}">
-    <td data-codigo-de-barras="{{ item.produto.codigo_de_barras }}" >{{ item.produto.codigo_de_barras }}</td>
-    <td data-item-descricao="{{ item.produto.descricao }}" >{{ item.produto.descricao }}</td>
-    <td data-item-quantidade="{{ item.quantidade }}" >{{ item.quantidade }}</td>
-    <td data-item-preco-de-venda="{{ item.produto.preco_de_venda }}" >{{ item.produto.preco_de_venda }}</td>
-    <td data-item-desconto="{{ item.produto.desconto }}" >{{ item.produto.desconto }}</td>
-    <td data-item-desconto="{{ item.preco_vendido }}" >{{ item.preco_vendido }}</td>
+<tr class="item-venda" 
+    id="item-{{ item.produto.id }}" 
+    data-produto-codigo-de-barras="{{ item.produto.codigo_de_barras }}" 
+    data-item-descricao="{{ item.produto.descricao }}" 
+    data-item-quantidade="{{ item.quantidade }}" 
+    data-item-preco-de-venda="{{ item.produto.preco_de_venda }}" 
+    data-item-desconto="{{ item.produto.calcular_desconto }}" 
+    data-item-preco-total="{{ item.preco_total }}">
+    <td>{{ item.produto.codigo_de_barras }}</td>
+    <td>{{ item.produto.descricao }}</td>
+    <td>{{ item.quantidade }}</td>
+    <td>{{ item.produto.preco_de_venda }}</td>
+    <td>{{ item.produto.calcular_desconto }}</td>
+    <td>{{ item.preco_total }}</td>
 </tr>

@@ -7,7 +7,12 @@
     <h1>Venda</h1>
 
     <section id="item-form" class="container my-4">
-        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' scope.pk %}" hx-swap="none">
+        <form method="post" 
+            class="row row-cols-lg-auto g-3 align-items-end" 
+            hx-post="{% url 'efetuar_venda' scope.pk %}" 
+            hx-target="#itens-venda-lista"
+            hx-swap="afterbegin"
+            hx-on::after-request="colectItensVenda();">
             {% crispy item_venda_form %}
         </form>
     </section>
@@ -30,7 +35,13 @@
     </section>
 
     <section id="venda-form" class="container my-4">
-        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' scope.pk %}" hx-swap="none">
+        <form method="post" 
+            class="row row-cols-lg-auto g-3 align-items-end" 
+            hx-post="{% url 'efetuar_venda' scope.pk %}" 
+            hx-vals='js:{itens: colectItensVenda()}'
+            {% comment %} '{"itens":[{"codigo_de_barras":22222,"quantidade":6}]}' {% endcomment %}
+            hx-swap="none">
+            
             {% crispy venda_form %}
         </form>
     </section>   
@@ -105,8 +116,11 @@
             </div>
         </div>
     </div>
-    
-    
 
 {% endblock main_content %}
 
+{% block scripts %}
+
+<script src="{% static 'scripts/colect_itens_venda.js' %}"></script>
+
+{% endblock scripts %}

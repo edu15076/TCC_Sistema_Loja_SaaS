@@ -17,7 +17,7 @@ class ItemVendaForm(
     NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.ModelForm
 ):
     _name = 'item_venda'
-    should_check_model_form = True
+    should_check_model_form = False
 
     codigo_de_barras = forms.CharField(
         label=_('Código de barras'),
@@ -35,12 +35,13 @@ class ItemVendaForm(
         return Submit(self.submit_name(), 'Salvar')
 
     def __init__(self, loja=None, caixeiro=None, *args, **kwargs):
+        print(loja)
         super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
         self.caixeiro = caixeiro
 
-    def clean_codigo_barras(self):
+    def clean_codigo_de_barras(self):
         codigo_de_barras = self.cleaned_data['codigo_de_barras']
         produto = Produto.produtos.filter(loja=self.loja, codigo_de_barras=codigo_de_barras).first()
 
@@ -86,17 +87,18 @@ class VendaForm(NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.Mo
         model = Venda
         fields = ['vendedor', 'porcentagem_desconto']
 
-    def __init__(self, loja=None, *args, **kwargs):
+    def __init__(self, loja=None, caixeiro=None, *args, **kwargs):
         super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
+        self.caixeiro = caixeiro
         self.fields['vendedor'].queryset = Vendedor.vendedores.filter(loja=loja)
 
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Finalizar')
 
-    def clean_caiixa(self):
+    def clean_caixa(self):
         caixa = self.cleaned_data['caixa']
 
         if not caixa:
@@ -125,17 +127,18 @@ class VendaForm(NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.Mo
 
     def save(self, commit = ...):
         vendedor = self.cleaned_data.get('vendedor')
-        caixa = self.cleaned_data['caixa']
-        caixeiro = self.cleaned_data['caixeiro']
+        # caixa = self.cleaned_data['caixa']
+        caixeiro = self.caixeiro
         porcentagem_desconto = self.cleaned_data['porcentagem_desconto']
         caixa = caixeiro.recuperar_caixa(datetime.now())
+        print(caixa)
 
         self.cleaned_data['loja'] = self.loja
 
         if commit:
             venda = Venda(
                 vendedor=vendedor,
-                caixa=caixa,
+                # caixa=caixa,
                 porcentagem_desconto=porcentagem_desconto,
                 loja=self.loja,
                 caixeiro=caixeiro

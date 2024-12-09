@@ -86,6 +86,11 @@ class Venda(models.Model):
     @property
     def desconto(self):
         return self.preco_total * self.porcentagem_desconto / 100
+    
+    def save(self, *args, **kwargs):
+        if self.pk is None and hasattr(self, 'vendedor') and self.vendedor:
+            self.comissao_vendedor = self.vendedor.porcentagem_comissao * self.desconto
+        return super().save(*args, **kwargs)
 
     # def clean(self):
     #     if self.caixa.loja != self.produto.loja:

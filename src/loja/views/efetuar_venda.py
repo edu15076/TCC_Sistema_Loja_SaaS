@@ -31,10 +31,6 @@ class EfetuarVendaView(
         'item_venda': ItemVendaForm,
     }
 
-    def handle_no_permission(self):
-        print(self.user)
-        return super().handle_no_permission()
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -64,13 +60,14 @@ class EfetuarVendaView(
         templates = [self.template_name]
 
         request = self.request
+        print(self.forms_class['item_venda'].submit_name() in request.POST)
         if self.forms_class['item_venda'].submit_name() in request.POST:
             templates.append('efetuar_vendas/item_venda.html')
         elif self.forms_class['venda'].submit_name() in request.POST:
             templates.append('efetuar_vendas/venda_sucess.html')
             templates.append('efetuar_vendas/venda_fail.html')
 
-        return super().get_template_names()
+        return templates
     
     def form_valid(self, form):
         if form.form_name() == 'venda':
@@ -78,10 +75,8 @@ class EfetuarVendaView(
 
             return render(self.request, self.get_template_names()[1], {'venda': venda})
         else:
-            print('aaaaaaaa')
             item = form.save()
-
-            # item
+            print(self.get_template_names())
 
             return render(self.request, self.get_template_names()[1], {'item': item})
         
