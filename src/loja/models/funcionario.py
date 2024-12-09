@@ -1,9 +1,10 @@
+import datetime
 from decimal import Decimal
 
 from django.contrib.auth.models import Group
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import F
+from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
 
 from common.models import (
@@ -12,6 +13,7 @@ from common.models import (
     UsuarioGenericoPessoaFisicaQuerySet,
     LojaScope,
 )
+from loja.models import Venda, VendaQuerySet
 from util.decorators import CachedClassProperty
 from util.models import cast_to_model
 
@@ -190,6 +192,107 @@ class Funcionario(UsuarioGenericoPessoaFisica):
         if commit:
             self.save()
 
+    def _get_qtd_vendas_como_vendedor(self, filters: dict = None):
+        if not hasattr(self, 'vendas_como_vendedor'):
+            return 0
+        vendas: VendaQuerySet = self.vendas_como_vendedor
+        if filters is not None:
+            vendas = vendas.filter(**filters)
+        return vendas.count()
+
+    def _get_valor_vendas_como_vendedor(self, filters: dict = None):
+        if not hasattr(self, 'vendas_como_vendedor'):
+            return Decimal('0')
+        vendas: VendaQuerySet = self.vendas_como_vendedor
+        if filters is not None:
+            vendas = vendas.filter(**filters)
+        return vendas.annotate_preco_total_com_desconto().aggregate(
+            total=Coalesce(Sum('preco_total_com_desconto'), Decimal('0'))
+        )['total']
+
+    def _get_comissao_vendas_como_vendedor(self, filters: dict = None):
+        if not hasattr(self, 'vendas_como_vendedor'):
+            return Decimal('0')
+        vendas: VendaQuerySet = self.vendas_como_vendedor
+        if filters is not None:
+            vendas = vendas.filter(**filters)
+        return vendas.aggregate(
+            total=Coalesce(Sum('comissao_vendedor'), Decimal('0'))
+        )['total']
+
+    def _get_filter_vendas_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        data_inicio = data_inicio if data_inicio is not None else datetime.date.today()
+        filters = filters or {}
+        return filters | {'data_hora__range': (data_inicio, data_fim)}
+
+    def _get_qtd_vendas_como_vendedor_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_qtd_vendas_como_vendedor(
+            self._get_filter_vendas_time_range(data_inicio, data_fim, filters)
+        )
+
+    def _get_valor_vendas_como_vendedor_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_valor_vendas_como_vendedor(
+            self._get_filter_vendas_time_range(data_inicio, data_fim, filters)
+        )
+
+    def _get_comissao_vendas_como_vendedor_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_comissao_vendas_como_vendedor(
+            self._get_filter_vendas_time_range(data_inicio, data_fim, filters)
+        )
+
+    def _get_qtd_vendas_como_vendedor_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_qtd_vendas_como_vendedor_time_range(
+            data_inicio=datetime.date.today() - datetime.timedelta(dias_atras),
+            data_fim=None,
+            filters=filters
+        )
+
+    def _get_valor_vendas_como_vendedor_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_valor_vendas_como_vendedor_time_range(
+            data_inicio=datetime.date.today() - datetime.timedelta(dias_atras),
+            data_fim=None,
+            filters=filters
+        )
+
+    def _get_comissao_vendas_como_vendedor_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_comissao_vendas_como_vendedor_time_range(
+            data_inicio=datetime.date.today() - datetime.timedelta(dias_atras),
+            data_fim=None,
+            filters=filters
+        )
+
 
 class FuncionarioPapelQuerySet(FuncionarioQuerySet):
     def complete(self):
@@ -319,6 +422,66 @@ class Vendedor(FuncionarioPapel):
         self._porcentagem_comissao = porcentagem_comissao
 
     vendedores = VendedorManager()
+
+    def get_qtd_vendas(self, filters: dict = None):
+        return self._get_qtd_vendas_como_vendedor(filters)
+
+    def get_valor_vendas(self, filters: dict = None):
+        return self._get_valor_vendas_como_vendedor(filters)
+
+    def get_comissao_vendas(self, filters: dict = None):
+        return self._get_comissao_vendas_como_vendedor(filters)
+
+    def get_qtd_vendas_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_qtd_vendas_como_vendedor_time_range(
+            data_inicio, data_fim, filters
+        )
+
+    def get_valor_vendas_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_valor_vendas_como_vendedor_time_range(
+            data_inicio, data_fim, filters
+        )
+
+    def get_comissao_vendas_time_range(
+            self,
+            data_inicio: datetime.date,
+            data_fim: datetime.date = None,
+            filters: dict = None
+    ):
+        return self._get_comissao_vendas_como_vendedor_time_range(
+            data_inicio, data_fim, filters
+        )
+
+    def get_qtd_vendas_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_qtd_vendas_como_vendedor_dias_atras(dias_atras, filters)
+
+    def get_valor_vendas_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_valor_vendas_como_vendedor_dias_atras(dias_atras, filters)
+
+    def get_comissao_vendas_dias_atras(
+            self,
+            dias_atras: int,
+            filters: dict = None
+    ):
+        return self._get_comissao_vendas_como_vendedor_dias_atras(dias_atras, filters)
 
     class Meta:
         proxy = True

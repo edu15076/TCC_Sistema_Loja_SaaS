@@ -14,12 +14,15 @@ from loja.models import (
 
 
 class ItemQuerySet(models.QuerySet):
-    pass
+    def annotate_preco_total(self):
+        return self.annotate(preco_total=F('quantidade') * F('preco_vendido'))
+
 
 class ItemManager(models.Manager):
     def get_queryset(self):
         return ItemQuerySet(self.model, using=self._db).all()
-    
+
+
 class Item(models.Model):
     produto = models.ForeignKey(
         Produto, 
