@@ -8,3 +8,4 @@ from .gestao_promocao_produto import *
 from .gestao_promocoes import *
 from .estado_caixa import *
 from .gestao_caixa import *
+from .efetuar_venda import *

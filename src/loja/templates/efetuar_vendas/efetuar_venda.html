@@ -1,0 +1,111 @@
+{% extends "base_loja.html" %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block main_content %}
+    <h1>Venda</h1>
+
+    <section id="item-form">
+        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' %}" hx-swap="none">
+            {% crispy item_venda_form %}
+        </form>
+    </section>
+
+    <section id="itens-venda">
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Código de Barras</th>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Quantidade</th>
+                    <th scope="col">Preço</th>
+                    <th scope="col">Desconto</th>
+                    <th scope="col">Preço Final</th>
+                </tr>
+            </thead>
+            <tbody id="itens-venda-lista"></tbody>
+            <footer id="itens-somas"></footer>
+        </table>
+    </section>
+
+    <section id="venda-form">
+        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' %}" hx-swap="none">
+            {% crispy venda_form %}
+        </form>
+    </section>    
+    <div
+        class="modal fade bg-danger"
+        id="modal-pagamento"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="failVendaModalLabel"
+        aria-hidden="true"
+    >
+        <div
+            class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+            role="document"
+        >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>
+                        Compra falhou
+                    </h3>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body" id="fail-venda-body-modal">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- Modal Body -->
+    <!-- if you want to close by clicking outside the modal, delete the last endpoint:data-bs-backdrop and data-bs-keyboard -->
+    <div
+        class="modal fade"
+        id="compra-efetuada"
+        tabindex="-1"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        role="dialog"
+        aria-labelledby="successVendaModalLabel"
+        aria-hidden="true"
+    >
+        <div
+            class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+            role="document"
+        >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Venda efetuada com sucesso!
+                    </h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <p>Valor total: R$ {{ venda.valor_total }}</p>
+                    <p>Valor pago: R$ {{ venda.valor_pago }}</p>
+                    <p>Troco: R$ {{ venda.troco }}</p>
+
+                    <button class="btn btn-danger">Cancelar</button>
+                    <button class="btn btn-sucess">Concluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+{% endblock main_content %}
+

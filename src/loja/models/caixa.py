@@ -39,6 +39,11 @@ class Caixa(models.Model):
         self.dinheiro_em_caixa += valor
         self.save()
 
+    def recuperar_caixeiro(self, data_hora):
+        return TrabalhaCaixa.objects.filter(
+            caixa=self, trabalho_por_dia__dia_da_semana=data_hora.weekday()
+        ).first().caixeiro
+
     def __str__(self):
         return f"Caixa {self.numero_identificacao} - {'Aberto' if self.is_open else 'Fechado'}"
 
