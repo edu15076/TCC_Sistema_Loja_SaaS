@@ -56,7 +56,7 @@ class EfetuarVendaView(
 
         if request is not None:
             kwargs['data'] = request.POST
-            kwargs['data']['caixeiro'] = self.user
+            kwargs['caixeiro'] = self.user
 
         return kwargs
     
@@ -78,22 +78,22 @@ class EfetuarVendaView(
 
             return render(self.request, self.get_template_names()[1], {'venda': venda})
         else:
+            print('aaaaaaaa')
             item = form.save()
 
             # item
 
-            return render(self.request, self.get_template_names()[1], {'venda': venda})
+            return render(self.request, self.get_template_names()[1], {'item': item})
         
     
     def get(self, request, *args, **kwargs):
         if not self.caixa_aberto():
-            print('aaaaaaaaaaaa')
             return render(request, 'efetuar_vendas/caixa_fechado.html')
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
         print(request.POST)
-        
+
         if not self.caixa_aberto():
             return JsonResponse({'type':'error', 'message':'Caixa fechado'}, status=400)
         

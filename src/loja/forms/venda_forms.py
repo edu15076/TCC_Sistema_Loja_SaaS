@@ -34,10 +34,11 @@ class ItemVendaForm(
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Salvar')
 
-    def __init__(self, loja=None, *args, **kwargs):
+    def __init__(self, loja=None, caixeiro=None, *args, **kwargs):
         super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
+        self.caixeiro = caixeiro
 
     def clean_codigo_barras(self):
         codigo_de_barras = self.cleaned_data['codigo_de_barras']
@@ -54,6 +55,7 @@ class ItemVendaForm(
         quantidade = self.cleaned_data['quantidade']
         preco_vendido = produto.preco_de_venda - produto.calcular_desconto()
 
+        print(self.loja)
         item = Item(
             produto = produto,
             quantidade = quantidade,

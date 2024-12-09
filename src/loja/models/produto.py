@@ -48,6 +48,10 @@ class Produto(ValidateModelMixin, models.Model):
     @property
     def qtd_em_estoque(self):
         return sum([p.qtd_em_estoque for p in self.lotes.filter(produto=self)])
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save( *args, **kwargs)
 
     def promocao_por_data(self, data: date):
         """
@@ -72,6 +76,15 @@ class Produto(ValidateModelMixin, models.Model):
         Retorna a promoção ativa para a data atual.
         """
         return self.promocao_por_data(date.today())
+    
+    def atualizar_quantidade_lote(self, codigo_lote: str, quantidade: int):
+        lote = self.lotes.get(lote=codigo_lote)
+
+        if lote is None:
+            raise ValidationError(f"Lote com código {codigo_lote} não encontrado.")
+        
+        lote.qtd_em_estoque = quantidade
+        lote.save()
 
     def promocao_valida(self, promocao=None, data: date=date.today()):
         """
@@ -125,3 +138,7 @@ class ProdutoPorLote(models.Model):
     )
 
     produtos_por_lote = ProdutoPorLoteManager()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save( *args, **kwargs)
