@@ -6,13 +6,13 @@
 {% block main_content %}
     <h1>Venda</h1>
 
-    <section id="item-form">
-        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' %}" hx-swap="none">
+    <section id="item-form" class="container my-4">
+        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' scope.pk %}" hx-swap="none">
             {% crispy item_venda_form %}
         </form>
     </section>
 
-    <section id="itens-venda">
+    <section id="container itens-venda my-4" class="container my-4">
         <table class="table table-dark table-striped">
             <thead>
                 <tr>
@@ -29,11 +29,12 @@
         </table>
     </section>
 
-    <section id="venda-form">
-        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' %}" hx-swap="none">
+    <section id="venda-form" class="container my-4">
+        <form method="post" class="row row-cols-lg-auto g-3 align-items-end" hx-post="{% url 'efetuar_venda' scope.pk %}" hx-swap="none">
             {% crispy venda_form %}
         </form>
-    </section>    
+    </section>   
+     
     <div
         class="modal fade bg-danger"
         id="modal-pagamento"

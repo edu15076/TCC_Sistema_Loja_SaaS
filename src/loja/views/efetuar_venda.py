@@ -24,6 +24,7 @@ class EfetuarVendaView(
     raise_exception = True
     template_name = 'efetuar_vendas/efetuar_venda.html'
     model = Venda
+    object = None
     usuario_class = Caixeiro
     forms_class = {
         'venda': VendaForm,
@@ -52,10 +53,10 @@ class EfetuarVendaView(
     def get_form_kwargs(self, form_class=None, request=None) -> dict[str, any]:
         kwargs = {}
         kwargs['loja'] = self.get_loja()
-        kwargs['caixeiro'] = self.user
 
         if request is not None:
             kwargs['data'] = request.POST
+            kwargs['data']['caixeiro'] = self.user
 
         return kwargs
     
@@ -91,6 +92,9 @@ class EfetuarVendaView(
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
+        print(request.POST)
+        
         if not self.caixa_aberto():
             return JsonResponse({'type':'error', 'message':'Caixa fechado'}, status=400)
+        
         return super().post(request, *args, **kwargs)

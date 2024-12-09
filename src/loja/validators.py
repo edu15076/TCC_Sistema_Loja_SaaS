@@ -39,7 +39,7 @@ def validate_unique_promocao(produto, promocao):
         )
 
 def validate_data_atual_promocao(data):
-    if data < datetime.today():
+    if data < datetime.today().date():
         raise ValidationError(
             _('A data de início não pode ser no passado.')
         )

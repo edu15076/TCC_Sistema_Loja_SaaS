@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.contrib.auth.models import Group
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import F, QuerySet, Sum
+from django.db.models import F, QuerySet, Sum, Q
 from django.db.models.functions import Coalesce
 
 from common.models import (
@@ -371,11 +371,12 @@ class Caixeiro(FuncionarioPapel):
             )
 
     def recuperar_caixa(self, data_hora):
+
         return TrabalhaCaixa.objects.filter(
             caixeiro=self,
             trabalho_por_dia__dia_da_semana=data_hora.weekday(),
-            trabalho_por_dia__timeslices__hora_inicio__lte=data_hora.time(),
-            trabalho_por_dia__timeslices__hora_fim__gte=data_hora.time()
+            trabalho_por_dia__timeslices__start__lte=data_hora.time(),
+            trabalho_por_dia__timeslices__end__gte=data_hora.time()
         ).first().caixa
 
 

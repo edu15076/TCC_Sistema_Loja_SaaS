@@ -89,7 +89,7 @@ class VendaForm(NameFormMixin, LojaValidatorFormMixin, CrispyFormMixin, forms.Mo
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
-        self.fields['verdedor'].queryset = Vendedor.vendedores.filter(loja=loja)
+        self.fields['vendedor'].queryset = Vendedor.vendedores.filter(loja=loja)
 
     def get_submit_button(self) -> Submit:
         return Submit(self.submit_name(), 'Finalizar')
