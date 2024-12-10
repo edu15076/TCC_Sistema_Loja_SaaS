@@ -1,165 +1,176 @@
-    {% extends 'base_loja.html' %}
+{% extends 'base_loja.html' %}
 
-    {% block main_content %}
-    <div class="container my-4">
-        <h1 class="text-justify">Gestão de Caixas</h1>
+{% block main_content %}
+<div class="container my-4">
+    <h1 class="text-justify">Gestão de Caixas</h1>
 
-        <form method="get" class="d-flex justify-content-align-items-center gap-3 my-4">
-            <label for="filtro" class="form-label mb-0">Filtrar:</label>
-            <select name="filtro" class="form-select w-auto">
-                <option value="todos" {% if filtro == "todos" %}selected{% endif %}>Todos</option>
-                <option value="abertos" {% if filtro == "abertos" %}selected{% endif %}>Abertos</option>
-                <option value="fechados" {% if filtro == "fechados" %}selected{% endif %}>Fechados</option>
-            </select>
+    <form method="get" class="d-flex justify-content-align-items-center gap-3 my-4">
+        <label for="filtro" class="form-label mb-0">Status:</label>
+        <select name="filtro" class="form-select w-auto">
+            <option value="todos" {% if filtro == "todos" %}selected{% endif %}>Todos</option>
+            <option value="abertos" {% if filtro == "abertos" %}selected{% endif %}>Abertos</option>
+            <option value="fechados" {% if filtro == "fechados" %}selected{% endif %}>Fechados</option>
+        </select>
 
-            <label for="ordem" class="form-label mb-0">Ordenar por:</label>
-            <select name="ordem" class="form-select w-auto">
-                <option value="id" {% if ordem == "id" %}selected{% endif %}>ID</option>
-                <option value="dinheiro_em_caixa" {% if ordem == "dinheiro_em_caixa" %}selected{% endif %}>Maior Quantidade de Dinheiro</option>
-                <option value="nome" {% if ordem == "nome" %}selected{% endif %}>Nome do Caixa</option>
-            </select>
+        <label for="ordem" class="form-label mb-0">Ordenar por:</label>
+        <select name="ordem" class="form-select w-auto">
+            <option value="id" {% if ordem == "id" %}selected{% endif %}>ID</option>
+            <option value="dinheiro_em_caixa" {% if ordem == "dinheiro_em_caixa" %}selected{% endif %}>Maior Quantidade de Dinheiro</option>
+            <option value="nome" {% if ordem == "nome" %}selected{% endif %}>Nome do Caixa</option>
+        </select>
 
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </form>
+        <button type="submit" class="btn btn-primary">{% heroicon_solid "magnifying-glass" %}</button>
+    </form>
 
-        <div class="d-flex justify-content-left align-items-center gap-3 my-4">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#novoCaixaModal">
-                Cadastrar Novo Caixa
-            </button>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#pesquisarCaixeiroModal">
-                Pesquisar Caixeiro
-            </button>
-        </div>
-
-        {% if error_message %}
-        <div class="alert alert-danger">
-            {{ error_message }}
-        </div>
-        {% endif %}
-
-        {% if success_message %}
-        <div class="alert alert-success">
-            {{ success_message }}
-        </div>
-        {% endif %}
-
-        <!-- Retorno da pesquisa por um caixeiro num Caixa -->
-        {% if pesquisa_resultado %}
-            <ul>
-            {% for resultado, trabalho_id in pesquisa_resultado %}
-                <li>
-                    {{ resultado }} 
-                    <form method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="trabalho_id" value="{{ trabalho_id }}"> 
-                        <input type="hidden" name="acao" value="remover_periodo">
-                        <button type="submit" class="btn btn-danger btn-sm">X</button>
-                    </form>
-                </li>
-            {% endfor %} 
-            </ul>
-        {% else %}
-            {{ mensagem_resultado }}
-        {% endif %}
-        
-        <!-- Mensagem de erro para caso não ter nenhum Caixa -->
-        {% if not caixas %}
-            <div class="alert alert-danger text-center" role="alert">
-                Não há caixas cadastrados no momento.
-            </div>
-        {% else %}
-            <div class="row g-4">
-                {% for caixa in caixas %}
-                    {% include 'cards/card_caixa.html' with is_estado_caixa=False caixa=caixa loja_scope=loja_scope %}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Modal para Cadastrar Novo Caixa -->
-        <div class="modal fade" id="novoCaixaModal" tabindex="-1" aria-labelledby="novoCaixaModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="novoCaixaModalLabel">Cadastrar Novo Caixa</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="numero_identificacao" class="form-label">Número de Identificação:</label>
-                                <input type="number" name="numero_identificacao" class="form-control" required min="1" max="99999999" 
-                                    title="O número de identificação deve ter exatamente 8 dígitos e estar entre 00000001 e 99999999." 
-                                    oninput="this.value = this.value.padStart(8, '0');" 
-                                    pattern="^\d{8}$" placeholder="00000001">
-                            </div>
-                            <button type="submit" name="acao" value="adicionar" class="btn btn-success w-100">Adicionar</button>
-                        </form>
-                    </div>
-                </div>
+    <div class="card my-4">
+        <div class="card-body">
+            <h5 class="card-title">Caixas</h5>
+            <div class="d-flex justify-content-left align-items-center gap-3">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoCaixaModal">
+                    Cadastrar Novo Caixa
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pesquisarCaixeiroModal">
+                    Buscar por Caixeiros
+                </button>
             </div>
         </div>
-        <!-- Mensagem de erro para Cadastrar Novo Caixa -->
-        {% if request.session.error_message %}
-        <div class="alert alert-danger">
-            {{ request.session.error_message }}
-        </div>
-        {% endif %}
-
-        <!-- Modal para Pesquisar Caixeiro -->
-        <div class="modal fade" id="pesquisarCaixeiroModal" tabindex="-1" aria-labelledby="pesquisarCaixeiroModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="pesquisarCaixeiroModalLabel">Pesquisar Caixeiro</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="acao" value="pesquisar_caixeiro">
-                            <div class="mb-3">
-                                <label for="numero_identificacao" class="form-label">Número de Identificação do Caixa:</label>
-                                <input type="number" name="numero_identificacao" class="form-control" required min="1" max="99999999" 
-                                    title="O número de identificação deve ter exatamente 8 dígitos e estar entre 00000001 e 99999999." 
-                                    oninput="this.value = this.value.padStart(8, '0');" 
-                                    pattern="^\d{8}$" placeholder="00000001" value="00000001">
-                            </div>
-                            <div class="mb-3">
-                                <label for="horario_inicio_pesquisa" class="form-label">Horário de Trabalho (Início):</label>
-                                <input type="time" name="horario_inicio_pesquisa" id="horario_inicio_pesquisa" class="form-control" required value="00:00">
-                            </div>
-                            <div class="mb-3">
-                                <label for="horario_fim_pesquisa" class="form-label">Horário de Trabalho (Fim):</label>
-                                <input type="time" name="horario_fim_pesquisa" id="horario_fim_pesquisa" class="form-control" required value="23:59">
-                            </div>
-                            <div class="mb-3">
-                                <label for="dia_da_semana" class="form-label">Dia da Semana:</label>
-                                <select name="dia_da_semana" class="form-select" required>
-                                    <option value="">Selecione um dia</option>
-                                    <option selected value="todos">Todos os dias</option>
-                                    <option value="segunda">Segunda</option>
-                                    <option value="terca">Terça</option>
-                                    <option value="quarta">Quarta</option>
-                                    <option value="quinta">Quinta</option>
-                                    <option value="sexta">Sexta</option>
-                                    <option value="sabado">Sábado</option>
-                                    <option value="domingo">Domingo</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-info">Pesquisar</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% if request.session.success_message %}
-        <div class="alert alert-success">
-            {{ request.session.success_message }}
-        </div>
-        {% endif %}
-
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% endblock main_content %}
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if success_message %}
+    <div class="alert alert-success">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    <!-- Retorno da pesquisa por um caixeiro num Caixa -->
+    {% if pesquisa_resultado %}
+        <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}">
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="remover_periodo">
+            
+            <h5 class="mt-4">Resultados da Pesquisa:</h5>
+            <ul class="list-group my-3">
+                {% for resultado, trabalho_id in pesquisa_resultado %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ resultado }}</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <!-- Checkbox dentro do form -->
+                            <input type="checkbox" name="trabalho_ids" value="{{ trabalho_id }}">
+
+                    </li>
+                {% endfor %}
+            </ul>
+            <button type="submit" class="btn btn-danger w-100">Remover Selecionados</button>
+        </form>
+    {% else %}
+        {{ mensagem_resultado }}
+    {% endif %}
+    
+    <!-- Mensagem de erro para caso não ter nenhum Caixa -->
+    {% if not caixas %}
+        <div class="alert alert-danger text-center" role="alert">
+            Não há caixas cadastrados no momento.
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for caixa in caixas %}
+                {% include 'cards/card_caixa.html' with is_estado_caixa=False caixa=caixa loja_scope=loja_scope %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Modal para Cadastrar Novo Caixa -->
+    <div class="modal fade" id="novoCaixaModal" tabindex="-1" aria-labelledby="novoCaixaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="novoCaixaModalLabel">Cadastrar Novo Caixa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div div class="mb-3">
+                            <label for="numero_identificacao" class="form-label">Número de Identificação:</label>
+                            <input type="number" name="numero_identificacao" class="form-control" required min="1" max="99999999" 
+                                title="O número de identificação deve ter exatamente 8 dígitos e estar entre 00000001 e 99999999." 
+                                oninput="this.value = this.value.padStart(8, '0');" 
+                                pattern="^\d{8}$" placeholder="00000001">
+                        </div>
+                        <button type="submit" name="acao" value="adicionar" class="btn btn-primary w-100">Adicionar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Mensagem de erro para Cadastrar Novo Caixa -->
+    {% if request.session.error_message %}
+    <div class="alert alert-danger">
+        {{ request.session.error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Modal para Pesquisar Caixeiro -->
+    <div class="modal fade" id="pesquisarCaixeiroModal" tabindex="-1" aria-labelledby="pesquisarCaixeiroModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pesquisarCaixeiroModalLabel">Pesquisar Caixeiro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'gestao_caixas' loja_scope=loja_scope %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="pesquisar_caixeiro">
+                        <div class="mb-3">
+                            <label for="numero_identificacao" class="form-label">Número de Identificação do Caixa:</label>
+                            <input type="number" name="numero_identificacao" class="form-control" required min="1" max="99999999" 
+                                title="O número de identificação deve ter exatamente 8 dígitos e estar entre 00000001 e 99999999." 
+                                oninput="this.value = this.value.padStart(8, '0');" 
+                                pattern="^\d{8}$" placeholder="00000001" value="00000001">
+                        </div>
+                        <div class="mb-3">
+                            <label for="horario_inicio_pesquisa" class="form-label">Horário de Trabalho (Início):</label>
+                            <input type="time" name="horario_inicio_pesquisa" id="horario_inicio_pesquisa" class="form-control" required value="00:00">
+                        </div>
+                        <div class="mb-3">
+                            <label for="horario_fim_pesquisa" class="form-label">Horário de Trabalho (Fim):</label>
+                            <input type="time" name="horario_fim_pesquisa" id="horario_fim_pesquisa" class="form-control" required value="23:59">
+                        </div>
+                        <div class="mb-3">
+                            <label for="dia_da_semana" class="form-label">Dia da Semana:</label>
+                            <select name="dia_da_semana" class="form-select" required>
+                                <option value="">Selecione um dia</option>
+                                <option selected value="todos">Todos os dias</option>
+                                <option value="segunda">Segunda</option>
+                                <option value="terca">Terça</option>
+                                <option value="quarta">Quarta</option>
+                                <option value="quinta">Quinta</option>
+                                <option value="sexta">Sexta</option>
+                                <option value="sabado">Sábado</option>
+                                <option value="domingo">Domingo</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if request.session.success_message %}
+    <div class="alert alert-success">
+        {{ request.session.success_message }}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock main_content %}

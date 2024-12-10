@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.core.validators import RegexValidator
 
 from loja.models.fluxodecaixa import FluxoDeCaixa
 from loja.models.trabalhacaixa import TrabalhaCaixa
@@ -15,7 +16,17 @@ class CaixaManager(models.Manager):
 
 
 class Caixa(models.Model):
-    numero_identificacao = models.CharField(max_length=50, unique=True)
+    numero_identificacao_validator = RegexValidator(
+        regex=r'^\d{8}$',
+        message="O número de identificação deve ter exatamente 8 dígitos.",
+        code='invalid_numero_identificacao'
+    )
+
+    numero_identificacao = models.CharField(
+        max_length=8,
+        validators=[numero_identificacao_validator],
+    )
+
     loja = models.ForeignKey('Loja', on_delete=models.CASCADE, related_name='caixas')
     horario_aberto = models.DateTimeField(null=True, blank=True)
     dinheiro_em_caixa = models.FloatField(default=0.0)
@@ -43,6 +54,9 @@ class Caixa(models.Model):
         return f"Caixa {self.numero_identificacao} - {'Aberto' if self.is_open else 'Fechado'}"
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['numero_identificacao', 'loja'], name='unique_caixa_per_loja')
+        ]
         permissions = [
             ("manage_caixa", "Pode gerenciar caixas"),
         ]
