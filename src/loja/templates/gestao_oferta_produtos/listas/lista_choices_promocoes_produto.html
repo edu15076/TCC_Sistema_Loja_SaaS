@@ -1,0 +1,15 @@
+<div id="choices-promocoes" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+    {% if promocoes_choices|length > 0 %}
+
+        {% for promocao in promocoes_choices %}
+            {% with label=promocao value=promocao.pk %}
+                {% include "gestao_oferta_produtos/cards/card_promocao_multiple_choice_produto.html" %}
+            {% endwith %}
+        {% endfor %}
+    
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhuma promoção encontrada
+        </div>
+    {% endif %}
+</div>

@@ -6,12 +6,16 @@ from django.utils.translation import gettext_lazy as _
 
 from common.models import Periodo
 from util.forms import QueryFormMixin, CrispyFormMixin
+from util.mixins import NameFormMixin
 from loja.models import Produto, Promocao
 
 
-class ProdutoQueryForm(QueryFormMixin, forms.Form):
+class ProdutoQueryForm(NameFormMixin, QueryFormMixin, forms.Form):
+    _name = "produto_query"
+
     query = forms.CharField(
-        required=True,
+        label=_('Pesquisar'),
+        required=False,
         max_length=128,
         widget=forms.TextInput(attrs={'placeholder': _('Digite sua pesquisa...')}),
     )
@@ -20,7 +24,6 @@ class ProdutoQueryForm(QueryFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
-        self.helper.attrs = {'oninput': 'this.form.submit()'}
 
     class Meta:
-        fields = ['descricao']
+        fields = ['descricao', 'codigo_de_barras']

@@ -8,14 +8,12 @@ from django.db.models import F, ExpressionWrapper, DecimalField
 
 from common.models import Periodo
 from loja.models.loja import Loja
-from util.forms import CrispyFormMixin, CustomModelMultipleChoiceField
+from util.forms import CrispyFormMixin, CustomModelMultipleChoiceField, QueryFormMixin
 from util.forms.model_fields import ModelIntegerField
 from .mixins import LojaValidatorFormMixin
 from util.mixins import NameFormMixin
 from loja.models import Produto, Promocao
 from loja.validators import validate_unique_promocao
-
-# TODO - Refatorar para usar LojaValidatorFormMixin e ModelFields
 
 
 class PromocoesPorProdutoForm(
@@ -54,20 +52,7 @@ class PromocoesPorProdutoForm(
             self.fields['promocoes'].queryset = Promocao.promocoes.filter(
                 loja=loja,
                 data_inicio__gt=date.today(),
-            ).annotate(
-                desconto=ExpressionWrapper(
-                    self.instance.preco_de_venda * F('porcentagem_desconto') / 100,
-                    output_field=DecimalField(
-                        _('Desconto'), max_digits=10, decimal_places=2
-                    ),
-                ),
-                preco_com_desconto=ExpressionWrapper(
-                    self.instance.preco_de_venda - F('desconto'),
-                    output_field=DecimalField(
-                        _('Desconto'), max_digits=10, decimal_places=2
-                    ),
-                ),
-            )
+            ).with_desconto(self.instance.preco_de_venda)
 
     def save(self, commit: bool = True) -> Any:
         instance = super().save(commit=False)
@@ -119,15 +104,9 @@ class ProdutosPorPromocaoForm(
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
 
-        self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja).annotate(
-            desconto=ExpressionWrapper(
-                F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
-                output_field=DecimalField(
-                    _('Desconto'), max_digits=10, decimal_places=2
-                ),
-            ),
-            preco_com_desconto=F('preco_de_venda') - F('desconto'),
-        )
+        self.fields['produtos'].queryset = Produto.produtos.filter(
+            loja=loja
+        ).with_desconto(self.instance.porcentagem_desconto)
 
     def clean_produtos(self):
         produtos = self.cleaned_data.get('produtos')
@@ -213,14 +192,8 @@ class DuplicarPromocaoForm(
         if self.instance is not None and self.instance.pk is not None:
             self.fields['produtos'].initial = [self.instance.produtos]
 
-            produtos_queryset = produtos_queryset.annotate(
-                desconto=ExpressionWrapper(
-                    F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
-                    output_field=DecimalField(
-                        _('Desconto'), max_digits=10, decimal_places=2
-                    ),
-                ),
-                preco_com_desconto=F('preco_de_venda') - F('desconto'),
+            produtos_queryset = produtos_queryset.with_desconto(
+                self.instance.porcentagem_desconto
             )
 
             self.fields['descricao'].initial = self.instance.descricao
@@ -333,14 +306,8 @@ class PromocaoForm(
         self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja)
 
         if self.instance.pk is not None:
-            self.fields['produtos'].queryset.annotate(
-                desconto=ExpressionWrapper(
-                    F('preco_de_venda') * (self.instance.porcentagem_desconto / 100),
-                    output_field=DecimalField(
-                        _('Desconto'), max_digits=10, decimal_places=2
-                    ),
-                ),
-                preco_com_desconto=F('preco_de_venda') - F('desconto'),
+            self.fields['produtos'].queryset.with_desconto(
+                self.instance.porcentagem_desconto
             )
 
     def clean_unidades_de_tempo_por_periodo(self):
@@ -463,3 +430,25 @@ class FiltroPromocaoForm(CrispyFormMixin, forms.Form):
             and len(self.cleaned_data['produtos']) == 0
         ):
             self.Meta.filter_arguments.pop('produtos')
+
+
+class PromocaoQueryForm(NameFormMixin, QueryFormMixin, forms.Form):
+    _name = 'promocao_query'
+
+    query = forms.CharField(
+        label=_('Pesquisar'),
+        required=False,
+        max_length=128,
+        widget=forms.TextInput(attrs={'placeholder': _('Digite sua pesquisa...')}),
+    )
+
+    class Meta:
+        fields = ['descricao', 'porcentagem_desconto']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self.create_helper()
+        self.helper.form_method = 'post'
+
+    def get_submit_button(self) -> Submit:
+        return Submit(self.submit_name(), 'Pesquisar')

@@ -1,0 +1,13 @@
+<div id="choices-produtos" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+    {% if produtos_choices|length > 0 %}
+        {% for produto in produtos_choices %}
+            {% with label=produto value=produto.pk %}
+                {% include "gestao_oferta_produtos/cards/card_produto_multiple_choice_promocao.html" %}
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhum produto encontrado
+        </div>
+    {% endif %}
+<div id="choices-produtos" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">

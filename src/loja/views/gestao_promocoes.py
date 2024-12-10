@@ -5,14 +5,20 @@ from django.shortcuts import render
 
 from util.mixins import MultipleFormsViewMixin
 from loja.models.funcionario import GerenteFinanceiro
-from util.views.edit_list import CreateOrUpdateListHTMXView
-from loja.models import Promocao
+from util.views import CreateOrUpdateListHTMXView, QueryView
+from loja.models import Promocao, Produto
 from loja.views import LojaProtectionMixin
-from loja.forms import DuplicarPromocaoForm, PromocaoForm, FiltroPromocaoForm
+from loja.forms import (
+    DuplicarPromocaoForm,
+    PromocaoForm,
+    FiltroPromocaoForm,
+    ProdutoQueryForm,
+)
 
 
 class GestaoPromocoesCRUDListView(
     MultipleFormsViewMixin,
+    QueryView,
     LojaProtectionMixin,
     LoginRequiredMixin,
     PermissionRequiredMixin,
@@ -28,6 +34,7 @@ class GestaoPromocoesCRUDListView(
     default_order = ['id']
     paginate_by = 30
     usuario_class = GerenteFinanceiro
+    query_form_class = ProdutoQueryForm
     forms_class = {
         'promocao': PromocaoForm,
         'duplicar_promocao': DuplicarPromocaoForm,
@@ -40,6 +47,8 @@ class GestaoPromocoesCRUDListView(
         forms = self.get_forms()
         for form in forms.values():
             context[form.form_name()] = form
+
+        context[self.query_form_class.form_name()] = self.query_form_class()
 
         context['promocoes'] = self.object_list
         context['filter_form'] = self.filter_form(
@@ -68,6 +77,11 @@ class GestaoPromocoesCRUDListView(
     def get_template_names(self) -> list[str]:
         templates = [self.template_name]
 
+        if self.query_form_class.submit_name() in self.request.POST:
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_choices_produtos_promocao.html'
+            )
+
         request = self.request
         cards = request.GET.get('visualizacao') == 'cards'
 
@@ -87,5 +101,22 @@ class GestaoPromocoesCRUDListView(
             self.get_template_names()[1],
             {'promocao': promocao, 'erros': erros},
         )
+
+    def pesquisar_produtos(self, request: HttpRequest) -> HttpResponse:
+        queryset = self.search(
+            request, queryset=Produto.produtos.filter(loja=self.get_loja())
+        )
+        # queryset = queryset.with_desconto(self.get_object().preco_de_venda)
+
+        return render(
+            request,
+            self.get_template_names()[1],
+            {'produtos_choices': queryset},
+        )
+
+    def post(self, request, *args, **kwargs):
+        if self.query_form_class.submit_name() in request.POST:
+            return self.pesquisar_produtos(request)
+        return super().post(request, *args, **kwargs)
 
     # TODO def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:

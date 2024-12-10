@@ -36,16 +36,26 @@
             </div>
             {% if produtos_por_promocao_form.produtos|length > 0 %}
             <div class="modal-body mx-4 my-4">
+                <form  class=""
+                    hx-post="{% url 'gerir_produtos_promocao' scope.pk promocao.pk %}" 
+                    hx-trigger="keyup delay:250ms" 
+                    hx-target="#choices-produtos"
+                    hx-swap="outerHTML">
+                    {% csrf_token %}
+                    <input type="hidden" name="{{ produto_query_form.submit_name }}" value="1">
+                    {{ produto_query_form.query|as_crispy_field }}
+                </form>
                 <form method="post" 
                     hx-post="{% url 'gerir_produtos_promocao' scope.pk promocao.pk %}" 
                     hx-target="#produtos"
                     hx-on::after-request="$('#editarProdutosModal').modal('hide');" 
                     hx-swap="innerHTML">
                     {% csrf_token %}
-                    <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                    <div id="choices-produtos" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
                         {% for value, label in produtos_por_promocao_form.produtos.field.choices %}
-                            {% include "gestao_oferta_produtos//cards/card_produto_multiple_choice_promocao.html" %}
+                            {% include "gestao_oferta_produtos/cards/card_produto_multiple_choice_promocao.html" %}
                         {% endfor %}
+                        {% comment %} {% include "gestao_oferta_produtos/listas/lista_choices_produtos_promocao.html" %}  {% endcomment %}
                     </div>
                     <button name="{{ produtos_por_promocao_form.submit_name }}" 
                         value="{{ produtos_por_promocao_form.get_submit_button.value }}"

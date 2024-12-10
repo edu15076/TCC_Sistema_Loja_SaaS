@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any
 
 from django.db import models
-from django.db.models import F
+from django.db.models import F, ExpressionWrapper
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
@@ -19,7 +19,14 @@ __all__ = ['Produto', 'ProdutoPorLote']
 
 
 class ProdutoQuerySet(models.QuerySet):
-    pass
+    def with_desconto(self, promocao_porcentagem_desconto):
+        return self.annotate(
+            desconto=ExpressionWrapper(
+                F('preco_de_venda') * promocao_porcentagem_desconto / 100,
+                output_field=models.DecimalField(),
+            ),
+            preco_com_desconto=F('preco_de_venda') - F('desconto'),
+        )
 
 
 class ProdutoManager(models.Manager):

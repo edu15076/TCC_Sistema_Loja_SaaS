@@ -8,7 +8,7 @@ from django.shortcuts import render
 
 from util.mixins import MultipleFormsViewMixin
 from loja.views.mixins import LojaProtectionMixin
-from util.views.edit_list import CreateOrUpdateListHTMXView
+from util.views import CreateOrUpdateListHTMXView, QueryView
 from loja.models import Produto, GerenteFinanceiro, ConfiguracaoDeVendas
 from loja.forms import (
     ConfiguracaoDeVendasForm,
@@ -21,6 +21,7 @@ from loja.forms import (
 
 class GestaoOfertaProdutoListView(
     MultipleFormsViewMixin,
+    QueryView,
     LojaProtectionMixin,
     LoginRequiredMixin,
     CreateOrUpdateListHTMXView,
@@ -31,7 +32,7 @@ class GestaoOfertaProdutoListView(
     usuario_class = GerenteFinanceiro
     raise_exception = True
     filter_form = OfertaProdutosFilterForm
-    query_form = ProdutoQueryForm
+    query_form_class = ProdutoQueryForm
     model = Produto
     object_pk = None
     object = None
@@ -84,7 +85,7 @@ class GestaoOfertaProdutoListView(
             loja__scope=self.scope
         )
         context['filter_form'] = self.filter_form()
-        context['query_form'] = self.query_form()
+        context[self.query_form_class.form_name()] = self.query_form_class()
         context['produtos'] = self.get_page()
         context['produtos_count'] = Produto.produtos.filter(
             loja__scope=self.scope
@@ -111,20 +112,19 @@ class GestaoOfertaProdutoListView(
         return render(request, self.template_name, self.get_context_data())
 
     def pesquisar_produtos(self, request: HttpRequest) -> HttpResponse:
-        query_form = self.query_form(request.POST)
-        queryset = self.get_queryset()
-
-        if query_form.is_valid():
-            query_parameters = query_form.get_parameters()
-            queryset = queryset.filter(**query_parameters)
+        queryset = self.search(request)
 
         return render(
             request,
             self.get_template_names()[0],
             {
                 'produtos': queryset,
-                'em_venda_form': self.get_form(self.forms_class['em_venda']),
-                'preco_form': self.get_form(self.forms_class['preco_de_venda']),
+                self.forms_class['em_venda'].form_name(): self.get_form(
+                    self.forms_class['em_venda']
+                ),
+                self.forms_class['preco_de_venda'].form_name(): self.get_form(
+                    self.forms_class['preco_de_venda']
+                ),
             },
         )
 
@@ -155,14 +155,8 @@ class GestaoOfertaProdutoListView(
         )
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        try:
-            if 'query' in request.POST:
-                return self.pesquisar_produtos(request)
-            else:
-                self.object_pk = request.POST.get('id')
-                return super().post(request)
-
-        except Exception as e:
-            return JsonResponse(
-                {'success': False, 'type': 'error', 'message': str(e)}, status=400
-            )
+        if self.query_form_class.submit_name() in request.POST:
+            return self.pesquisar_produtos(request)
+        else:
+            self.object_pk = request.POST.get('id')
+            return super().post(request)

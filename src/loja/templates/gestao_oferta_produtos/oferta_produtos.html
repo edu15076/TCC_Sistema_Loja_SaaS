@@ -21,26 +21,22 @@
         {% crispy configuracao_de_venda_form %}
     </form>
 
-    <section id="filtro-form">
+    <section id="filtro-form" class="row row-cols-lg-auto g-3 align-items-end">
+        <form  class="row row-cols-lg-auto g-3 align-items-end"
+            hx-post="{% url 'gerir_oferta_produtos' scope.pk %}" 
+            hx-trigger="keyup delay:250ms" 
+            hx-target="#ofertas"
+            hx-swap="innerHTML">   
+            {% csrf_token %}
+            <input type="hidden" name="{{ produto_query_form.submit_name }}" value="1">
+            {{ produto_query_form.query|as_crispy_field }}
+        </form>
         <form method="get" class="row row-cols-lg-auto g-3 align-items-end">
             {{ filter_form.ordem|as_crispy_field }}
             {{ filter_form.em_venda|as_crispy_field }}
             <button type="submit" class="btn btn-primary my-3">{% heroicon_solid "magnifying-glass" %}</button>
         </form>
     </section>
-    
-{% comment %} 
-    <section id="query-form">
-        <form  class="row row-cols-lg-auto g-3 align-items-end"
-            hx-post="{% url 'gerir_oferta_produtos' scope.pk %}" 
-            hx-trigger="keyup changed delay:1000ms" 
-            hx-target="#ofertas" 
-            hx-swap="innerHTML">   
-            {% csrf_token %}
-            {{ query_form.query|as_crispy_field }}
-        </form>
-    </section> 
-{% endcomment %}
 
     <section id="ofertas">
         {% include "gestao_oferta_produtos/listas/lista_ofertas_produtos.html" %}

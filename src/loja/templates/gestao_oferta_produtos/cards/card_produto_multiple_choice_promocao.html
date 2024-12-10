@@ -4,9 +4,13 @@
             <input type="checkbox" value="{{ value }}" name="produtos" id="produto_{{ value }}" {% if label in promocao.produtos.all %}checked{% endif %}>
             <span class="checkmark"></span>
             <b>{{ label.descricao }}</b><br>
+            <span class="font-monospace">{{ label.codigo_de_barras }}</span><br>
             <span>Preço de venda: R$ {{ label.preco_de_venda }}</span><br>
-            <span>Desconto: R$ {{ label.desconto|floatformat:2 }}</span><br>
-            <span>Preço com desconto: R$ {{ label.preco_com_desconto|floatformat:2 }}</span><br>
+            {% if label.desconto %}
+                <span>Desconto: R$ {{ label.desconto|floatformat:2 }}</span><br>
+                <span>Preço com desconto: R$ {{ label.preco_com_desconto|floatformat:2 }}</span><br>
+            {% else %}
+            {% endif %}
         </label>
     </li>
 </div>

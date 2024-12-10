@@ -29,6 +29,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <form  class=""
+                        hx-post="{{ action }}" 
+                        hx-trigger="keyup delay:250ms" 
+                        hx-target="#duplicar-promocao-form #choices-produtos"
+                        hx-swap="outerHTML">
+                        {% csrf_token %}
+                        <input type="hidden" name="{{ produto_query_form.submit_name }}" value="1">
+                        {{ produto_query_form.query|as_crispy_field }}
+                    </form>
                     <form
                         id="duplicar-promocao-form" 
                         {% comment %} method="post"  {% endcomment %}
@@ -39,7 +48,7 @@
                         {% csrf_token %}
                         {{ duplicar_promocao_form.descricao|as_crispy_field }}
                         {{ duplicar_promocao_form.data_inicio|as_crispy_field }}
-                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                        <div id="choices-produtos" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
                             {% for value, label in duplicar_promocao_form.produtos.field.choices %}
                                 {% include "gestao_oferta_produtos//cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
@@ -64,6 +73,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <form  class=""
+                        hx-post="{{ action }}" 
+                        hx-trigger="keyup delay:250ms" 
+                        hx-target="#cadastro-promocao-form #choices-produtos"
+                        hx-swap="outerHTML">
+                        {% csrf_token %}
+                        <input type="hidden" name="{{ produto_query_form.submit_name }}" value="1">
+                        {{ produto_query_form.query|as_crispy_field }}
+                    </form>
                     <form 
                         id="cadastro-promocao-form" 
                         hx-post="{{ action }}" 
@@ -78,7 +96,7 @@
                         {{ promocao_form.numero_de_periodos|as_crispy_field }}
                         {{ promocao_form.unidades_de_tempo_por_periodo|as_crispy_field }}
 
-                        <div class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
+                        <div id="choices-produtos" class="row list-unstyled d-flex justify-content-between mb-3 mx-1">
                             {% for value, label in promocao_form.produtos.field.choices %}
                                 {% include "gestao_oferta_produtos//cards/card_produto_multiple_choice_promocao.html" %}
                             {% endfor %}
