@@ -1,5 +1,5 @@
 from crispy_forms.bootstrap import AppendedText, PrependedText
-from crispy_forms.layout import Submit, Layout, Button
+from crispy_forms.layout import Submit, Layout, Button, Field
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -43,13 +43,16 @@ class PrecoDeVendaProdutoForm(
 
     def __init__(self, *args, loja: Loja = None, **kwargs):
         super().__init__(loja=loja, *args, **kwargs)
-        self.helper = self.create_helper()
+        self.helper = self.create_helper(add_submit_button=False)
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
             PrependedText(
-            'preco_de_venda', 'R$'
+                'preco_de_venda', 'R$',
             ),
+            self.get_submit_button()
         )
+        self.helper.form_show_labels = False
+
 
 
 class OfertaProdutosFilterForm(CrispyFormMixin, forms.Form):

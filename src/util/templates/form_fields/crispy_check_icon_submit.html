@@ -1,0 +1,10 @@
+{% load crispy_forms_tags %}
+
+<div class="form-group">
+    <button name="{{ input.name }}" 
+        value="{{ input.value }}" 
+        class="mx-2 mb-3 btn btn-primary" 
+        type="submit">
+        {% heroicon_solid "check" size=20 %}
+    </button>
+</div>
