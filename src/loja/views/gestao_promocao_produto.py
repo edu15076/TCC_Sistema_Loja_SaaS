@@ -2,13 +2,14 @@ from typing import Any
 
 from django.db.models import F, ExpressionWrapper, DecimalField
 from django.views.generic.detail import DetailView
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext_lazy as _
 
 from loja.models.funcionario import GerenteFinanceiro
-from util.views.htmx import UpdateHTMXView
+from util.views import UpdateHTMXView, QueryView
 from loja.models import Produto, Promocao
 from loja.views import LojaProtectionMixin
 from loja.forms import *
@@ -17,6 +18,7 @@ from util.mixins import MultipleFormsViewMixin
 
 class GestaoPromocoesProdutoCRUDView(
     MultipleFormsViewMixin,
+    QueryView,
     LojaProtectionMixin,
     LoginRequiredMixin,
     UpdateHTMXView,
@@ -28,6 +30,11 @@ class GestaoPromocoesProdutoCRUDView(
     template_name = 'gestao_oferta_produtos/promocoes_por_produto.html'
     model = Produto
     usuario_class = GerenteFinanceiro
+    query_forms_class = {
+        'promocao': PromocaoQueryForm,
+        'produto': ProdutoQueryForm,
+    }
+    query_form_class = PromocaoQueryForm
     forms_class = {
         'promocoes_por_produto': PromocoesPorProdutoForm,
         'preco_de_venda': PrecoDeVendaProdutoForm,
@@ -44,6 +51,14 @@ class GestaoPromocoesProdutoCRUDView(
         if 'promocoes' in request.POST:
             templates.append(
                 'gestao_oferta_produtos/listas/lista_promocoes_produto.html'
+            )
+        elif self.query_forms_class['promocao'].submit_name() in request.POST:
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_choices_promocoes_produto.html'
+            )
+        elif self.query_forms_class['produto'].submit_name() in request.POST:
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_choices_produtos_promocao.html'
             )
         elif 'data_inicio' in request.POST:
             if cards:
@@ -82,18 +97,14 @@ class GestaoPromocoesProdutoCRUDView(
 
         forms = self.get_forms()
         for key, form in forms.items():
-            context[f"{key}_form"] = form
+            context[form.form_name()] = form
+
+        for form in self.query_forms_class.values():
+            context[form.form_name()] = form()
 
         context['produto'] = produto
-        context['promocoes'] = produto.promocoes.all().annotate(
-            desconto=ExpressionWrapper(
-                produto.preco_de_venda * F('porcentagem_desconto') / 100,
-                output_field=DecimalField(),
-            ),
-            preco_com_desconto=ExpressionWrapper(
-                produto.preco_de_venda - F('desconto'),
-                output_field=DecimalField(),
-            ),
+        context['promocoes'] = produto.promocoes.all().with_desconto(
+            produto.preco_de_venda
         )
 
         return context
@@ -111,16 +122,7 @@ class GestaoPromocoesProdutoCRUDView(
             self.object = Produto.produtos.get(pk=self.kwargs['pk'])
             context['promocao'] = (
                 Promocao.promocoes.filter(pk=object.pk)
-                .annotate(
-                    desconto=ExpressionWrapper(
-                        self.object.preco_de_venda * F('porcentagem_desconto') / 100,
-                        output_field=DecimalField(),
-                    ),
-                    preco_com_desconto=ExpressionWrapper(
-                        self.object.preco_de_venda - F('desconto'),
-                        output_field=DecimalField(),
-                    ),
-                )
+                .with_desconto(self.object.preco_de_venda)
                 .first()
             )
         else:
@@ -132,9 +134,52 @@ class GestaoPromocoesProdutoCRUDView(
 
         return render(self.request, self.get_template_names()[1], context)
 
+    def pesquisar_promocoes(self, request: HttpRequest) -> HttpResponse:
+        queryset = self.search(
+            request,
+            query_form_class=self.query_forms_class['promocao'],
+            queryset=Promocao.promocoes.filter(loja=self.get_loja()),
+        )
+        queryset = queryset.with_desconto(self.get_object().preco_de_venda)
+
+        return render(
+            request,
+            self.get_template_names()[1],
+            {
+                'promocoes_choices': queryset,
+            },
+        )
+
+    def pesquisar_produtos(self, request: HttpRequest) -> HttpResponse:
+        queryset = self.search(
+            request,
+            query_form_class=self.query_forms_class['produto'],
+            queryset=Produto.produtos.filter(loja=self.get_loja()),
+        )
+        # queryset = queryset.with_desconto(self.get_object().preco_de_venda)
+
+        return render(
+            request,
+            self.get_template_names()[1],
+            {'produtos_choices': queryset},
+        )
+
+    def post(self, request, *args, **kwargs):
+        try:
+            if self.query_forms_class['promocao'].submit_name() in request.POST:
+                return self.pesquisar_promocoes(request)
+            elif self.query_forms_class['produto'].submit_name() in request.POST:
+                return self.pesquisar_produtos(request)
+            return super().post(request, *args, **kwargs)
+        except Exception as e:
+            return JsonResponse(
+                {'success': False, 'type': 'error', 'message': str(e)}, status=400
+            )
+
 
 class GestaoProdutosPromocaoCRUDView(
     MultipleFormsViewMixin,
+    QueryView,
     LojaProtectionMixin,
     LoginRequiredMixin,
     UpdateHTMXView,
@@ -146,6 +191,7 @@ class GestaoProdutosPromocaoCRUDView(
     template_name = 'gestao_oferta_produtos/produtos_por_promocao.html'
     model = Promocao
     usuario_class = GerenteFinanceiro
+    query_form_class = ProdutoQueryForm
     forms_class = {
         'produtos_por_promocao': ProdutosPorPromocaoForm,
         'duplicar_promocao': DuplicarPromocaoForm,
@@ -162,6 +208,10 @@ class GestaoProdutosPromocaoCRUDView(
             )
         elif 'data_inicio' in request.POST:
             templates.append('gestao_oferta_produtos/articles/article_promocao.html')
+        elif self.query_form_class.submit_name() in request.POST:
+            templates.append(
+                'gestao_oferta_produtos/listas/lista_choices_produtos_promocao.html'
+            )
 
         return templates
 
@@ -172,14 +222,11 @@ class GestaoProdutosPromocaoCRUDView(
         for form in forms.values():
             context[form.form_name()] = form
 
+        context[self.query_form_class.form_name()] = self.query_form_class()
         promocao = self.get_object()
         context['promocao'] = promocao
-        context['produtos'] = promocao.produtos.all().annotate(
-            desconto=ExpressionWrapper(
-                F('preco_de_venda') * (promocao.porcentagem_desconto / 100),
-                output_field=DecimalField(),
-            ),
-            preco_com_desconto=F('preco_de_venda') - F('desconto'),
+        context['produtos'] = promocao.produtos.all().with_desconto(
+            promocao.porcentagem_desconto
         )
         context['data_final'] = promocao.data_inicio + promocao.periodo.tempo_total
         context['today'] = date.today()
@@ -207,12 +254,8 @@ class GestaoProdutosPromocaoCRUDView(
         if type(form) == self.forms_class['produtos_por_promocao']:
             self.object = object
             context['promocao'] = object
-            context['produtos'] = object.produtos.all().annotate(
-                desconto=ExpressionWrapper(
-                    F('preco_de_venda') * (object.porcentagem_desconto / 100),
-                    output_field=DecimalField(),
-                ),
-                preco_com_desconto=F('preco_de_venda') - F('desconto'),
+            context['produtos'] = object.produtos.all().with_desconto(
+                object.porcentagem_desconto
             )
 
             return render(self.request, self.get_template_names()[1], context)
@@ -222,4 +265,26 @@ class GestaoProdutosPromocaoCRUDView(
                     'gerir_produtos_promocao',
                     kwargs={'loja_scope': self.scope.pk, 'pk': object.pk},
                 )
+            )
+
+    def pesquisar_produtos(self, request: HttpRequest) -> HttpResponse:
+        queryset = self.search(
+            request, queryset=Produto.produtos.filter(loja=self.get_loja())
+        )
+        queryset = queryset.with_desconto(self.get_object().porcentagem_desconto)
+
+        return render(
+            request,
+            self.get_template_names()[1],
+            {'produtos_choices': queryset},
+        )
+
+    def post(self, request, *args, **kwargs):
+        try:
+            if self.query_form_class.submit_name() in request.POST:
+                return self.pesquisar_produtos(request)
+            return super().post(request, *args, **kwargs)
+        except Exception as e:
+            return JsonResponse(
+                {'success': False, 'type': 'error', 'message': str(e)}, status=400
             )

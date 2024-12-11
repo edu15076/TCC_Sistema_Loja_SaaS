@@ -18,8 +18,9 @@
             hx-target="#linha-produto-{{ produto.id }}" 
             hx-swap="outerHTML"
             hx-vals='{"id": "{{ produto.id }}" }'>
+            {% crispy preco_de_venda_form %}
             {% csrf_token %}
-            {{ preco_de_venda_form.preco_de_venda|as_crispy_field }}
+            {% comment %} {{ preco_de_venda_form.preco_de_venda|as_crispy_field }} {% endcomment %}
             <button name="{{ preco_de_venda_form.submit_name }}" 
                 value="{{ preco_de_venda_form.get_submit_button.value }}" 
                 class="mx-2 mb-3 btn btn-primary" 

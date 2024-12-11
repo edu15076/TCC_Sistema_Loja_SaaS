@@ -1,4 +1,5 @@
-from crispy_forms.layout import Submit
+from crispy_forms.bootstrap import AppendedText
+from crispy_forms.layout import Submit, Layout
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -25,6 +26,10 @@ class ConfiguracaoDeVendasForm(
         super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            AppendedText(
+                'limite_porcentagem_desconto_maximo', '%', template='form_fields/crispy_append_text.html'),
+        )
 
         self.instance = ConfiguracaoDeVendas.configuracoes.get(loja=loja)
 

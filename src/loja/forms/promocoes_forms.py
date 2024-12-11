@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Any
 
-from crispy_forms.layout import Submit
+from crispy_forms.bootstrap import AppendedText, PrependedText
+from crispy_forms.layout import Submit, Layout, Button, Field
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.db.models import F, ExpressionWrapper, DecimalField
@@ -296,12 +297,21 @@ class PromocaoForm(
         ]
 
     def get_submit_button(self) -> Submit:
-        return Submit(self.submit_name(), 'Salvar')
+        return Submit(self.submit_name(), 'Cadastrar', css_class="btn btn-block w-100 btn-primary mt-2")
 
     def __init__(self, loja=None, *args, **kwargs):
         super().__init__(loja=loja, *args, **kwargs)
         self.helper = self.create_helper()
         self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            AppendedText(
+            'porcentagem_desconto', '%'
+            ),
+            Field(
+                'produtos',
+                template='gestao_oferta_produtos/listas/lista_choices_produtos_promocao.html',
+            )
+        )
 
         self.fields['produtos'].queryset = Produto.produtos.filter(loja=loja)
 
