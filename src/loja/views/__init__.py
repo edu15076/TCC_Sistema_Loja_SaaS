@@ -6,5 +6,6 @@ from .gestao_vendedores import *
 from .gestao_oferta_produtos import *
 from .gestao_promocao_produto import *
 from .gestao_promocoes import *
+from .gestao_estoque_de_produtos import *
 from .estado_caixa import *
 from .gestao_caixa import *
