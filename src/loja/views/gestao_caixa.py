@@ -13,9 +13,11 @@ from loja.models.timeslice import TimeSlice
 from loja.models.trabalhapordia import TrabalhoPorDia
 from loja.views.interfaces.gestao_caixa import ABCGestaoCaixaCRUDListView
 
+
 class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
     template_name = "gestao_caixa.html"
     usuario_class = GerenteDeRH
+    permission_required = "loja.gerir_caixas"
 
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         filtro = request.GET.get("filtro", "todos")
@@ -25,9 +27,11 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         success_message = request.session.pop('success_message', None)
 
         if filtro == "abertos":
-            caixas = Caixa.objects.filter(horario_aberto__isnull=False, ativo=True, loja__scope=loja_scope)
+            caixas = Caixa.objects.filter(horario_aberto__isnull=False, ativo=True,
+                                          loja__scope=loja_scope)
         elif filtro == "fechados":
-            caixas = Caixa.objects.filter(horario_aberto__isnull=True, ativo=True, loja__scope=loja_scope)
+            caixas = Caixa.objects.filter(horario_aberto__isnull=True, ativo=True,
+                                          loja__scope=loja_scope)
         else:
             caixas = Caixa.objects.filter(ativo=True, loja__scope=loja_scope)
 
@@ -77,12 +81,15 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
     def adicionar_caixa(self, request, loja_scope):
         numero_identificacao = request.POST.get("numero_identificacao")
 
-        if Caixa.objects.filter(numero_identificacao=numero_identificacao, loja__scope=loja_scope).exists():
-            request.session["error_message"] = "Esse número de identificação já está cadastrado nesta loja. Por favor, escolha outro."
+        if Caixa.objects.filter(numero_identificacao=numero_identificacao,
+                                loja__scope=loja_scope).exists():
+            request.session[
+                "error_message"] = "Esse número de identificação já está cadastrado nesta loja. Por favor, escolha outro."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
         if not numero_identificacao.isdigit() or len(numero_identificacao) != 8:
-            request.session["error_message"] = "O número de identificação deve ter exatamente 8 dígitos."
+            request.session[
+                "error_message"] = "O número de identificação deve ter exatamente 8 dígitos."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
         loja = get_object_or_404(Loja, scope=loja_scope)
@@ -96,9 +103,10 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
                 loja=loja
             )
             request.session["success_message"] = "Caixa adicionado com sucesso."
-            return redirect(reverse('gestao_caixas', kwargs ={'loja_scope': loja_scope}))
+            return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
         except IntegrityError:
-            request.session["error_message"] = "Já existe um caixa cadastrado com esse número de identificação nesta loja."
+            request.session[
+                "error_message"] = "Já existe um caixa cadastrado com esse número de identificação nesta loja."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
     def pesquisar_caixeiro(self, request, loja_scope):
@@ -107,19 +115,23 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         horario_fim = request.POST.get("horario_fim_pesquisa")
         dias_da_semana = request.POST.getlist("dia_da_semana")
         try:
-            caixa = get_object_or_404(Caixa, numero_identificacao=numero_identificacao, loja__scope=loja_scope)
+            caixa = get_object_or_404(Caixa, numero_identificacao=numero_identificacao,
+                                      loja__scope=loja_scope)
             if not caixa.ativo:
                 request.session["error_message"] = "O caixa não está ativo."
-                return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+                return redirect(
+                    reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
         except Http404:
-            request.session["error_message"] = f"O caixa com este número de identificação {numero_identificacao} é inválido."
+            request.session[
+                "error_message"] = f"O caixa com este número de identificação {numero_identificacao} é inválido."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
         caixeiros_encontrados = TrabalhaCaixa.objects.filter(caixa=caixa)
 
         if dias_da_semana and "todos" not in dias_da_semana:
             caixeiros_encontrados = caixeiros_encontrados.filter(
-                trabalho_por_dia__dia_da_semana__in=[self.get_dia_da_semana(dia) for dia in dias_da_semana],
+                trabalho_por_dia__dia_da_semana__in=[self.get_dia_da_semana(dia) for dia
+                                                     in dias_da_semana],
                 trabalho_por_dia__timeslices__start__gte=horario_inicio,
                 trabalho_por_dia__timeslices__end__lte=horario_fim,
             )
@@ -135,8 +147,10 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
                 6: 'Sábado',
             }
             pesquisa_resultado = [
-                (f"{trabalho.caixeiro.nome} - {timeslice.start} a {timeslice.end} ({dias_nomes[trabalho.trabalho_por_dia.dia_da_semana]})", trabalho.id) 
-                for trabalho in caixeiros_encontrados 
+                (
+                f"{trabalho.caixeiro.nome} - {timeslice.start} a {timeslice.end} ({dias_nomes[trabalho.trabalho_por_dia.dia_da_semana]})",
+                trabalho.id)
+                for trabalho in caixeiros_encontrados
                 for timeslice in trabalho.trabalho_por_dia.timeslices.all()
             ]
             mensagem_resultado = "Caixeiros encontrados."
@@ -165,9 +179,11 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
                 TrabalhaCaixa.objects.filter(id__in=trabalho_ids).delete()
                 request.session["success_message"] = "Períodos removidos com sucesso."
             except Exception as e:
-                request.session["error_message"] = f"Ocorreu um erro ao remover os períodos: {str(e)}"
+                request.session[
+                    "error_message"] = f"Ocorreu um erro ao remover os períodos: {str(e)}"
         else:
-            request.session["error_message"] = "Nenhum período selecionado para remover."
+            request.session[
+                "error_message"] = "Nenhum período selecionado para remover."
         return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
     def gerenciar_caixa(self, request, caixa_id, loja_scope):
@@ -204,11 +220,15 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
             for trabalho in trabalhos_existentes:
                 for timeslice in trabalho.trabalho_por_dia.timeslices.all():
                     if horario_inicio_time < timeslice.end and horario_fim_time > timeslice.start:
-                        request.session["error_message"] = f"O caixeiro {caixeiro.nome} já está alocado em um horário nesse dia."
-                        return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+                        request.session[
+                            "error_message"] = f"O caixeiro {caixeiro.nome} já está alocado em um horário nesse dia."
+                        return redirect(
+                            reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
-            time_slice = TimeSlice.objects.create(start=horario_inicio_time, end=horario_fim_time)
-            trabalho_por_dia = TrabalhoPorDia.objects.create(dia_da_semana=dia_da_semana)
+            time_slice = TimeSlice.objects.create(start=horario_inicio_time,
+                                                  end=horario_fim_time)
+            trabalho_por_dia = TrabalhoPorDia.objects.create(
+                dia_da_semana=dia_da_semana)
             trabalho_por_dia.timeslices.add(time_slice)
 
             TrabalhaCaixa.objects.create(
@@ -234,7 +254,8 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         return dias.get(dia.lower())
 
     def get_caixeiros_disponiveis(self, loja_scope):
-        return Funcionario.funcionarios.filter(groups__name='loja_caixeiros', scope=loja_scope)
+        return Funcionario.funcionarios.filter(groups__name='loja_caixeiros',
+                                               scope=loja_scope)
 
     def get_form_kwargs(self):
         return super().get_form_kwargs() | {

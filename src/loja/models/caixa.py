@@ -2,9 +2,6 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
 
-from loja.models.fluxodecaixa import FluxoDeCaixa
-from loja.models.trabalhacaixa import TrabalhaCaixa
-
 
 class CaixaQuerySet(models.QuerySet):
     pass
@@ -51,12 +48,11 @@ class Caixa(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Caixa {self.numero_identificacao} - {'Aberto' if self.is_open else 'Fechado'}"
+        return (f"Caixa {self.numero_identificacao} - "
+                f"{'Aberto' if self.is_open else 'Fechado'}")
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['numero_identificacao', 'loja'], name='unique_caixa_per_loja')
-        ]
-        permissions = [
-            ("manage_caixa", "Pode gerenciar caixas"),
+            models.UniqueConstraint(fields=['numero_identificacao', 'loja'],
+                                    name='unique_caixa_per_loja')
         ]
