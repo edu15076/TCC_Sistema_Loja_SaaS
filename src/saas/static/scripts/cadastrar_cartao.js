@@ -37,6 +37,7 @@ $cadastroCartaoBtn.click(function () {
             console.log(result);
             const csrfToken = $("#payment-form input[name=csrfmiddlewaretoken]").val()
 
+            console.log($("#id_numero_residencial").val())
             //Extrair informações da resposta do Stripe
             const cardData = {
                 'csrfmiddlewaretoken': csrfToken,
@@ -56,21 +57,33 @@ $cadastroCartaoBtn.click(function () {
                 body: JSON.stringify(cardData),
             })
             .then((response) => {
+                console.log(response.status);
+                if (response.status !== 200) {
+                    // Lança um erro se o status não for 200
+                    throw new Error(`Erro na requisição: ${response.status}`);
+                }
+            
                 return response.text(); // Tratar a resposta como texto
             })
             .then((html) => {
                 console.info("Sucesso:", html); // Imprimir o HTML no console
                 $("#lista-metodos-pagamento > div").prepend(html);
-
+            
                 $('#addCartaoModal').modal('hide');
                 $("#payment-form")[0].reset();
                 $("input[name=csrfmiddlewaretoken]").val(csrfToken);
-
+            
                 card.unmount(); 
                 card.mount('#card-element');
+            
+                let $avisoSemCartoesDiv = $('#aviso-sem-cartoes');
+                if ($avisoSemCartoesDiv.length > 0) {
+                    $avisoSemCartoesDiv.remove();
+                }
+                $('conteudo').removeClass('d-none');
             })
             .catch((error) => {
-                console.error("Erro:", error);
+                console.error(error);
             });
         }
     });

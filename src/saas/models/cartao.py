@@ -91,7 +91,9 @@ class Cartao(NotUpdatableFieldMixin, models.Model):
     #         self.set_padrao()
 
     def save(self, *args, **kwargs):
-        if self.payment_method_id is None:
+        print(len(self.payment_method_id) == 0)
+        if len(self.payment_method_id) == 0:
+            print('aaaaaaaaaaa')
             payment_method = payment_api.criar_metodo_pagameto(self.token, self)
             self.payment_method_id = payment_method.id
             self.numero = payment_method.card.last4
@@ -99,7 +101,7 @@ class Cartao(NotUpdatableFieldMixin, models.Model):
             self.mes_validade = payment_method.card.exp_month
             self.bandeira = self.get_bandeira(payment_method.card.brand)
 
-            if self.padrao:
+            if self.padrao or Cartao.cartoes.filter(cliente_contratante=self.cliente_contratante).count() == 0:
                 self.set_padrao()
 
 

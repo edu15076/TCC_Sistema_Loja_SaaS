@@ -26,7 +26,7 @@ class MetodosPagamentoCRDView(
         'cartao_padrao': CartaoPadraoForm,
         'cartao': CartaoForm,
     }
-    template_name = 'metodos_pagamento.html'
+    template_name = 'metodos_pagamento/metodos_pagamento.html'
     login_url = reverse_lazy('login_contratacao')
 
     usuario_class = ClienteContratante
@@ -39,8 +39,11 @@ class MetodosPagamentoCRDView(
         for form in forms.values():
             context[form.form_name()] = form
 
-        context['cartao_padrao'] = Cartao.cartoes.filter(cliente_contratante=self.user, padrao=True).first()
-        context['cartoes'] = Cartao.cartoes.filter(cliente_contratante=self.user).exclude(pk=context['cartao_padrao'].pk)
+        cartao_padrao = Cartao.cartoes.filter(cliente_contratante=self.user, padrao=True).first()
+        context['cartao_padrao'] = cartao_padrao
+        context['cartoes'] = Cartao.cartoes.filter(cliente_contratante=self.user)
+        if cartao_padrao is not None:
+            context['cartoes'] = context['cartao_padrao'].exclude(pk=cartao_padrao.pk)
         context['cartoes_count'] = Cartao.cartoes.filter(cliente_contratante=self.user).count()
         context['bandeiras'] = Cartao.Bandeiras
         context['public_key'] = settings.STRIPE_PUBLIC_KEY
@@ -52,7 +55,7 @@ class MetodosPagamentoCRDView(
 
         request = self.request
         if request is not None and self.forms_class['cartao_padrao'].submit_name() not in request.POST:
-            template_name = 'cards/card_metodo_pagamento.html'
+            template_name = 'metodos_pagamento/cards/card_metodo_pagamento.html'
 
         return [template_name]
     
