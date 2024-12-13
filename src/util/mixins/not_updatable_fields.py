@@ -15,4 +15,4 @@ class NotUpdatableFieldMixin:
         if self.pk is None or self.not_updatable_fields is None:
             return super().save(*args, **kwargs)
 
-        super().save(update_fields=self.updatable_fields, *args, **kwargs)
+        super().save(*args, **kwargs)

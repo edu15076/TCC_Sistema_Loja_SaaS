@@ -14,6 +14,7 @@ grupos_usuarios_contrato = {
     'saas_clientes_contratantes': [
         'gerenciar_perfil',
         'consultar_contratos_disponiveis',
+        'gerir_metodos_de_pagamento',
         'gerir_assinatura_do_contrato',
         'gerir_cadastro_da_loja',
         'gerir_admins_da_loja',

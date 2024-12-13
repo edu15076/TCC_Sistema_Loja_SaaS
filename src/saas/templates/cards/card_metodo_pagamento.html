@@ -1,0 +1,39 @@
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+<div class="col">
+    <div class="debit-card card mb-3 w-100 card-{{ cartao.get_bandeira_display|lower }}">
+        <div class="d-flex flex-column h-100">
+            <label class="d-block">
+                <div class="d-flex position-relative justify-content-between align-items-top">
+                    <div>
+                        {% if cartao.bandeira == bandeiras.VISA %}
+                            <img src="{% static 'images/card_brands/visa.png' %}" class="visa">
+                        {% elif cartao.bandeira == bandeiras.MASTERCARD %}
+                            <img src="{% static 'images/card_brands/mastercard.png' %}" class="mastercard">
+                        {% endif %}
+                        <p class="mt-2 mb-4 fw-bold text-white">{{ cartao.nome_titular }}</p>
+                    </div>
+                    <form method="post"
+                        id="cartao-{{ cartao.pk }}-padrao-form"
+                        hx-post="{% url 'metodos_pagamento' %}"
+                        hx-target="this"
+                    >   
+                        {% csrf_token %}
+                        <input type="hidden" name="cartao" value="{{ cartao.pk }}">
+                        <button name="{{ cartao_padrao_form.submit_name }}"
+                            value="{{ cartao_padrao_form.get_submit_button.value }}"
+                            class="btn btn-sm btn-primary">
+                            Tornar padrão
+                        </button>
+                    </form>
+                </div>
+            </label>
+            <div class="mt-auto fw-bold d-flex align-items-center justify-content-between text-dark">
+                <p>**** **** **** {{ cartao.numero }}</p>
+                <p>{{ cartao.mes_validade|stringformat:"02d" }}/{{ cartao.ano_validade|stringformat:"d"|slice:"-2:" }}</p>
+            </div>
+        </div>
+    </div>
+</div>

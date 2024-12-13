@@ -65,6 +65,11 @@ urlpatterns = [
         name='cancelar_contrato'
     ),
     path(
+        'metodos_pagamento/',
+        MetodosPagamentoCRDView.as_view(),
+        name='metodos_pagamento'
+    ),
+    path(
         'minha_loja/dados_loja/',
         DadosLojaView.as_view(),
         name='dados_loja'

@@ -10,19 +10,10 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('common', '0003_periodo'),
-        ('saas', '0004_cartao'),
+        ('saas', '0003_gerente_de_contratos'),
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='cartao',
-            name='contratante',
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                to='saas.clientecontratante',
-                verbose_name='Cliente Contratante',
-            ),
-        ),
         migrations.CreateModel(
             name='Contrato',
             fields=[

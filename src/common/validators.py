@@ -122,3 +122,21 @@ class CEPValidator:
                 )
 
         raise ValidationError(_(f"CEP não existe"))
+    
+
+@deconstructible
+class MesmaLojaValidator:
+    error_messages = {
+        'field_not_from_loja': _('%(field_name) não existe nessa loja'),
+    }
+
+    def __init__(self, loja):
+        self.loja = loja
+
+    def __call__(self, value):
+        if not hasattr(value, 'loja') or value.loja != self.loja:
+            raise ValidationError(
+                self.error_messages['field_not_from_loja'],
+                code='field_not_from_loja',
+                params={'field_name': value.__class__.__name__},
+            )

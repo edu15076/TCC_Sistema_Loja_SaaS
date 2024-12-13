@@ -77,7 +77,6 @@ class Endereco(NotUpdatableFieldMixin, ValidateModelMixin, models.Model):
     not_updatable_fields = ['cep']
 
     enderecos = EnderecoManager()
-    objects = models.Manager()
 
     def cep_exists(self) -> bool:
         """Retorna se o cep do modelo existe"""

@@ -28,6 +28,10 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-9%l$p%)=axnxsnupc4pm6x2k1%_e=js$uuqwdw7)$+mg=hc7ao'
 
+# STRIPE KEYS: use somente de testes no desenvolvimento
+STRIPE_PUBLIC_KEY = env('STRIPE_TEST_API_PUBLIC_KEY')
+STRIPE_SECRET_KEY = env('STRIPE_TEST_API_SECRET_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

@@ -9,6 +9,7 @@ from common.models import (
 from loja.models import Loja
 from util.decorators import CachedClassProperty
 from util.models.singleton import SingletonManager, SingletonMixin
+from saas.api import StripeSistemaPagamentosContratos as payment_api
 
 __all__ = ('UsuarioContratacao', 'GerenteDeContratos', 'ClienteContratante')
 
@@ -73,6 +74,7 @@ class ClienteContratante(UsuarioContratacao):
     loja = models.OneToOneField(
         Loja, on_delete=models.RESTRICT, related_name='contratante'
     )
+    customer_id = models.CharField(max_length=248)
 
     contratantes = ClienteContratanteManager()
 
@@ -89,6 +91,7 @@ class ClienteContratante(UsuarioContratacao):
             if not hasattr(self, 'loja') or self.loja is None
             else self.loja
         )
+        self.customer_id = payment_api.criar_cliente_contratante(self)
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
