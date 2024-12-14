@@ -92,6 +92,12 @@ class Migration(migrations.Migration):
                         to='loja.loja',
                     ),
                 ),
+                (
+                    'customer_id',
+                    models.CharField(
+                        max_length=248
+                    ),
+                )
             ],
             options={
                 'abstract': False,
