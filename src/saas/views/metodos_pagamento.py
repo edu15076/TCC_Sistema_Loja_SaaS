@@ -43,7 +43,7 @@ class MetodosPagamentoCRDView(
         context['cartao_padrao'] = cartao_padrao
         context['cartoes'] = Cartao.cartoes.filter(cliente_contratante=self.user)
         if cartao_padrao is not None:
-            context['cartoes'] = context['cartao_padrao'].exclude(pk=cartao_padrao.pk)
+            context['cartoes'] = context['cartoes'].exclude(pk=cartao_padrao.pk)
         context['cartoes_count'] = Cartao.cartoes.filter(cliente_contratante=self.user).count()
         context['bandeiras'] = Cartao.Bandeiras
         context['public_key'] = settings.STRIPE_PUBLIC_KEY
@@ -53,9 +53,13 @@ class MetodosPagamentoCRDView(
     def get_template_names(self):
         template_name = self.template_name
 
+
         request = self.request
-        if request is not None and self.forms_class['cartao_padrao'].submit_name() not in request.POST:
-            template_name = 'metodos_pagamento/cards/card_metodo_pagamento.html'
+        if request is not None:
+            if self.forms_class['cartao_padrao'].submit_name() in request.POST or self.user.cartoes.count() == 1:
+                template_name = 'metodos_pagamento/metodos_pagamento_conteudo.html'
+            else:
+                template_name = 'metodos_pagamento/cards/card_metodo_pagamento.html'
 
         return [template_name]
     
@@ -82,11 +86,15 @@ class MetodosPagamentoCRDView(
 
     def form_valid(self, form):
         cartao = form.save()
+        context = {}
 
         if type(form) == self.forms_class['cartao_padrao']:
             context = self.get_context_data()
-        else:
-            context = {'cartao': cartao}
+        elif self.user.cartoes.count() == 1:
+            context = self.get_context_data()
+        else: 
+            context['cartao'] = cartao
+            context['bandeiras'] = Cartao.Bandeiras
         context['erros'] = form.errors
 
         return render(

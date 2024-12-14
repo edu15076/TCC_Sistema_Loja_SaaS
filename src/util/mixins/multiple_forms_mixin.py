@@ -71,15 +71,15 @@ class MultipleFormsViewMixin:
         return form_class(**self.get_form_kwargs(form_class, request))
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        # try:
+        try:
             form = self.get_form(request=request)
 
             if form.is_valid():
                 return self.form_valid(form)
 
             return self.form_invalid(form)
-        # except Exception as e:
-        #     # TODO - Log error
-        #     return JsonResponse(
-        #         {'success': False, 'type': 'error', 'message': str(e)}, status=400
-        #     )
+        except Exception as e:
+            # TODO - Log error
+            return JsonResponse(
+                {'success': False, 'type': 'error', 'message': str(e)}, status=400
+            )

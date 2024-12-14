@@ -42,30 +42,25 @@ class CartaoForm(NameFormMixin, ModalCrispyFormMixin, forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
     )
-    # padrao = forms.BooleanField(
-    #     label='Definir como padrão',
-    #     required=False,
-    #     widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-    # )
 
     class Meta:
         model = Cartao
-        fields = [
-            'nome_titular'
-        ]
+        fields = ['nome_titular']
 
-    def __init__(self, *args, user:ClienteContratante=None, **kwargs):
+    def __init__(self, *args, user: ClienteContratante = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = self.create_helper()
 
-        self.user = user        
+        self.user = user
 
     def is_valid(self):
-        # print(self.cleaned_data)
-        return super().is_valid() and self.cleaned_data['cep'] and self.cleaned_data['numero_residencial']
+        return (
+            super().is_valid()
+            and self.cleaned_data['cep']
+            and self.cleaned_data['numero_residencial']
+        )
 
     def clean_endereco(self):
-        a = Endereco(cep="30421169", numero=69)
         cep = self.cleaned_data['cep']
         numero_residencial = self.cleaned_data['numero_residencial']
         complemento = self.cleaned_data['complemento']
@@ -76,7 +71,7 @@ class CartaoForm(NameFormMixin, ModalCrispyFormMixin, forms.ModelForm):
 
         self.cleaned_data['endereco'] = endereco
         return endereco
-    
+
     def clean(self):
         cleaned_data = super().clean()
         cleaned_data['endereco'] = self.clean_endereco()
@@ -89,35 +84,38 @@ class CartaoForm(NameFormMixin, ModalCrispyFormMixin, forms.ModelForm):
             endereco=self.cleaned_data['endereco'],
             cliente_contratante=self.user,
         )
-        
+
         if commit:
             instance.save()
 
         return instance
-    
+
 
 class CartaoPadraoForm(NameFormMixin, CrispyFormMixin, forms.Form):
     _name = 'cartao_padrao'
 
     cartao = ModelIntegerField(
-        required=True,
-        widget=forms.HiddenInput,
-        model_cls=Cartao
+        required=True, widget=forms.HiddenInput, model_cls=Cartao
     )
-
 
     class Meta:
         model = Cartao
         fields = ['padrao']
 
-    def __init__(self, *args, user:ClienteContratante=None, **kwargs):
+    def __init__(self, *args, user: ClienteContratante = None, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['cartao'].extra_filters = {'cliente_contratante': user}
         self.helper = self.create_helper()
         self.user = user
-    
+
+    def clean_cartao(self):
+        cartao = self.cleaned_data['cartao']
+        if cartao.cliente_contratante != self.user:
+            raise forms.ValidationError('Cartão inválido')
+
+        return cartao
+
     def save(self):
         instance = self.cleaned_data['cartao']
         instance.set_padrao()
-        
+
         return instance

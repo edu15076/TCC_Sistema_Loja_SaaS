@@ -20,7 +20,9 @@
         </div>
     {% endif %}
     <div id="conteudo" class="{% if cartoes_count == 0 %} d-none {% endif %}">
-        {% include 'metodos_pagamento/metodos_pagamento_conteudo.html' %}
+        {% if cartoes_count > 0 %}
+            {% include 'metodos_pagamento/metodos_pagamento_conteudo.html' %}
+        {% endif %}
     </div>
 
     <div class="modal fade" id="addCartaoModal" tabindex="-1" aria-labelledby="addCartaoModalLabel" aria-hidden="true">

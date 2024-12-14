@@ -5,6 +5,7 @@ from django.conf import settings
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
 class StripeSistemaPagamentosContratos(ABCSistemaPagamentosContratos):
     @classmethod
     def criar_cliente_contratante(cls, cliente_contratante) -> str:
@@ -23,7 +24,7 @@ class StripeSistemaPagamentosContratos(ABCSistemaPagamentosContratos):
             },
         )
 
-        print(payment_method)
+        # print(payment_method)
 
         stripe.PaymentMethod.attach(
             payment_method.id,

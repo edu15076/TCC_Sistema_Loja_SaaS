@@ -1,5 +1,5 @@
 const publicKey = $("#payment-form").data("public-key");
-console.log(publicKey);
+console.info('Public Key', publicKey);
 const stripe = Stripe(publicKey);
 const elements = stripe.elements();
 
@@ -28,16 +28,11 @@ card.mount("#card-element");
 
 const $cadastroCartaoBtn = $("#payment-form button");
 $cadastroCartaoBtn.click(function () {
-    console.log("submit");
     stripe.createToken(card).then(function (result) {
         if (result.error) {
-            // TODO informar o usuário sobre o erro
             console.error(result.error.message);
         } else {
-            console.log(result);
             const csrfToken = $("#payment-form input[name=csrfmiddlewaretoken]").val()
-
-            console.log($("#id_numero_residencial").val())
             //Extrair informações da resposta do Stripe
             const cardData = {
                 'csrfmiddlewaretoken': csrfToken,
@@ -57,18 +52,21 @@ $cadastroCartaoBtn.click(function () {
                 body: JSON.stringify(cardData),
             })
             .then((response) => {
-                console.log(response.status);
                 if (response.status !== 200) {
-                    // Lança um erro se o status não for 200
                     throw new Error(`Erro na requisição: ${response.status}`);
                 }
-            
-                return response.text(); // Tratar a resposta como texto
+                
+                return response.text(); 
             })
             .then((html) => {
-                console.info("Sucesso:", html); // Imprimir o HTML no console
-                $("#lista-metodos-pagamento > div").prepend(html);
-            
+                let $html = $(html);
+
+                if ($html.is('#metodos-de-pagamento-conteudo')) {
+                        $('#conteudo').prepend($html);
+                } else {
+                    $("#lista-metodos-pagamento > div").prepend($html);
+                } 
+                
                 $('#addCartaoModal').modal('hide');
                 $("#payment-form")[0].reset();
                 $("input[name=csrfmiddlewaretoken]").val(csrfToken);
@@ -80,7 +78,11 @@ $cadastroCartaoBtn.click(function () {
                 if ($avisoSemCartoesDiv.length > 0) {
                     $avisoSemCartoesDiv.remove();
                 }
-                $('conteudo').removeClass('d-none');
+                let $avisoUnicoCartao = $('#aviso-unico-cartao')
+                if ($avisoUnicoCartao.length > 0) {
+                    $avisoUnicoCartao.remove();
+                }
+                $('#conteudo').removeClass('d-none');
             })
             .catch((error) => {
                 console.error(error);

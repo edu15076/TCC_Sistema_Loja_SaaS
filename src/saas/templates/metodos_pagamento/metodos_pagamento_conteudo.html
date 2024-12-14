@@ -1,35 +1,37 @@
-<h2 class="h3 mb-3">Cartão padrão</h2>
-<section class="container mt-2">
-    <div class=" row row-cols-lg-auto justify-content-between"
-        style="border-radius: 0.5rem; border: 2px solid {% if cartao_padrao.bandeira == bandeiras.VISA %}#0093E9{% elif cartao_padrao.bandeira == bandeiras.MASTERCARD %}#ff1100{% else %}#007bff{% endif %};">
-        <div class="h5 mx-3 my-4">
-            <span class="d-block small text-secondary" style="font-size: 0.8rem;">Bandeira:</span>{{ cartao_padrao.get_bandeira_display }}
+<div id="metodos-de-pagamento-conteudo">
+    <h2 class="h3 mb-3">Cartão padrão</h2>
+    <section class="container mt-2">
+        <div class=" row row-cols-lg-auto justify-content-between"
+            style="border-radius: 0.5rem; border: 2px solid {% if cartao_padrao.bandeira == bandeiras.VISA %}#0093E9{% elif cartao_padrao.bandeira == bandeiras.MASTERCARD %}#ff1100{% else %}#007bff{% endif %};">
+            <div class="h5 mx-3 my-4">
+                <span class="d-block small text-secondary" style="font-size: 0.8rem;">Bandeira:</span>{{ cartao_padrao.get_bandeira_display }}
+            </div>
+            <div class="h5 mx-3 my-4">
+                <span class="d-block small text-secondary" style="font-size: 0.8rem;">Titular:</span>{{ cartao_padrao.nome_titular }}
+            </div>
+            <div class="h5 mx-3 my-4">
+                <span class="d-block small text-secondary" style="font-size: 0.8rem;">Número:</span>**** **** **** {{ cartao_padrao.numero }}
+            </div>
+            <div class="h5 mx-3 my-4">
+                <span class="d-block small text-secondary" style="font-size: 0.8rem;">Validade:</span>{{ cartao_padrao.mes_validade|stringformat:"02d" }}/{{ cartao_padrao.ano_validade|stringformat:"d"|slice:"-2:" }}
+            </div>
         </div>
-        <div class="h5 mx-3 my-4">
-            <span class="d-block small text-secondary" style="font-size: 0.8rem;">Titular:</span>{{ cartao_padrao.nome_titular }}
-        </div>
-        <div class="h5 mx-3 my-4">
-            <span class="d-block small text-secondary" style="font-size: 0.8rem;">Número:</span>**** **** **** {{ cartao_padrao.numero }}
-        </div>
-        <div class="h5 mx-3 my-4">
-            <span class="d-block small text-secondary" style="font-size: 0.8rem;">Validade:</span>{{ cartao_padrao.mes_validade|stringformat:"02d" }}/{{ cartao_padrao.ano_validade|stringformat:"d"|slice:"-2:" }}
-        </div>
-    </div>
-</section>
+    </section>
 
-<h2 class="h3 mt-4">Outros cartões</h2>
-<button type="button" class="btn btn-primary mb-3 mt-2" data-bs-toggle="modal" data-bs-target="#addCartaoModal">
-    Adicionar Cartão
-</button>
-<section id="lista-metodos-pagamento" class="container mt-4 ps-0">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for cartao in cartoes %}
-            {% include 'metodos_pagamento/cards/card_metodo_pagamento.html' %}
-        {% endfor %}
-    </div>
-</section>
-{% if cartoes_count == 1 %}
-    <div id="aviso-unico-cartao" class="alert alert-info mt-4" role="alert">
-        Só existe o cartão padrão.
-    </div>
-{% endif %}
+    <h2 class="h3 mt-4">Outros cartões</h2>
+    <button type="button" class="btn btn-primary mb-3 mt-2" data-bs-toggle="modal" data-bs-target="#addCartaoModal">
+        Adicionar Cartão
+    </button>
+    <section id="lista-metodos-pagamento" class="container mt-4 ps-0">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for cartao in cartoes %}
+                {% include 'metodos_pagamento/cards/card_metodo_pagamento.html' %}
+            {% endfor %}
+        </div>
+    </section>
+    {% if cartoes_count == 1 %}
+        <div id="aviso-unico-cartao" class="alert alert-info mt-4" role="alert">
+            Só existe o cartão padrão.
+        </div>
+    {% endif %}
+</div>

@@ -18,7 +18,8 @@
                     <form method="post"
                         id="cartao-{{ cartao.pk }}-padrao-form"
                         hx-post="{% url 'metodos_pagamento' %}"
-                        hx-target="this"
+                        hx-target="#conteudo"
+                        hx-swap="innerHTML"
                     >   
                         {% csrf_token %}
                         <input type="hidden" name="cartao" value="{{ cartao.pk }}">
