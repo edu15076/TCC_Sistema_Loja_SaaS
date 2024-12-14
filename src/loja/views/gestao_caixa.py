@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -114,24 +114,22 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         horario_inicio = request.POST.get("horario_inicio_pesquisa")
         horario_fim = request.POST.get("horario_fim_pesquisa")
         dias_da_semana = request.POST.getlist("dia_da_semana")
+
         try:
-            caixa = get_object_or_404(Caixa, numero_identificacao=numero_identificacao,
-                                      loja__scope=loja_scope)
+            caixa = get_object_or_404(Caixa, numero_identificacao=numero_identificacao, loja__scope=loja_scope)
             if not caixa.ativo:
                 request.session["error_message"] = "O caixa não está ativo."
-                return redirect(
-                    reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+                return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
         except Http404:
-            request.session[
-                "error_message"] = f"O caixa com este número de identificação {numero_identificacao} é inválido."
+            request.session["error_message"] = f"O caixa com este número de identificação {numero_identificacao} é inválido."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
-
+        
         caixeiros_encontrados = TrabalhaCaixa.objects.filter(caixa=caixa)
 
         if dias_da_semana and "todos" not in dias_da_semana:
+            dias_semana_numeros = [self.get_dia_da_semana(dia) for dia in dias_da_semana]
             caixeiros_encontrados = caixeiros_encontrados.filter(
-                trabalho_por_dia__dia_da_semana__in=[self.get_dia_da_semana(dia) for dia
-                                                     in dias_da_semana],
+                trabalho_por_dia__dia_da_semana__in=dias_semana_numeros,
                 trabalho_por_dia__timeslices__start__gte=horario_inicio,
                 trabalho_por_dia__timeslices__end__lte=horario_fim,
             )
@@ -148,8 +146,9 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
             }
             pesquisa_resultado = [
                 (
-                f"{trabalho.caixeiro.nome} - {timeslice.start} a {timeslice.end} ({dias_nomes[trabalho.trabalho_por_dia.dia_da_semana]})",
-                trabalho.id)
+                    f"{trabalho.caixeiro.nome} - {timeslice.start} a {timeslice.end} ({dias_nomes[trabalho.trabalho_por_dia.dia_da_semana]})",
+                    trabalho.id
+                )
                 for trabalho in caixeiros_encontrados
                 for timeslice in trabalho.trabalho_por_dia.timeslices.all()
             ]
@@ -191,8 +190,8 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         acao = request.POST.get("acao")
 
         if acao == "remover":
-            caixa.ativo = False
             TrabalhaCaixa.objects.filter(caixa=caixa).delete()
+            caixa.ativo = False
             caixa.save()
         elif acao == "associar_caixeiro":
             return self.associar_caixeiro(request, caixa, loja_scope)
@@ -203,41 +202,78 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         caixeiro_id = request.POST.get("caixeiro_id")
         horario_inicio = request.POST.get("horario_inicio")
         horario_fim = request.POST.get("horario_fim")
-        dias_trabalho = request.POST.getlist("dias_trabalho")
-        caixeiro = get_object_or_404(Caixeiro, codigo=caixeiro_id)
+        dias_da_semana = request.POST.getlist("dias_trabalho")
+        
+        try:
+            caixeiro = get_object_or_404(Caixeiro, cpf=caixeiro_id)
+        except Http404:
+            request.session["error_message"] = "Caixeiro inválido. Por favor, selecione um caixeiro válido."
+            return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+        
+        horario_inicio = datetime.strptime(horario_inicio, "%H:%M").time()
+        horario_fim = datetime.strptime(horario_fim, "%H:%M").time()
 
-        horario_inicio_time = datetime.strptime(horario_inicio, '%H:%M').time()
-        horario_fim_time = datetime.strptime(horario_fim, '%H:%M').time()
+        for dia in dias_da_semana:
+            dia_semana = self.get_dia_da_semana(dia)
 
-        for dia in dias_trabalho:
-            dia_da_semana = self.get_dia_da_semana(dia)
+            if horario_fim < horario_inicio:
+                # Se o horário de fim é menor, significa que o turno se estende para o dia seguinte
+                dia_semana_verificacao = (dia_semana + 1) % 7
+                horario_inicio_verificacao = time(0, 0)
+            else:
+                dia_semana_verificacao = dia_semana
+                horario_inicio_verificacao = horario_inicio
 
-            trabalhos_existentes = TrabalhaCaixa.objects.filter(
+            # Verificar conflitos para o caixeiro
+            caixeiros_conflito = TrabalhaCaixa.objects.filter(
                 caixeiro=caixeiro,
-                trabalho_por_dia__dia_da_semana=dia_da_semana
-            ).prefetch_related('trabalho_por_dia__timeslices')
+                trabalho_por_dia__dia_da_semana=dia_semana_verificacao,
+                trabalho_por_dia__timeslices__start__lt=horario_fim,
+                trabalho_por_dia__timeslices__end__gt=horario_inicio_verificacao,
+            ).exists()
 
-            for trabalho in trabalhos_existentes:
-                for timeslice in trabalho.trabalho_por_dia.timeslices.all():
-                    if horario_inicio_time < timeslice.end and horario_fim_time > timeslice.start:
-                        request.session[
-                            "error_message"] = f"O caixeiro {caixeiro.nome} já está alocado em um horário nesse dia."
-                        return redirect(
-                            reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+            if caixeiros_conflito:
+                request.session["error_message"] = (
+                    f"O caixeiro {caixeiro.nome} já está escalado para trabalhar no dia {dia} "
+                    f"entre {horario_inicio} e {horario_fim}."
+                )
+                return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
 
-            time_slice = TimeSlice.objects.create(start=horario_inicio_time,
-                                                  end=horario_fim_time)
-            trabalho_por_dia = TrabalhoPorDia.objects.create(
-                dia_da_semana=dia_da_semana)
-            trabalho_por_dia.timeslices.add(time_slice)
+            # Verificar se já existe outro caixeiro escalado para o mesmo horário
+            outros_caixeiros_conflito = TrabalhaCaixa.objects.filter(
+                trabalho_por_dia__dia_da_semana=dia_semana_verificacao,
+                trabalho_por_dia__timeslices__start__lt=horario_fim,
+                trabalho_por_dia__timeslices__end__gt=horario_inicio_verificacao,
+            ).exclude(caixeiro=caixeiro).exists()
 
-            TrabalhaCaixa.objects.create(
-                caixeiro=caixeiro,
-                caixa=caixa,
-                trabalho_por_dia=trabalho_por_dia
-            )
+            if outros_caixeiros_conflito:
+                request.session["error_message"] = (
+                    f"Já existe outro caixeiro escalado para trabalhar no dia {dia} "
+                    f"entre {horario_inicio} e {horario_fim}."
+                )
+                return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+
+        try:
+            for dia in dias_da_semana:
+                dia_semana = self.get_dia_da_semana(dia)
+
+                timeslice = TimeSlice.objects.create(start=horario_inicio, end=horario_fim)
+                trabalho_por_dia = TrabalhoPorDia.objects.create(
+                    dia_da_semana=dia_semana
+                )
+                trabalho_por_dia.timeslices.add(timeslice)
+
+                TrabalhaCaixa.objects.create(
+                    caixa=caixa,
+                    caixeiro=caixeiro,
+                    trabalho_por_dia=trabalho_por_dia
+                )
+            request.session["success_message"] = "Caixeiro associado ao caixa com sucesso."
+        except Exception as e:
+            request.session["error_message"] = f"Erro ao associar caixeiro: {str(e)}. Por favor, tente novamente."
 
         return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
+
 
     def get_dia_da_semana(self, dia):
         if isinstance(dia, int):
