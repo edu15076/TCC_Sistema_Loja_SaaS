@@ -205,7 +205,7 @@ class GestaoCaixaCRUDListView(ABCGestaoCaixaCRUDListView, View):
         dias_da_semana = request.POST.getlist("dias_trabalho")
         
         try:
-            caixeiro = get_object_or_404(Caixeiro, cpf=caixeiro_id)
+            caixeiro = get_object_or_404(Caixeiro, cpf=caixeiro_id, scope=loja_scope)
         except Http404:
             request.session["error_message"] = "Caixeiro inválido. Por favor, selecione um caixeiro válido."
             return redirect(reverse('gestao_caixas', kwargs={'loja_scope': loja_scope}))
