@@ -3,7 +3,8 @@ from decimal import Decimal
 from typing import Any
 
 from django.db import models
-from django.db.models import F, UniqueConstraint
+from django.db.models import F, UniqueConstraint, Sum, Value
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
@@ -49,8 +50,9 @@ class Produto(ValidateModelMixin, models.Model):
 
     @property
     def qtd_em_estoque(self):
-        # TODO: Fazer isso usando aggregate com SUM
-        return sum([p.qtd_em_estoque for p in self.lotes.filter(produto=self)])
+        return self.lotes.aggregate(
+            total=Coalesce(Sum('qtd_em_estoque'), Value(0))
+        )['total']
 
     def promocao_por_data(self, data: date):
         """
