@@ -13,6 +13,8 @@ grupos_funcionarios = {
     ],
     'loja_gerentes_de_estoque': [
         'is_gerente_de_estoque',
+        'gerir_produtos_cadastrados',
+        'gerir_estoque_de_produto',
     ],
     'loja_gerentes_financeiros': [
         'is_gerente_financeiro',

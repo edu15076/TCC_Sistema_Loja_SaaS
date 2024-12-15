@@ -1,0 +1,23 @@
+<div id="dados-produto-{{ produto.pk }}" class="dados-produto card mb-3">
+    <div class="card-body">
+        <div class="d-flex flex-wrap column-gap-2 align-top justify-content-between">
+            <div>
+                <h5 class="card-title">
+                    Produto: {{ produto.codigo_de_barras }}
+                </h5>
+                <p>
+                    <strong>Quantidade em estoque:</strong> {{ produto.qtd_em_estoque }}<br>
+                    <strong>Descrição:</strong> {{ produto.descricao }}<br>
+                </p>
+            </div>
+            <button class="btn btn-secondary mb-3" style="height: fit-content" type="button" data-bs-toggle="modal"
+                    data-bs-target="#editar-produto-{{ produto.pk }}">
+                Editar Produto
+            </button>
+        </div>
+
+        <a href="{% url 'gestao_produtos_por_lote' loja_scope=scope.pk produto_pk=produto.pk %}" class="btn btn-primary">
+            Editar Estoque
+        </a>
+    </div>
+</div>

@@ -3,7 +3,8 @@ from decimal import Decimal
 from typing import Any
 
 from django.db import models
-from django.db.models import F
+from django.db.models import F, UniqueConstraint, Sum, Value
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
@@ -26,6 +27,7 @@ class ProdutoManager(models.Manager):
     def get_queryset(self):
         return ProdutoQuerySet(self.model, using=self._db).all()
 
+
 class Produto(ValidateModelMixin, models.Model):
     descricao = models.CharField(_('Descrição'), max_length=246)
     preco_de_venda = models.DecimalField(
@@ -33,6 +35,7 @@ class Produto(ValidateModelMixin, models.Model):
         max_digits=11,
         decimal_places=2,
         validators=[MinValueValidator(1, _('Preço não pode ser nulo ou negativo.'))],
+        default=Decimal('1.00'),
     )
     codigo_de_barras = models.CharField(
         _('Código de barras'), max_length=128, blank=True
@@ -47,7 +50,9 @@ class Produto(ValidateModelMixin, models.Model):
 
     @property
     def qtd_em_estoque(self):
-        return sum([p.qtd_em_estoque for p in self.lotes.filter(produto=self)])
+        return self.lotes.aggregate(
+            total=Coalesce(Sum('qtd_em_estoque'), Value(0))
+        )['total']
 
     def promocao_por_data(self, data: date):
         """
@@ -82,9 +87,9 @@ class Produto(ValidateModelMixin, models.Model):
             return True
         except ValidationError:
             return False
-    
+
     def calcular_desconto(
-        self, promocao = None, data: date = date.today()
+            self, promocao=None, data: date = date.today()
     ):
         """
         Calcula o preço de venda do produto para a data passada.
@@ -99,12 +104,13 @@ class Produto(ValidateModelMixin, models.Model):
 
 
 class ProdutoPorLoteQuerySet(models.QuerySet):
-    pass
+    def complete(self):
+        return self.alias(loja=F('produto__loja'))
 
 
 class ProdutoPorLoteManager(models.Manager):
     def get_queryset(self):
-        return ProdutoPorLoteQuerySet(self.model, using=self._db).all()
+        return ProdutoPorLoteQuerySet(self.model, using=self._db).complete()
 
 
 class ProdutoPorLote(models.Model):
@@ -122,3 +128,16 @@ class ProdutoPorLote(models.Model):
     )
 
     produtos_por_lote = ProdutoPorLoteManager()
+
+    @property
+    def loja(self):
+        return self.produto.loja
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['produto', 'lote'],
+                name='unique_produto_lote',
+                violation_error_message=_('O produto já possui este lote.')
+            )
+        ]
