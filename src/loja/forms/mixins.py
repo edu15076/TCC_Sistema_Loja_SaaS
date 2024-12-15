@@ -12,7 +12,7 @@ __all__ = (
 class LojaValidatorFormMixin:
     error_messages = {
         'instance_not_from_loja':
-            _('Instância de %(instance_type) não existe nessa loja'),
+            _('Instância de %(instance_type)s não existe nessa loja'),
     }
 
     fields_loja_check: list[str] = []
@@ -33,10 +33,8 @@ class LojaValidatorFormMixin:
             return super().clean()
         if self.instance.loja != self.loja:
             raise forms.ValidationError(
-                self.error_messages['field_not_from_loja'],
-                code='field_not_from_loja',
-                params={'field_name': self.instance.__class__.__name__},
+                self.error_messages['instance_not_from_loja'],
+                code='instance_not_from_loja',
+                params={'instance_type': self.instance.__class__.__name__},
             )
         return super().clean()
-
-

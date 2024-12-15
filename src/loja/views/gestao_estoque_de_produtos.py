@@ -34,7 +34,7 @@ __all__ = (
 
 
 class CriarProdutoView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateHTMXView
+    LojaProtectionMixin, PermissionRequiredMixin, CreateHTMXView
 ):
     template_name = 'gestao_estoque/modals/modal_criar_produto.html'
     form_template_name = 'gestao_estoque/forms/htmx_create_produto.html'
@@ -68,7 +68,7 @@ class CriarProdutoView(
 
 
 class UpdateProdutoView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, UpdateHTMXView
+    LojaProtectionMixin, PermissionRequiredMixin, UpdateHTMXView
 ):
     template_name = 'gestao_estoque/modals/modal_editar_produto.html'
     form_template_name = 'gestao_estoque/forms/htmx_edit_produto.html'
@@ -187,7 +187,7 @@ class GestaoProdutosEstoqueView(
 
 
 class CriarProdutoPorLoteView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, CreateHTMXView
+    LojaProtectionMixin, PermissionRequiredMixin, CreateHTMXView
 ):
     template_name = 'gestao_produto/modals/modal_criar_produto_por_lote.html'
     form_template_name = 'gestao_produto/forms/htmx_create_produto_por_lote.html'
@@ -228,7 +228,7 @@ class CriarProdutoPorLoteView(
 
 
 class UpdateProdutoPorLoteView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, UpdateHTMXView
+    LojaProtectionMixin, PermissionRequiredMixin, UpdateHTMXView
 ):
     template_name = 'gestao_produto/modals/modal_editar_produto_por_lote.html'
     form_template_name = 'gestao_produto/forms/htmx_edit_produto_por_lote.html'
@@ -357,7 +357,7 @@ class CardProdutoPorLoteView(
 
 
 class DeleteProdutoPorLoteView(
-    UserFromLojaRequiredMixin,
+    LojaProtectionMixin,
     PermissionRequiredMixin,
     DeleteHTMXView
 ):
@@ -390,7 +390,7 @@ class DeleteProdutoPorLoteView(
 
 
 class GestaoProdutosPorLoteView(
-    UserFromLojaRequiredMixin, PermissionRequiredMixin, DetailView
+    LojaProtectionMixin, PermissionRequiredMixin, DetailView
 ):
     template_name = 'gestao_produto/gestao_produtos_por_lote.html'
     model = Produto

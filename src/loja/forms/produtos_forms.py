@@ -75,7 +75,7 @@ class ProdutoPorLoteChangeForm(ModalCrispyFormMixin, forms.ModelForm):
                 )
         ):
             raise forms.ValidationError(
-                message=ProdutoPorLoteChangeForm.error_messages['lote_ja_cadastrado'],
+                message=self.error_messages['lote_ja_cadastrado'],
                 code='lote_ja_cadastrado',
             )
 
@@ -107,7 +107,7 @@ class ProdutoLoteValidatorFormMixin(LojaValidatorFormMixin):
     error_messages = {
         'lote_de_outro_produto':
             _('Esse lote é de outro produto e não pode ser alterado.'),
-    }
+    } | LojaValidatorFormMixin.error_messages
 
     def __init__(self, *args, produto: Produto, **kwargs):
         super().__init__(*args, **kwargs)
@@ -123,6 +123,9 @@ class ProdutoLoteValidatorFormMixin(LojaValidatorFormMixin):
 
 
 class ProdutoPorLoteEditForm(ProdutoLoteValidatorFormMixin, ProdutoPorLoteChangeForm):
+    error_messages = (ProdutoLoteValidatorFormMixin.error_messages
+                      | ProdutoPorLoteChangeForm.error_messages)
+
     def get_submit_button(self) -> Submit:
         return Submit('atualizar_lote', _('Atualizar Lote'))
 
