@@ -12,6 +12,7 @@ class EstadoCaixaListView(ABCEstadoCaixaCRUDListView):
     template_name = 'estado_caixa.html'
     context_object_name = 'caixas'
     usuario_class = Caixeiro
+    permission_required = "loja.gerir_estado_do_caixa"
 
     def get_queryset(self):
         loja_scope = self.kwargs.get('loja_scope')
