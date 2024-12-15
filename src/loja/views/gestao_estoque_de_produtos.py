@@ -2,13 +2,17 @@ from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
-from django.views.generic import ListView, DetailView, TemplateView, DeleteView
+from django.views.generic import ListView, DetailView, TemplateView
 
-from loja.forms import ProdutoCreationForm, ProdutoEditForm, ProdutoPorLoteDeleteForm, \
-    ProdutoPorLoteCreationForm, ProdutoPorLoteEditForm
+from loja.forms import (
+    ProdutoCreationForm,
+    ProdutoEditForm,
+    ProdutoPorLoteDeleteForm,
+    ProdutoPorLoteCreationForm,
+    ProdutoPorLoteEditForm
+)
 from util.views import CreateHTMXView, HTMXHelperMixin, UpdateHTMXView, DeleteHTMXView
 from loja.views.mixins import UserFromLojaRequiredMixin, LojaProtectionMixin
 from loja.models import ProdutoPorLote, GerenteDeEstoque, Produto
@@ -233,7 +237,7 @@ class UpdateProdutoPorLoteView(
     context_object_name = 'lote'
     success_url = None
     redirect_on_success = False
-    restrict_direct_access = False
+    restrict_direct_access = True
     hx_target_form_invalid = 'this'
     hx_swap_form_invalid = 'outerHTML'
     form_error_status_code = 299
@@ -303,7 +307,7 @@ class ListProdutosPorLoteView(
     ListView
 ):
     template_name = 'gestao_produto/includes/table_produto_por_lote.html'
-    restrict_direct_access = False
+    restrict_direct_access = True
     model = ProdutoPorLote
     context_object_name = 'lotes'
     ordering = ['-qtd_em_estoque', 'lote']
@@ -312,10 +316,15 @@ class ListProdutosPorLoteView(
     permission_required = 'loja.gerir_estoque_de_produto'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs) | {
+            'produto': Produto.produtos.filter(pk=self.kwargs.get('produto_pk')).first()
+        }
         for lote in context['lotes']:
             self.get_context_data_produto(lote)
         return context
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(produto=self.kwargs.get('produto_pk'))
 
     def get_login_url(self):
         return reverse('login_loja', kwargs={'loja_scope': int(self.scope)})
@@ -337,7 +346,9 @@ class CardProdutoPorLoteView(
     permission_required = 'loja.gerir_estoque_de_produto'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs) | {
+            'produto': Produto.produtos.filter(pk=self.kwargs.get('produto_pk')).first()
+        }
         self.get_context_data_produto(context['lote'])
         return context
 
