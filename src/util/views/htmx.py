@@ -8,11 +8,12 @@ from django.template.response import TemplateResponse
 from django.urls import resolve
 from django.views.generic import CreateView, UpdateView
 from django.views.generic.base import ContextMixin, TemplateView
-from django.views.generic.edit import ModelFormMixin, FormMixin
+from django.views.generic.edit import ModelFormMixin, FormMixin, DeleteView
 
 __all__ = (
     'CreateHTMXView',
     'UpdateHTMXView',
+    'DeleteHTMXView',
     'HttpResponseHTMXRedirect',
     'HTMXModelFormMixin',
     'HTMXFormMixin',
@@ -55,6 +56,7 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
     redirect_on_success = True
     hx_target_form_invalid = None
     hx_swap_form_invalid = None
+    form_error_status_code = 200
 
     def get_hx_target_form_invalid(self):
         return self.hx_target_form_invalid
@@ -71,8 +73,10 @@ class HTMXFormMixin(HTMXHelperMixin, FormMixin):
         return super().get_context_data(**kwargs)
 
     def form_invalid(self, form):
+        # TODO: HTMX blocks 400, maybe think of a better way then 299
         response = TemplateResponse(
-            self.request, self.form_template_name, self.get_context_data(form=form)
+            self.request, self.form_template_name, self.get_context_data(form=form),
+            status=self.form_error_status_code
         )
         if hx_retarget := self.get_hx_target_form_invalid():
             response['HX-Retarget'] = hx_retarget
@@ -113,4 +117,8 @@ class CreateHTMXView(HTMXModelFormMixin, CreateView):
 
 
 class UpdateHTMXView(HTMXModelFormMixin, UpdateView):
+    pass
+
+
+class DeleteHTMXView(HTMXFormMixin, DeleteView):
     pass

@@ -1,0 +1,15 @@
+<table class="table table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Lote</th>
+            <th>Quantidade em Estoque</th>
+            <th>Editar</th>
+            <th>Deletar</th>
+        </tr>
+    </thead>
+    <tbody id="tbody-lotes">
+        {% for lote in lotes %}
+            {% include 'gestao_produto/table_rows/tr_produto_por_lote.html' %}
+        {% endfor %}
+    </tbody>
+</table>

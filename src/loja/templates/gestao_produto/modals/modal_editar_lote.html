@@ -1,0 +1,2 @@
+{% url 'editar_produto_por_lote' loja_scope=scope.pk produto_pk=lote.produto.pk pk=lote.pk as editar_produto_por_lote_action %}
+{% include 'gestao_produto/modals/modal_editar_produto_por_lote.html' with action=editar_produto_por_lote_action form=lote.edit_form %}

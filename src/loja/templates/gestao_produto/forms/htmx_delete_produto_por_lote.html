@@ -1,0 +1,15 @@
+{% load crispy_forms_tags %}
+
+<form hx-target="#tr-produto-por-lote-{{ form.instance.pk }}"
+      hx-swap="outerHTML"
+      hx-post="{{ action }}"
+      hx-on::before-request="subtract_qtd_produto_por_lote({{ form.instance.pk }})"
+      method="post">
+    {% crispy form %}
+    <button type="submit"
+        name="deletar_lote"
+        class="btn btn-danger"
+        id="submit-id-deletar_lote-{{ form.instance.pk }}">
+            {% heroicon_solid "trash" size=20 %}
+    </button>
+</form>

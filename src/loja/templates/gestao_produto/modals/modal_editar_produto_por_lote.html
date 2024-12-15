@@ -1,0 +1,3 @@
+{% with lote_pk=lote.pk|stringformat:"i" %}
+    {% include 'modals/modal_generic_form.html' with modal_title="Editar Lote: "|add:lote.lote modal_id="editar-produto-por-lote-"|add:lote_pk aria_labelledby="editarProdutoPorLoteLabel" modal_form="gestao_produto/forms/htmx_edit_produto_por_lote.html" %}
+{% endwith %}

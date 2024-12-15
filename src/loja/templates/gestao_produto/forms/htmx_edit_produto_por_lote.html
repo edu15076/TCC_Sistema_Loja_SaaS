@@ -1,0 +1,14 @@
+{% load crispy_forms_tags %}
+
+<form hx-target="#tr-produto-por-lote-{{ form.instance.pk }}"
+      hx-swap="outerHTML"
+      hx-post="{{ action }}"
+      hx-on::before-on-load="
+          if (event.detail.xhr.status != 200)
+              return;
+          $('#editar-produto-por-lote-{{ form.instance.pk }}').modal('hide');
+          subtract_qtd_produto_por_lote({{ form.instance.pk }});
+      "
+      method="post">
+    {% crispy form %}
+</form>
