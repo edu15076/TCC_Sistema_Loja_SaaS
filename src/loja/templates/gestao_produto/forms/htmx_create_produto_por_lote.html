@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+
+<form hx-target="#tbody-lotes"
+      hx-swap="afterbegin"
+      hx-post="{{ action }}"
+      hx-on::after-request="$('#criar-produto-por-lote').modal('hide'); add_qtd_produto_por_lote_val($('#id_qtd_em_estoque').val());"
+      method="post">
+    {% crispy form %}
+</form>

@@ -36,7 +36,11 @@
             <div id="links-gerente-de-estoque" class="permission-links ms-3">
         {% endif %}
         {% block links_gerente_de_estoque %}
-            
+            {% if perms.loja.gerir_produtos_cadastrados %}
+                <li class="nav-item">
+                    <a href="{% url 'gerir_produtos_estoque' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Produtos em Estoque</a>
+                </li>
+            {% endif %}
         {% endblock links_gerente_de_estoque %}
         {% if perms.loja.is_gerente_de_estoque %}</div>{% endif %}
         

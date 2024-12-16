@@ -1,0 +1,30 @@
+{% extends 'base_loja.html' %}
+
+{% block main_content %}
+    <h1>Gerir Lotes do Produto: {{ produto.codigo_de_barras }}</h1>
+    {% include 'gestao_produto/cards/card_criar_produto_por_lote_para_produto.html' %}
+    <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'criar_produto_por_lote' loja_scope=scope.pk produto_pk=produto.pk %}"></div>
+    <div hx-trigger="load" hx-swap="outerHTML" hx-get="{% url 'list_produtos_por_lote' loja_scope=scope.pk produto_pk=produto.pk %}" class="mt-3 d-flex justify-content-center">
+        <div class="spinner-grow" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+{% endblock main_content %}
+
+{% block extra_scripts %}
+    <script>
+        const $qtdEmEstoque = $('.qtd-em-estoque-produto');
+
+        function subtract_qtd_produto_por_lote(lote_pk) {
+            $qtdEmEstoque.html(parseInt($qtdEmEstoque.html()) - parseInt($(`#qtd-em-estoque-lote-${lote_pk}`).html()));
+        }
+
+        function add_qtd_produto_por_lote(lote_pk) {
+            $qtdEmEstoque.html(parseInt($qtdEmEstoque.html()) + parseInt($(`#qtd-em-estoque-lote-${lote_pk}`).html()));
+        }
+
+        function add_qtd_produto_por_lote_val(val) {
+            $qtdEmEstoque.html(parseInt($qtdEmEstoque.html()) + parseInt(val));
+        }
+    </script>
+{% endblock extra_scripts %}

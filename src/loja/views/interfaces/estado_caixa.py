@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from django.http import HttpRequest, HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView
 from common.views.mixins import UsuarioMixin
 
 
 class ABCEstadoCaixaCRUDListView(
-    ABC, LoginRequiredMixin, UsuarioMixin, ListView
+    ABC, LoginRequiredMixin, UsuarioMixin, PermissionRequiredMixin, ListView
 ):
     @abstractmethod
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:

@@ -2,10 +2,12 @@
 
 {% block brand %}
     <a class="d-flex align-items-center gap-3 p-0 navbar-brand" href="{% url 'home_loja' loja_scope=scope.pk %}">
-        <img class="rounded"
-                     src="{% url 'logo_loja' loja_scope=scope.pk %}"
-                     alt="Logo da loja"
-                     style="height: 3.5rem;">
+        {% if scope.loja.logo %}
+            <img class="rounded"
+                         src="{% url 'logo_loja' loja_scope=scope.pk %}"
+                         alt="Logo da loja"
+                         style="height: 3.5rem;">
+        {% endif %}
         {{ scope.loja.nome }}
     </a>
 {% endblock brand %}

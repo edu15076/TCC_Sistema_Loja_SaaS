@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+
+<form hx-target="#list-produtos"
+      hx-swap="afterbegin"
+      hx-post="{{ action }}"
+      hx-on::after-request="$('#criar-produto').modal('hide')"
+      method="post">
+    {% crispy form %}
+</form>
