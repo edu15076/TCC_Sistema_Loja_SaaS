@@ -17,7 +17,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="id" value="{{ caixa.id }}">
                     {% if caixa.horario_aberto %}
-                        <button name="acao" value="fechar" class="btn btn-warning btn-block">Fechar Caixa</button>
+                        <button name="acao" value="fechar" class="btn btn-primary btn-block">Fechar Caixa</button>
                     {% else %}
                         <button name="acao" value="abrir" class="btn btn-primary btn-block">Abrir Caixa</button>
                     {% endif %}
@@ -30,7 +30,7 @@
                 </form>
                 
                 <div class="row justify-content-center mt-2">
-                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#associarCaixeiroModal-{{ caixa.id }}">
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#associarCaixeiroModal-{{ caixa.id }}">
                         Associar Caixeiro
                     </button>
                 </div>
@@ -65,17 +65,36 @@
                     <label for="horario_fim" class="form-label">Horário de Trabalho (Fim):</label>
                     <input type="time" name="horario_fim" class="form-control" required>
 
-                    <label for="dias_trabalho" class="form-label">Selecionar Dias da Semana:</label>
-                    <select name="dias_trabalho" class="form-select w-auto" multiple required>
-                        <option value="domingo">Domingo</option>
-                        <option value="segunda">Segunda</option>
-                        <option value="terca">Terça</option>
-                        <option value="quarta">Quarta</option>
-                        <option value="quinta">Quinta</option>
-                        <option value="sexta">Sexta</option>
-                        <option value="sabado">Sábado</option>
-                    </select>
-                        
+                    <label class="form-label">Selecionar Dias da Semana:</label>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="domingo" class="form-check-input" id="domingo">
+                        <label class="form-check-label" for="domingo">Domingo</label>
+                    </div>
+                    <div class="form-check">
+                        <input type ="checkbox" name="dias_trabalho" value="segunda" class="form-check-input" id="segunda">
+                        <label class="form-check-label" for="segunda">Segunda</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="terca" class="form-check-input" id="terca">
+                        <label class="form-check-label" for="terca">Terça</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="quarta" class="form-check-input" id="quarta">
+                        <label class="form-check-label" for="quarta">Quarta</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="quinta" class="form-check-input" id="quinta">
+                        <label class="form-check-label" for="quinta">Quinta</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="sexta" class="form-check-input" id="sexta">
+                        <label class="form-check-label" for="sexta">Sexta</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="dias_trabalho" value="sabado" class="form-check-input" id="sabado">
+                        <label class="form-check-label" for="sabado">Sábado</label>
+                    </div>
+
                     <button type="submit" class="btn btn-success mt-2">Associar Caixeiro</button>
                 </form>
             </div>

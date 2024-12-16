@@ -4,12 +4,11 @@
     Vendedor: {{ funcionario.cpf }}
 {% endblock funcionario_title %}
 
-{# TODO: Colocar dados de vendedor como comissao ganha no mes atual #}
 {% block funcionario_extra_data %}
     <br>
-    <strong>Quantidade de Vendas Novembro 2024:</strong> 51<br>
-    <strong>Valor Vendido Novembro 2024:</strong> R$ 13.050,00<br>
-    <strong>Comissão Novembro 2024:</strong> R$ 1.305,00<br>
+    <strong>Quantidade de Vendas nos últimos {{ numero_de_tempos }} {{ unidade_de_tempo }}:</strong> {{ funcionario.qtd_vendas }}<br>
+    <strong>Valor Vendido nos últimos {{ numero_de_tempos }} {{ unidade_de_tempo }}:</strong> {{ funcionario.valor_vendido }}<br>
+    <strong>Comissão nos últimos {{ numero_de_tempos }} {{ unidade_de_tempo }}:</strong> {{ funcionario.comissao_ganha }}<br>
     
     {% if funcionario == user %}
         <small class="d-block text-body-secondary">Esse vendedor é você</small>

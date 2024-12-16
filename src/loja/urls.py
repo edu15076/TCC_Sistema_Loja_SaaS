@@ -110,9 +110,64 @@ urlpatterns = [
         name='gerir_oferta_produtos',
     ),
     path(
+        'produto/<int:produto_pk>/criar_produto_por_lote/',
+        CriarProdutoPorLoteView.as_view(),
+        name='criar_produto_por_lote',
+    ),
+    path(
+        'produto/<int:produto_pk>/editar_lote/<int:pk>/',
+        UpdateProdutoPorLoteView.as_view(),
+        name='editar_produto_por_lote',
+    ),
+    path(
+        'produto/<int:produto_pk>/lotes/',
+        ListProdutosPorLoteView.as_view(),
+        name='list_produtos_por_lote',
+    ),
+    path(
+        'produto/<int:produto_pk>/lote_detail/<int:pk>/',
+        CardProdutoPorLoteView.as_view(),
+        name='produto_por_lote_detail',
+    ),
+    path(
+        'produto/<int:produto_pk>/deletar_lote/<int:pk>/',
+        DeleteProdutoPorLoteView.as_view(),
+        name='delete_produto_por_lote',
+    ),
+    path(
+        'produto/<int:produto_pk>/',
+        GestaoProdutosPorLoteView.as_view(),
+        name='gestao_produtos_por_lote',
+    ),
+    path(
+        'estoque_de_produtos/produtos/',
+        ListProdutosView.as_view(),
+        name='list_produtos_estoque',
+    ),
+    path(
+        'estoque_de_produtos/produto_detail/<int:pk>/',
+        CardProdutoView.as_view(),
+        name='produto_estoque_detail',
+    ),
+    path(
+        'estoque_de_produtos/produto_detail_edit/<int:pk>/',
+        CardProdutoEditView.as_view(),
+        name='produto_estoque_detail_edit',
+    ),
+    path(
+        'estoque_de_produtos/criar_produto/',
+        CriarProdutoView.as_view(),
+        name='criar_produto_estoque',
+    ),
+    path(
+        'estoque_de_produtos/editar_produto/<int:pk>/',
+        UpdateProdutoView.as_view(),
+        name='editar_produto_estoque',
+    ),
+    path(
         'estoque_de_produtos/',
-        GestaoEstoqueDeProdutosListView.as_view(),
-        name='gestao_estoque_de_produtos',
+        GestaoProdutosEstoqueView.as_view(),
+        name='gerir_produtos_estoque',
     ),
     path(
         'promocoes_produto/<int:pk>/',
@@ -138,5 +193,10 @@ urlpatterns = [
         'gestao-caixas/',
         GestaoCaixaCRUDListView.as_view(),
         name='gestao_caixas',
+    ),
+    path(
+        'venda/',
+        EfetuarVendaView.as_view(),
+        name='efetuar_venda',
     ),
 ]

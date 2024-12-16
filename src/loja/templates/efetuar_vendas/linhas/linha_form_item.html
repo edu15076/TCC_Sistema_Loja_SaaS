@@ -1,0 +1,9 @@
+<tr class="item-venda" 
+    id="item-{{ produto.id }}">
+    <td>{{ produto.codigo_de_barras }}</td>
+    <td>{{ produto.descricao }}</td>
+    <td>{{ quantidade }}</td>
+    <td>R$ {{ produto.preco_de_venda }}</td>
+    <td>R$ {{ produto.calcular_desconto }}</td>
+    <td>R$ {{ preco_total }}</td>
+</tr>

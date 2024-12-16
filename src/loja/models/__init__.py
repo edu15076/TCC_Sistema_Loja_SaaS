@@ -8,3 +8,5 @@ from .fluxodecaixa import *
 from .timeslice import *
 from .trabalhapordia import *
 from .trabalhacaixa import *
+from .venda import *
+from .item import *

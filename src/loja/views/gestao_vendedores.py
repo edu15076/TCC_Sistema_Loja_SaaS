@@ -34,8 +34,17 @@ class VendedorContextDataMixin:
             auto_id=f'alterar-comissao-vendedor-{vendedor.pk}-%s'
         )
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs) | {
+            'numero_de_tempos': 30,
+            'unidade_de_tempo': 'dias',
+        }
+
     def get_context_data_vendedor(self, vendedor: Vendedor, add_is_valid=False) -> Vendedor:
         vendedor.alterar_comissao_form = self.get_alterar_comissao_form(vendedor, add_is_valid)
+        vendedor.qtd_vendas = vendedor.get_qtd_vendas_dias_atras(30)
+        vendedor.valor_vendido = vendedor.get_valor_vendas_dias_atras(30)
+        vendedor.comissao_ganha = vendedor.get_comissao_vendas_dias_atras(30)
         return vendedor
 
 
