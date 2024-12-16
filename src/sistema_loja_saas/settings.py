@@ -35,7 +35,7 @@ STRIPE_SECRET_KEY = env('STRIPE_TEST_API_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
