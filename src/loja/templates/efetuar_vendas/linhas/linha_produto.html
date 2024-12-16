@@ -1,0 +1,22 @@
+{% load heroicons %}
+
+<tr class="item-venda" 
+    id="item-{{ produto.id }}" 
+    data-produto-codigo-de-barras="{{ produto.codigo_de_barras }}" 
+    data-item-descricao="{{ produto.descricao }}" 
+    data-item-quantidade="{{ quantidade }}" 
+    data-item-preco-de-venda="{{ produto.preco_de_venda }}" 
+    data-item-desconto="{{ produto.calcular_desconto }}" 
+    data-item-preco-total="{{ preco_total }}">
+    <td>{{ produto.codigo_de_barras }}</td>
+    <td>{{ produto.descricao }}</td>
+    <td>{{ quantidade }}</td>
+    <td>R$ {{ produto.preco_de_venda }}</td>
+    <td>R$ {{ produto.calcular_desconto }}</td>
+    <td>R$ {{ preco_total }}</td>
+    <td>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removerItemVenda({{ produto.id }})">
+            {% heroicon_solid 'trash' size=20 %}
+        </button>
+    </td>
+</tr>

@@ -128,7 +128,7 @@ class Migration(migrations.Migration):
                 (
                     'codigo_de_barras',
                     models.CharField(
-                        blank=True, max_length=128, verbose_name='Código de barras'
+                        max_length=128, verbose_name='Código de barras'
                     ),
                 ),
                 (

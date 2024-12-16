@@ -1,13 +1,14 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Sum
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 
+from loja.models.venda import Venda
 from loja.validators import validate_unique_promocao
 from util.mixins import ValidateModelMixin
 from loja.models import Loja
@@ -35,7 +36,7 @@ class Produto(ValidateModelMixin, models.Model):
         validators=[MinValueValidator(1, _('Preço não pode ser nulo ou negativo.'))],
     )
     codigo_de_barras = models.CharField(
-        _('Código de barras'), max_length=128, blank=True
+        _('Código de barras'), max_length=128
     )
     # TODO rever nomenclatura
     em_venda = models.BooleanField(_('À venda'), default=False)
@@ -47,7 +48,7 @@ class Produto(ValidateModelMixin, models.Model):
 
     @property
     def qtd_em_estoque(self):
-        return sum([p.qtd_em_estoque for p in self.lotes.filter(produto=self)])
+        return sum([lote.qtd_em_estoque for lote in self.lotes.all()])
     
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -105,7 +106,7 @@ class Produto(ValidateModelMixin, models.Model):
         """
         Calcula o preço de venda do produto para a data passada.
         """
-        if promocao is not None:
+        if promocao is None:
             promocao = self.promocao_por_data(data)
 
         if promocao is not None:

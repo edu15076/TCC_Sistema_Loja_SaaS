@@ -61,6 +61,12 @@
             <div id="links-caixeiro" class="permission-links ms-3">
         {% endif %}
         {% block links_caixeiro %}
+            {% if perms.loja.efetuar_venda %}
+                <li class="nav-item">
+                    <a href="{% url 'efetuar_venda' loja_scope=scope.pk %}" class="nav-link pt-0">Efetuar Venda</a>
+                </li>
+            {% else %}
+            {% endif %}
             {% if perms.loja.gerir_estado_do_caixa %}
                 <li class="nav-item">
                     <a href="{% url 'estado_caixa' loja_scope=scope.pk %}" class="nav-link pt-0">Gerir Caixa</a>

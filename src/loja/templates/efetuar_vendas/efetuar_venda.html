@@ -4,20 +4,20 @@
 {% load static %}
 
 {% block main_content %}
-    <h1>Venda</h1>
+    <h1 class="container">Venda</h1>
 
-    <section id="item-form" class="container my-4">
+    <section id="produto-form" class="container my-4">
         <form method="post" 
-            class="row row-cols-lg-auto g-3 align-items-end" 
+            class="row row-cols-lg-2 g-3 align-items-end" 
             hx-post="{% url 'efetuar_venda' scope.pk %}" 
-            hx-target="#itens-venda-lista"
-            hx-swap="afterbegin"
-            hx-on::after-request="colectItensVenda();">
-            {% crispy item_venda_form %}
+            hx-target="article"
+            hx-swap="beforeend"
+            hx-on::after-request="carregarModalLotes();">
+            {% crispy produto_venda_form %}
         </form>
     </section>
 
-    <section id="container itens-venda my-4" class="container my-4">
+    <section id="itens-venda" class="container my-4">
         <table class="table table-dark table-striped">
             <thead>
                 <tr>
@@ -27,24 +27,56 @@
                     <th scope="col">Preço</th>
                     <th scope="col">Desconto</th>
                     <th scope="col">Preço Final</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody id="itens-venda-lista"></tbody>
-            <footer id="itens-somas"></footer>
+            <tfoot id="itens-somas" class="fw-bold">
+                <tr>
+                    <td colspan="5">DESCONTO TOTAL</td>
+                    <td class="desconto-venda" >R$ 0,00</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="5" >TOTAL</td>
+                    <td class="total-venda" >R$ 0,00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
         </table>
     </section>
 
-    <section id="venda-form" class="container my-4">
-        <form method="post" 
-            class="row row-cols-lg-auto g-3 align-items-end" 
-            hx-post="{% url 'efetuar_venda' scope.pk %}" 
-            hx-vals='js:{itens: colectItensVenda()}'
-            {% comment %} '{"itens":[{"codigo_de_barras":22222,"quantidade":6}]}' {% endcomment %}
-            hx-swap="none">
-            
-            {% crispy venda_form %}
-        </form>
-    </section>   
+    <button type="button" id="finalizar-venda-btn" class="ms-2 btn btn-secondary" data-bs-toggle="modal" data-bs-target="">
+        Finalizar
+    </button>
+
+    <div class="modal fade" id="vendaModal" tabindex="-1" aria-labelledby="vendaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vendaModalLabel">Finalizar Venda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mx-2">
+                    <p class="h5">Total da venda: <span class="total-venda"></span></p>
+                    <p class="h5">Desconto: <span class="desconto-venda"></span></p>
+                    <p id="troco-label" class="h5 d-none text-info">Troco: <span id="troco">R$ 0,00</span></p>
+                    <p id="divida-label" class="h5 d-none text-danger">Divida: <span id="divida">R$ 0,00</span></p>
+                    <form id="venda-form"
+                        class="mt-4"
+                        method="post" 
+                        hx-target="article"
+                        hx-swap="beforeend"
+                        hx-post="{% url 'efetuar_venda' scope.pk %}" 
+                        hx-vals='js:{itens: coletarItensVenda()}'
+                        hx-on::after-request="vendaEfetuada();">
+                        {% comment %} {{ venda_form.valor_pago|as_crispy_field }} {% endcomment %}
+                        {% crispy venda_form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
      
     <div
         class="modal fade bg-danger"
@@ -76,51 +108,13 @@
         </div>
     </div>
     
-    
-    <!-- Modal Body -->
-    <!-- if you want to close by clicking outside the modal, delete the last endpoint:data-bs-backdrop and data-bs-keyboard -->
-    <div
-        class="modal fade"
-        id="compra-efetuada"
-        tabindex="-1"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        role="dialog"
-        aria-labelledby="successVendaModalLabel"
-        aria-hidden="true"
-    >
-        <div
-            class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
-            role="document"
-        >
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        Venda efetuada com sucesso!
-                    </h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <div class="modal-body">
-                    <p>Valor total: R$ {{ venda.valor_total }}</p>
-                    <p>Valor pago: R$ {{ venda.valor_pago }}</p>
-                    <p>Troco: R$ {{ venda.troco }}</p>
-
-                    <button class="btn btn-danger">Cancelar</button>
-                    <button class="btn btn-sucess">Concluir</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 {% endblock main_content %}
 
 {% block scripts %}
 
+<script src="{% static 'scripts/formatters/format_moeda.js' %}"></script>
+<script src="{% static 'scripts/efetuar_venda_controlador.js' %}"></script>
 <script src="{% static 'scripts/colect_itens_venda.js' %}"></script>
 
 {% endblock scripts %}

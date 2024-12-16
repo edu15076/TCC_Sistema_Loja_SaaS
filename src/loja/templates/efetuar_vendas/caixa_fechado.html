@@ -1,0 +1,10 @@
+{% extends "base_loja.html" %}
+
+{% block main_content %}
+    <div class="alert alert-warning text-center" role="alert">
+        <h4 class="alert-heading">Caixa Fechado</h4>
+        <p>O caixa está atualmente fechado. Por favor, abra o caixa para iniciar as vendas.</p>
+        <hr>
+        <a href="{% url 'estado_caixa' scope.pk %}" class="btn btn-primary">Abrir Caixa</a>
+    </div>
+{% endblock main_content %}

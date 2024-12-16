@@ -1,0 +1,35 @@
+{% load crispy_forms_tags %}
+
+<div class="modal fade show" id="quantidadeLotesModal" tabindex="-1" role="dialog" aria-labelledby="quantidadeLotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quantidadeLotesModalLabel">Selecionar Quantidades</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    onclick="$('#quantidadeLotesModal').remove()"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form 
+                    method="post"
+                    id="formsetLotes" 
+                    hx-post="{% url 'efetuar_venda' scope.pk %}"
+                    hx-swap="none"
+                    hx-on::after-request="carregarItem(event)"
+                    >
+                    {% comment %} {% csrf_token %} {% endcomment %}
+                    {{ quantidade_lotes_formset.management_form }}
+                    {% for form in quantidade_lotes_formset %}
+                        {% crispy form %}
+                    {% endfor %}
+                    <button class="btn btn-primary w-100" name="{{ quantidade_lotes_helper.get_submit_button.name }}">Obter</button>
+                    {% comment %} {% crispy quantidade_lotes_formset quantidade_lotes_helper %} {% endcomment %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

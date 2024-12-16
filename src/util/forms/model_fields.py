@@ -30,6 +30,8 @@ def model_field_factory(base_field_class):
             super().__init__(*args, **kwargs)
 
         def to_python(self, value):
+            if value in self.empty_values:
+                return None
             value = int(value)
             """Convert the input value to a model instance."""
             value = super().to_python(value)

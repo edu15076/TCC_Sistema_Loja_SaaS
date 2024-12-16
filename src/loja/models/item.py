@@ -8,8 +8,8 @@ from django.core.exceptions import ValidationError
 
 from loja.models import (
     Loja,
-    Produto,
-    Venda
+    # ProdutoPorLote,
+    # Venda
 )
 
 
@@ -24,9 +24,9 @@ class ItemManager(models.Manager):
 
 
 class Item(models.Model):
-    produto = models.ForeignKey(
-        Produto, 
-        verbose_name=_('Produto'), 
+    lote = models.ForeignKey(
+        'loja.ProdutoPorLote', 
+        verbose_name=_('Lote'), 
         on_delete=models.CASCADE
     )
     quantidade = models.PositiveIntegerField(_('Quantidade'), validators=[MinValueValidator(1, _('Quantidade não pode ser nula ou negativa.'))])
@@ -37,7 +37,7 @@ class Item(models.Model):
         validators=[MinValueValidator(Decimal('0.01'), _('Preço não pode ser nulo ou negativo.'))],
     )
     venda = models.ForeignKey(
-        Venda,
+        'loja.Venda',
         verbose_name=_('Venda'),
         related_name='itens',
         on_delete=models.CASCADE
@@ -47,6 +47,11 @@ class Item(models.Model):
     )
 
     itens = ItemManager()
+
+    @property
+    def produto(self):
+        from .produto import Produto
+        return self.lote.produto
     
     @property
     def preco_total(self):
