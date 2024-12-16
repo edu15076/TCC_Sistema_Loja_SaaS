@@ -1,0 +1,16 @@
+<tr class="tr-produto-por-lote" id="tr-produto-por-lote-{{ lote.pk }}" hx-on::after-settle="add_qtd_produto_por_lote({{ lote.pk }})">
+    <td>{{ lote.lote }}</td>
+    <td id="qtd-em-estoque-lote-{{ lote.pk }}">{{ lote.qtd_em_estoque }}</td>
+    <td>
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal"
+                    data-bs-target="#editar-produto-por-lote-{{ lote.pk }}">
+            {% heroicon_solid "pencil" size=20 %}
+        </button>
+        {% url 'editar_produto_por_lote' loja_scope=scope.pk produto_pk=produto.pk pk=lote.pk as editar_produto_por_lote_action %}
+        {% include 'gestao_produto/modals/modal_editar_produto_por_lote.html' with action=editar_produto_por_lote_action form=lote.edit_form %}
+    </td>
+    <td>
+        {% url 'delete_produto_por_lote' loja_scope=scope.pk produto_pk=produto.pk pk=lote.pk as delete_produto_por_lote_action %}
+        {% include 'gestao_produto/forms/htmx_delete_produto_por_lote.html' with action=delete_produto_por_lote_action form=lote.delete_form %}
+    </td>
+</tr>

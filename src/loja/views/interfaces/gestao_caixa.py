@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from django.http import HttpRequest, HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from loja.forms.cadastro_caixa_form import CaixaForm
 from django.views.generic import ListView
 from common.views.mixins import UsuarioMixin
@@ -8,7 +8,7 @@ from loja.views.mixins import UserFromLojaRequiredMixin
 
 
 class ABCGestaoCaixaCRUDListView(
-    ABC, UserFromLojaRequiredMixin, UsuarioMixin, ListView
+    ABC, UserFromLojaRequiredMixin, PermissionRequiredMixin, ListView
 ):
     form_class = CaixaForm
 

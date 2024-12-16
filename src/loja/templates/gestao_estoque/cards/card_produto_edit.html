@@ -1,0 +1,3 @@
+{% include 'gestao_estoque/cards/card_produto.html' %}
+{% url 'editar_produto_estoque' loja_scope=scope.pk pk=produto.pk as editar_produto_estoque_action %}
+{% include 'gestao_estoque/modals/modal_editar_produto.html' with action=editar_produto_estoque_action form=produto.edit_form produto_pk=produto.pk|stringformat:"i" %}

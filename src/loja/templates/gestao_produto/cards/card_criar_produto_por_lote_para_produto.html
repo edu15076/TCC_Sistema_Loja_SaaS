@@ -1,0 +1,16 @@
+<div class="card mb-4">
+    <h5 class="card-header">Cadastrar Lotes</h5>
+    <div class="card-body">
+        <h5 class="card-title">Criar lotes para o produto {{ produto.codigo_de_barras }}</h5>
+        <p>
+            <strong>Descrição:</strong> {{ produto.descricao }}<br>
+            <strong>Quantidade em estoque:</strong> <span class="qtd-em-estoque-produto">{{ produto.qtd_em_estoque }}</span><br>
+        </p>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal"
+                    data-bs-target="#criar-produto-por-lote">
+                Cadastrar Lote
+            </button>
+        </div>
+    </div>
+</div>
